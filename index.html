@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hubble - Chat & Social</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+        :root {
+            --primary: #009CFC;
+            --secondary: #A0AAFF;
+            --accent: #C97FFD;
+            --background-light: #f7f8fa;
+            --star: #A0AAFF;
+            --planet: #C97FFD;
+            --text-light: #222;
+            --auth-bg-light: #fff;
+            --background-dark: #181e2a;
+            --text-dark: #f7f8fa;
+            --auth-bg-dark: #232a3a;
+        }
+        body {
+            font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            overflow-x: hidden;
+            position: relative;
+        }
+        body[data-theme="light"] {
+            background: var(--background-light);
+            color: var(--text-light);
+        }
+        body[data-theme="dark"] {
+            background: var(--background-dark);
+            color: var(--text-dark);
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: 
+                radial-gradient(circle at 80% 20%, rgba(201,127,253,0.13) 0 8vw, transparent 12vw),
+                radial-gradient(circle at 15% 80%, rgba(0,156,252,0.10) 0 5vw, transparent 8vw),
+                repeating-radial-gradient(circle at 30% 30%, #a2dbff 0 1px, transparent 2px 100px),
+                repeating-radial-gradient(circle at 50% 50%, #A0AAFF 0 1px, transparent 2px 100px),
+                repeating-radial-gradient(circle at 30% 30%, #fff 0 1px, transparent 2px 100px),
+                repeating-radial-gradient(circle at 50% 50%, rgba(160,170,255,0.08) 0 60px, transparent 62px 100vw);
+            opacity: 0.22;
+        }
+        .topbar {
+            width: 100vw;
+            height: 56px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            position: relative;
+        }
+        body[data-theme="dark"] .topbar {
+            background: #20263a;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+        }
+        .hubble-gradient {
+            font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 700;
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            background: linear-gradient(90deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            margin-left: 2.2rem;
+            letter-spacing: 2px;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .center-wrap {
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+        }
+        .auth-container {
+            background: var(--auth-bg-light);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 2.5rem 2rem;
+            width: 100%;
+            max-width: 370px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            color: var(--text-light);
+        }
+        body[data-theme="dark"] .auth-container {
+            background: var(--auth-bg-dark);
+            color: var(--text-dark);
+        }
+        h1 {
+            display: none;
+        }
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: 500;
+            color: inherit;
+        }
+        input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+            padding: 0.7rem;
+            border: 1px solid var(--secondary);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--auth-bg-light);
+            color: var(--text-light);
+        }
+        body[data-theme="dark"] input[type="text"],
+        body[data-theme="dark"] input[type="email"],
+        body[data-theme="dark"] input[type="password"],
+        body[data-theme="dark"] input[type="number"] {
+            background: var(--auth-bg-dark);
+            color: var(--text-dark);
+        }
+        .invalid {
+            border: 2px solid #d32f2f !important;
+            background: #fff0f0;
+            color: #222;
+        }
+        .btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background 0.2s;
+        }
+        .btn:active {
+            background: var(--primary);
+        }
+        .switch-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.2rem;
+            color: var(--accent);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .error {
+            color: #d32f2f;
+            font-size: 0.95rem;
+            margin-bottom: 0.7rem;
+            text-align: center;
+        }
+        .timer {
+            color: var(--primary);
+            font-weight: 600;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        .resend-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .link-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background 0.18s;
+        }
+        
+        .link-btn:hover {
+            background: rgba(0, 156, 252, 0.1);
+        }
+        
+        /* Verification Screen Styles */
+        .verification-container {
+            text-align: center;
+            padding: 1rem 0;
+        }
+        
+
+        
+        .verification-container h1 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .verification-message {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
+        
+        .email-highlight {
+            color: var(--primary);
+            font-weight: 600;
+            background: rgba(0, 156, 252, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .verification-status {
+            margin-bottom: 2rem;
+        }
+        
+        .verification-steps {
+            background: rgba(0, 156, 252, 0.05);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        
+        .step:last-child {
+            margin-bottom: 0;
+        }
+        
+        .step-number {
+            background: var(--primary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .step-text {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+        
+        .verification-btn {
+            background: var(--primary) !important;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            padding: 0.9rem 2rem;
+        }
+        
+        .verification-actions {
+            border-top: 1px solid rgba(0, 156, 252, 0.2);
+            padding-top: 1.5rem;
+        }
+        
+        .resend-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .resend-text {
+            display: block;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        .resend-btn {
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.18s;
+        }
+        
+        .resend-btn:hover:not(:disabled) {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .resend-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: none;
+            color: var(--accent);
+        }
+        
+
+        
+        /* Dark theme adjustments for verification */
+        body[data-theme="dark"] .verification-message {
+            color: var(--text-dark);
+        }
+        
+        body[data-theme="dark"] .step-text {
+            color: var(--text-dark);
+        }
+        
+        body[data-theme="dark"] .resend-text {
+            color: var(--text-dark);
+        }
+        
+        body[data-theme="dark"] .verification-steps {
+            background: rgba(0, 156, 252, 0.1);
+        }
+        .info {
+            color: #0077b6;
+            font-size: 0.95rem;
+            margin-bottom: 0.7rem;
+            text-align: center;
+        }
+        /* Theme toggle button */
+        .theme-toggle {
+            position: fixed;
+            right: 2.2rem;
+            bottom: 2.2rem;
+            z-index: 100;
+            background: #fff;
+            color: #222;
+            border: 2px solid var(--secondary);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+        body[data-theme="dark"] .theme-toggle {
+            background: #232a3a;
+            color: #f7f8fa;
+            border: 2px solid #2c3550;
+        }
+        @media (max-width: 600px) {
+            .auth-container {
+                margin-top: 1.5rem;
+                border-radius: 0;
+                box-shadow: none;
+                padding: 1.2rem 0.5rem;
+            }
+            .topbar { height: 48px; }
+            .hubble-gradient { font-size: 1.3rem; margin-left: 1rem; }
+            .theme-toggle { right: 1rem; bottom: 1rem; }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <div class="topbar">
+        <span class="hubble-gradient">Hubble</span>
+    </div>
+    <div class="center-wrap">
+      <div class="auth-container" id="auth-container">
+          <!-- Content will be injected by JS -->
+      </div>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">🌙</button>
+    <script>
+        // Redirect to main.html if already signed in AND verified
+        (async function() {
+            try {
+                const { auth } = await import('./firebase.js');
+                const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                const { getFirestore, collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                const { app } = await import('./firebase.js');
+                const db = getFirestore(app);
+                
+                onAuthStateChanged(auth, async (user) => {
+                    if (user && user.emailVerified) {
+                        // Check if user exists in Firestore (completed registration)
+                        try {
+                            const userDoc = await getDocs(query(collection(db, "users"), where("email", "==", user.email)));
+                            if (!userDoc.empty) {
+                                // User is verified and completed registration, redirect to main
+                                window.location.href = 'main.html';
+                            }
+                            // If user is verified but not in Firestore, stay on index.html for verification completion
+                        } catch (error) {
+                            console.error('Error checking user registration:', error);
+                            // Stay on index.html if there's an error
+                        }
+                    }
+                    // If user is not verified or not authenticated, stay on index.html
+                });
+            } catch (e) {
+                console.error('Auth state check failed:', e);
+            }
+        })();
+        // Theme toggle logic
+        const themeToggle = document.getElementById('theme-toggle');
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('hubble-theme', theme);
+            themeToggle.textContent = theme === 'light' ? '🌙' : '☀️';
+        }
+        themeToggle.onclick = () => {
+            const current = document.body.getAttribute('data-theme');
+            setTheme(current === 'light' ? 'dark' : 'light');
+        };
+        // On load, set theme from localStorage
+        (function() {
+            const saved = localStorage.getItem('hubble-theme');
+            if (saved === 'dark' || saved === 'light') setTheme(saved);
+            else setTheme('light');
+        })();
+
+        // State
+        let currentScreen = 'signin'; // 'signin', 'signup', 'verify'
+
+        let lastSignupData = {};
+
+        // Utility validation functions
+        function validateEmail(email) {
+            return /^1\d{6}@lwsd\.org$/.test(email);
+        }
+        function validateUsername(username) {
+            return username.length >= 3 && username.length <= 75;
+        }
+        function validatePassword(password) {
+            return password.length >= 8 && password.length <= 75;
+        }
+        function showError(msg) {
+            return `<div class="error">${msg}</div>`;
+        }
+
+        // UI rendering
+        function renderSignIn(errorMsg = '', values = {}, invalidFields = {}) {
+            currentScreen = 'signin';
+            document.getElementById('auth-container').innerHTML = `
+                <h1>Hubble</h1>
+                ${errorMsg ? showError(errorMsg) : ''}
+                <form id="signin-form">
+                    <div class="input-group">
+                        <label for="signin-email">Email Address</label>
+                        <input type="email" id="signin-email" required autocomplete="username" value="${values.email || ''}" class="${invalidFields.email ? 'invalid' : ''}">
+                    </div>
+                    <div class="input-group">
+                        <label for="signin-password">Password</label>
+                        <input type="password" id="signin-password" required autocomplete="current-password" value="${values.password || ''}" class="${invalidFields.password ? 'invalid' : ''}">
+                    </div>
+                    <button class="btn" type="submit">Sign In</button>
+                </form>
+                <span class="switch-link" id="forgot-password">Forgot password?</span>
+                <span class="switch-link" id="to-signup">Don't have an account? Sign up</span>
+            `;
+            document.getElementById('to-signup').onclick = () => renderSignUp();
+            document.getElementById('forgot-password').onclick = async () => {
+                const email = prompt('Enter your email address to reset your password:');
+                if (!email || !validateEmail(email)) {
+                    alert('Please enter a valid LWSD email address.');
+                    return;
+                }
+                try {
+                    const { auth } = await import('./firebase.js');
+                    const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                    await sendPasswordResetEmail(auth, email);
+                    alert('Password reset email sent. Check your inbox.');
+                } catch (err) {
+                    let errorMessage = 'Failed to send reset email. Please try again.';
+                    
+                    if (err.code) {
+                        switch (err.code) {
+                            case 'auth/user-not-found':
+                                errorMessage = 'No account found with this email address.';
+                                break;
+                            case 'auth/invalid-email':
+                                errorMessage = 'Invalid email format. Please use your LWSD email address.';
+                                break;
+                            case 'auth/too-many-requests':
+                                errorMessage = 'Too many attempts. Please try again later.';
+                                break;
+                            case 'auth/network-request-failed':
+                                errorMessage = 'Network error. Please check your internet connection.';
+                                break;
+                        }
+                    }
+                    
+                    alert(errorMessage);
+                }
+            };
+            document.getElementById('signin-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signin-email').value.trim();
+                const password = document.getElementById('signin-password').value;
+                let invalid = {};
+                if (!validateEmail(email)) invalid.email = true;
+                if (!validatePassword(password)) invalid.password = true;
+                if (Object.keys(invalid).length > 0) {
+                    renderSignIn(
+                        !validateEmail(email) ? 'Invalid email format.' : 'Password must be 8-75 characters.',
+                        { email, password },
+                        invalid
+                    );
+                    return;
+                }
+                try {
+                    const module = await import('./auth.js');
+                    const user = await module.login(email, password);
+                    window.location.href = 'main.html';
+                } catch (err) {
+                    let errorMessage = 'Sign in failed. Please check your email and password.';
+                    
+                    // Check for custom error messages first
+                    if (err.message === 'EMAIL_NOT_VERIFIED') {
+                        // Check if there's pending registration data to continue verification
+                        const pendingData = localStorage.getItem('pendingUserData');
+                        if (pendingData) {
+                            const data = JSON.parse(pendingData);
+                            if (data.email === email) {
+                                lastSignupData = { email, username: data.username, password };
+                                renderVerification('', 'Please complete your email verification to access your account.');
+                                return;
+                            }
+                        }
+                        errorMessage = 'Please verify your email before signing in. Check your inbox for a verification link.';
+                    } else if (err.message === 'ACCOUNT_NOT_COMPLETED') {
+                        errorMessage = 'Account setup incomplete. Please complete the registration process.';
+                    } else if (err.code) {
+                        // Provide specific error messages based on Firebase error codes
+                        switch (err.code) {
+                            case 'auth/user-not-found':
+                                errorMessage = 'No account found with this email address.';
+                                break;
+                            case 'auth/wrong-password':
+                                errorMessage = 'Incorrect password. Please try again.';
+                                break;
+                            case 'auth/invalid-email':
+                                errorMessage = 'Invalid email format. Please use your LWSD email address.';
+                                break;
+                            case 'auth/too-many-requests':
+                                errorMessage = 'Too many failed attempts. Please try again later.';
+                                break;
+                            case 'auth/user-disabled':
+                                errorMessage = 'This account has been disabled. Please contact support.';
+                                break;
+                            case 'auth/network-request-failed':
+                                errorMessage = 'Network error. Please check your internet connection.';
+                                break;
+                            default:
+                                errorMessage = 'Sign in failed. Please check your email and password.';
+                        }
+                    }
+                    
+                    renderSignIn(errorMessage, { email, password }, { email: true, password: true });
+                }
+            };
+        }
+
+        function renderSignUp(errorMsg = '', values = {}, invalidFields = {}) {
+            currentScreen = 'signup';
+            document.getElementById('auth-container').innerHTML = `
+                <h1>Sign Up</h1>
+                ${errorMsg ? showError(errorMsg) : ''}
+                <form id="signup-form">
+                    <div class="input-group">
+                        <label for="signup-username">Username</label>
+                        <input type="text" id="signup-username" required minlength="3" maxlength="75" autocomplete="username" value="${values.username || ''}" class="${invalidFields.username ? 'invalid' : ''}">
+                    </div>
+                    <div class="input-group">
+                        <label for="signup-email">Email Address</label>
+                        <input type="email" id="signup-email" required autocomplete="email" value="${values.email || ''}" class="${invalidFields.email ? 'invalid' : ''}">
+                    </div>
+                    <div class="input-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" required minlength="8" maxlength="75" autocomplete="new-password" value="${values.password || ''}" class="${invalidFields.password ? 'invalid' : ''}">
+                    </div>
+                    <div class="input-group">
+                        <label for="signup-password2">Confirm Password</label>
+                        <input type="password" id="signup-password2" required minlength="8" maxlength="75" autocomplete="new-password" value="${values.password2 || ''}" class="${invalidFields.password2 ? 'invalid' : ''}">
+                    </div>
+                    <button class="btn" type="submit">Create Account</button>
+                </form>
+                <span class="switch-link" id="to-signin">Already have an account? Sign in</span>
+            `;
+            document.getElementById('to-signin').onclick = () => renderSignIn();
+            document.getElementById('signup-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('signup-username').value.trim();
+                const email = document.getElementById('signup-email').value.trim();
+                const password = document.getElementById('signup-password').value;
+                const password2 = document.getElementById('signup-password2').value;
+                let invalid = {};
+                if (!validateUsername(username)) invalid.username = true;
+                if (!validateEmail(email)) invalid.email = true;
+                if (!validatePassword(password)) invalid.password = true;
+                if (password !== password2) invalid.password2 = true;
+                if (Object.keys(invalid).length > 0) {
+                    let msg = '';
+                    if (invalid.username) msg = 'Username must be 3-75 characters.';
+                    else if (invalid.email) msg = 'Email must be in the format 1XXXXXX@lwsd.org.';
+                    else if (invalid.password) msg = 'Password must be 8-75 characters.';
+                    else if (invalid.password2) msg = 'Passwords do not match.';
+                    renderSignUp(msg, { username, email, password, password2 }, invalid);
+                    return;
+                }
+                // Check for duplicate username in pending data and existing users
+                try {
+                    const { db } = await import('./firebase.js');
+                    const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                    
+                    // Check existing verified users
+                    const q = query(collection(db, 'users'), where('username', '==', username));
+                    const snap = await getDocs(q);
+                    if (!snap.empty) {
+                        renderSignUp('That username is already taken.', { username, email, password, password2 }, { username: true });
+                        return;
+                    }
+                    
+                    // Check pending registration data in localStorage
+                    const pendingData = localStorage.getItem('pendingUserData');
+                    if (pendingData) {
+                        const data = JSON.parse(pendingData);
+                        if (data.username === username) {
+                            renderSignUp('That username is already reserved for a pending account.', { username, email, password, password2 }, { username: true });
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Could not check username uniqueness:', err);
+                    // Continue with registration - will be caught if duplicate exists
+                }
+                try {
+                    const module = await import('./auth.js');
+                    const { auth } = await import('./firebase.js');
+                    const { sendEmailVerification } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                    const user = await module.register(email, password, username);
+                    
+                    // Send verification email
+                    if (auth.currentUser && !auth.currentUser.emailVerified) {
+                        await sendEmailVerification(auth.currentUser);
+                        lastSignupData = { email, username, password };
+                        renderVerification('', 'Verification email sent! Please check your inbox.');
+                    } else {
+                        renderSignIn('Account created! Please verify your email before signing in.', { email }, {});
+                    }
+                } catch (err) {
+                    let errorMessage = 'Sign up failed. Please try again.';
+                    
+                    // Provide specific error messages based on Firebase error codes
+                    if (err.code) {
+                        switch (err.code) {
+                            case 'auth/email-already-in-use':
+                                errorMessage = 'An account with this email already exists. Please sign in instead.';
+                                break;
+                            case 'auth/invalid-email':
+                                errorMessage = 'Invalid email format. Please use your LWSD email address.';
+                                break;
+                            case 'auth/weak-password':
+                                errorMessage = 'Password is too weak. Please choose a stronger password.';
+                                break;
+                            case 'auth/network-request-failed':
+                                errorMessage = 'Network error. Please check your internet connection.';
+                                break;
+                            case 'auth/too-many-requests':
+                                errorMessage = 'Too many attempts. Please try again later.';
+                                break;
+                            default:
+                                errorMessage = 'Sign up failed. Please try again.';
+                        }
+                    }
+                    
+                    renderSignUp(errorMessage, { username, email, password, password2 }, { username: true, email: true, password: true, password2: true });
+                }
+            };
+        }
+
+        function renderVerification(errorMsg = '', infoMsg = '') {
+            currentScreen = 'verify';
+            document.getElementById('auth-container').innerHTML = `
+                <div class="verification-container">
+                    <h1>Check Your Email</h1>
+                    <div class="verification-message">
+                        We've sent a verification link to<br>
+                        <span class="email-highlight">${lastSignupData.email}</span>
+                    </div>
+                    
+                    <div id="verify-messages" class="verification-status">
+                        ${infoMsg ? `<div class="info">${infoMsg}</div>` : ''}
+                        ${errorMsg ? showError(errorMsg) : ''}
+                    </div>
+                    
+                    <div class="verification-steps">
+                        <div class="step">
+                            <span class="step-number">1</span>
+                            <span class="step-text">Check your email inbox</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">2</span>
+                            <span class="step-text">Click the verification link</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">3</span>
+                            <span class="step-text">Come back and click verify</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn verification-btn" id="verify-btn" type="button">I've Verified My Email</button>
+                    
+                    <div class="verification-actions">
+                        <div class="resend-section">
+                            <span class="resend-text">Didn't receive the email?</span>
+                            <button class="resend-btn" id="resend-btn">Resend Email</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('verify-btn').onclick = async () => {
+                // No code validation needed since we're checking email verification status
+                
+                try {
+                    // Check if user is still authenticated
+                    const { auth } = await import('./firebase.js');
+                    const { signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                    
+                    if (!auth.currentUser) {
+                        // User was signed out, need to sign them back in (bypass strict verification)
+                        await signInWithEmailAndPassword(auth, lastSignupData.email, lastSignupData.password);
+                    }
+                    
+                    // Reload user to check verification status
+                    await auth.currentUser.reload();
+                    
+                    if (auth.currentUser.emailVerified) {
+                        // Email is verified, complete registration in Firestore
+                        const module = await import('./auth.js');
+                        await module.completeRegistration();
+                        
+                        // Redirect to main site
+                        window.location.href = './main.html';
+                    } else {
+                        // Show error - email not verified yet
+                        const msgDiv = document.getElementById('verify-messages');
+                        msgDiv.innerHTML = `${showError('Email not verified yet. Please check your inbox and click the verification link.')}`;
+                    }
+                } catch (err) {
+                    console.error('Verification error:', err);
+                    const msgDiv = document.getElementById('verify-messages');
+                    msgDiv.innerHTML = `${showError('Verification failed. Please try again or resend the code.')}`;
+                }
+            };
+            document.getElementById('resend-btn').onclick = async () => {
+                try {
+                    // Check if user is still authenticated
+                    const { auth } = await import('./firebase.js');
+                    const { sendEmailVerification, signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                    
+                    if (!auth.currentUser) {
+                        // User was signed out, need to sign them back in (bypass strict verification)
+                        await signInWithEmailAndPassword(auth, lastSignupData.email, lastSignupData.password);
+                    }
+                    
+                    // Resend verification email
+                    await sendEmailVerification(auth.currentUser);
+                    
+                    // Show info message
+                    const msgDiv = document.getElementById('verify-messages');
+                    msgDiv.innerHTML = `<div class="info">Verification email resent! Please check your inbox.</div>`;
+                } catch (err) {
+                    console.error('Resend error:', err);
+                    const msgDiv = document.getElementById('verify-messages');
+                    msgDiv.innerHTML = `${showError('Failed to resend verification email. Please try again.')}`;
+                }
+            };
+        }
+
+
+
+        // On load, set theme from localStorage
+        (function() {
+            const saved = localStorage.getItem('hubble-theme');
+            if (saved === 'dark' || saved === 'light') setTheme(saved);
+            else setTheme('light');
+        })();
+
+        // Initial render
+        renderSignIn();
+    </script>
+    <script type="module" src="./firebase.js"></script>
+</body>
+</html>
