@@ -2,7 +2,7 @@
 
 // Server configuration
 const SERVER_CONFIG = {
-    baseUrl: 'http://localhost:8080', // For local development
+    baseUrl: 'https://mixtratournaments.github.io/var-_0x1a2b-YUhSMGNITTZMeTl0WldkaExtTnZiU0JqYjIwdlpHOWpZV3h6TG1OdmJTOWhjM1JwYj-', // Your domain
     uploadEndpoint: '/upload_handler.php', // Keep this as is
     maxFileSize: 5 * 1024 * 1024, // 5MB max file size
     allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
