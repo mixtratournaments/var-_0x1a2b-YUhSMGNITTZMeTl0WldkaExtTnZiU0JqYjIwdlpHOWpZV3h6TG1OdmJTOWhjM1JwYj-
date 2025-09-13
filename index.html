@@ -996,10 +996,12 @@
                     The system automatically cleans up abandoned registrations after 2 hours.
                     <br><br>
                     <strong>Solutions:</strong>
-                    <br>• Wait 2 hours and try again
+                    <br>• Wait a few minutes and try again (the system now cleans up expired sessions automatically)
                     <br>• Try a different username
                     <br>• Clear your browser's site data and refresh the page
-                    <br>• If you see "failed registration during cleanup" - this is normal and the system will still work
+                    <br>• If you're the same person who started the registration, you can continue with the same username
+                    <br><br>
+                    The system has been improved to automatically handle abandoned registrations and provide better error messages.
                 </div>
             </div>
             <div class="faq-item">
@@ -1476,10 +1478,12 @@
                     } catch (authError) {
                         console.warn('Could not delete Firebase Auth account during cleanup:', authError);
                         // Continue with localStorage cleanup even if auth deletion fails
+                        // This is expected if the account was already deleted or doesn't exist
                     }
                     
                     // Always remove localStorage data to free up the username
                     localStorage.removeItem('pendingUserData');
+                    console.log('Successfully cleaned up pending registration data');
                     
                     // Return success status for better error handling
                     return { success: true, authCleanupSuccess };
@@ -1490,6 +1494,7 @@
                 // Even if cleanup fails, try to remove localStorage to free up username
                 try {
                     localStorage.removeItem('pendingUserData');
+                    console.log('Removed pending data from localStorage despite error');
                 } catch (localError) {
                     console.error('Failed to remove pending data from localStorage:', localError);
                 }
@@ -1510,13 +1515,61 @@
                     // If session is older than 2 hours, clean it up
                     if (sessionAge > maxSessionAge) {
                         console.log('Cleaning up expired pending session for:', data.email);
-                        await cleanupPendingUsername();
+                        const result = await cleanupPendingUsername();
+                        if (result.success) {
+                            console.log('Successfully cleaned up expired session');
+                        } else {
+                            console.warn('Failed to clean up expired session:', result.error);
+                        }
                     }
                 }
             } catch (error) {
                 console.error('Error cleaning up expired pending sessions:', error);
             }
         }
+
+        // Function to initialize cleanup on page load
+        async function initializeCleanup() {
+            try {
+                await cleanupExpiredPendingSessions();
+            } catch (error) {
+                console.error('Error during initialization cleanup:', error);
+            }
+        }
+
+        // Debug function to check pending data status (for testing)
+        function debugPendingData() {
+            const pendingData = localStorage.getItem('pendingUserData');
+            if (pendingData) {
+                const data = JSON.parse(pendingData);
+                const now = Date.now();
+                const sessionAge = now - (data.createdAt || 0);
+                const maxSessionAge = 2 * 60 * 60 * 1000; // 2 hours
+                const isExpired = sessionAge > maxSessionAge;
+                
+                console.log('Pending Data Debug Info:');
+                console.log('- Username:', data.username);
+                console.log('- Email:', data.email);
+                console.log('- Created:', new Date(data.createdAt).toLocaleString());
+                console.log('- Age:', Math.round(sessionAge / 60000), 'minutes');
+                console.log('- Is Expired:', isExpired);
+                console.log('- Time until expiry:', Math.round((maxSessionAge - sessionAge) / 60000), 'minutes');
+                
+                return {
+                    exists: true,
+                    username: data.username,
+                    email: data.email,
+                    isExpired: isExpired,
+                    ageMinutes: Math.round(sessionAge / 60000)
+                };
+            } else {
+                console.log('No pending data found');
+                return { exists: false };
+            }
+        }
+
+        // Make debug function available globally for testing
+        window.debugPendingData = debugPendingData;
 
         // Function to handle abandoned unverified accounts
         async function handleAbandonedUnverifiedAccount(email, password) {
@@ -1891,20 +1944,28 @@
                         const sessionAge = now - (data.createdAt || 0);
                         const maxSessionAge = 2 * 60 * 60 * 1000; // 2 hours
                         
-                        // Only consider it reserved if the session is still valid (less than 2 hours old)
-                        if (data.username === username && sessionAge < maxSessionAge) {
-                            // Track pending username error
-                            trackError('Sign up error: Username reserved for pending account');
-                            
-                            renderSignUp('That username is already reserved for a pending account. Please wait a few minutes or try a different username.', { username, email, password, password2 }, { username: true });
-                            return;
-                        } else if (data.username === username && sessionAge >= maxSessionAge) {
-                            // Session is expired, clean it up and allow the username
-                            console.log('Cleaning up expired pending session for username:', username);
-                            const cleanupResult = await cleanupPendingUsername();
-                            if (!cleanupResult.success) {
-                                console.warn('Cleanup failed, but continuing with registration attempt');
-                                // Continue with registration - if it fails due to duplicate, user will get appropriate error
+                        // If this is the same username, handle it appropriately
+                        if (data.username === username) {
+                            if (sessionAge < maxSessionAge) {
+                                // Session is still valid, check if it's the same email
+                                if (data.email === email) {
+                                    // Same user continuing registration, allow it
+                                    console.log('Same user continuing registration, allowing username reuse');
+                                } else {
+                                    // Different email, username is reserved
+                                    trackError('Sign up error: Username reserved for pending account');
+                                    
+                                    renderSignUp('That username is already reserved for a pending account. Please wait a few minutes or try a different username.', { username, email, password, password2 }, { username: true });
+                                    return;
+                                }
+                            } else {
+                                // Session is expired, clean it up and allow the username
+                                console.log('Cleaning up expired pending session for username:', username);
+                                const cleanupResult = await cleanupPendingUsername();
+                                if (!cleanupResult.success) {
+                                    console.warn('Cleanup failed, but continuing with registration attempt');
+                                    // Continue with registration - if it fails due to duplicate, user will get appropriate error
+                                }
                             }
                         }
                     }
@@ -1915,6 +1976,17 @@
                     // Continue with registration - will be caught if duplicate exists
                 }
                 try {
+                    // Clear any existing pending data before starting new registration
+                    const existingPendingData = localStorage.getItem('pendingUserData');
+                    if (existingPendingData) {
+                        const existingData = JSON.parse(existingPendingData);
+                        // Only clear if it's a different user (different email or username)
+                        if (existingData.email !== email || existingData.username !== username) {
+                            console.log('Clearing existing pending data for different user');
+                            localStorage.removeItem('pendingUserData');
+                        }
+                    }
+                    
                     const module = await import('./auth.js');
                     const { auth } = await import('./firebase.js');
                     const { sendEmailVerification } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
@@ -1940,6 +2012,7 @@
                     trackError('Sign up error: ' + (err.message || err.code || 'Unknown error'));
                     
                     let errorMessage = 'Sign up failed. Please try again.';
+                    let invalidFields = {};
                     
                     // Provide specific error messages based on Firebase error codes
                     if (err.code) {
@@ -1977,37 +2050,57 @@
                                         // Provide more specific error message based on retry failure
                                         if (retryError.code === 'auth/email-already-in-use') {
                                             errorMessage = 'Account cleanup was attempted but the email is still in use. Please try signing in instead.';
+                                            invalidFields = { email: true };
                                         } else {
                                             errorMessage = 'Registration failed after cleanup. Please try again or contact support if the issue persists.';
+                                            invalidFields = { email: true, password: true };
                                         }
                                     }
                                 } else {
                                     // Cleanup failed, provide helpful message
                                     if (cleanupResult.message.includes('verified')) {
                                         errorMessage = 'An account with this email already exists and is verified. Please sign in instead.';
+                                        invalidFields = { email: true };
                                     } else {
                                         errorMessage = 'An account with this email already exists. Please sign in instead, or try again in a few minutes if you recently started registration.';
+                                        invalidFields = { email: true };
                                     }
                                 }
                                 break;
                             case 'auth/invalid-email':
                                 errorMessage = 'Invalid email format. Please use your LWSD email address.';
+                                invalidFields = { email: true };
                                 break;
                             case 'auth/weak-password':
                                 errorMessage = 'Password is too weak. Please choose a stronger password.';
+                                invalidFields = { password: true, password2: true };
                                 break;
                             case 'auth/network-request-failed':
-                                errorMessage = 'Network error. Please check your internet connection.';
+                                errorMessage = 'Network error. Please check your internet connection and try again.';
                                 break;
                             case 'auth/too-many-requests':
-                                errorMessage = 'Too many attempts. Please try again later.';
+                                errorMessage = 'Too many attempts. Please wait a few minutes before trying again.';
+                                break;
+                            case 'auth/operation-not-allowed':
+                                errorMessage = 'Account creation is temporarily disabled. Please try again later.';
+                                break;
+                            case 'auth/invalid-credential':
+                                errorMessage = 'Invalid credentials provided. Please check your information and try again.';
                                 break;
                             default:
-                                errorMessage = 'Sign up failed. Please try again.';
+                                // For unknown errors, provide more helpful message
+                                if (err.message) {
+                                    errorMessage = `Registration failed: ${err.message}. Please try again.`;
+                                } else {
+                                    errorMessage = 'Registration failed due to an unexpected error. Please try again or contact support if the issue persists.';
+                                }
                         }
+                    } else if (err.message) {
+                        // Handle non-Firebase errors
+                        errorMessage = `Registration failed: ${err.message}. Please try again.`;
                     }
                     
-                    renderSignUp(errorMessage, { username, email, password, password2 }, { username: true, email: true, password: true, password2: true });
+                    renderSignUp(errorMessage, { username, email, password, password2 }, invalidFields);
                 }
             };
         }
@@ -2195,6 +2288,9 @@
             if (helpButton) {
                 helpButton.addEventListener('click', showHelpPopup);
             }
+            
+            // Initialize cleanup of expired pending sessions
+            initializeCleanup();
         });
         
         (function() {
