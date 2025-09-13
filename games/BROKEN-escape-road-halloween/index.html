@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Escape Road Halloween</title>
+  <link rel="shortcut icon" href="icon.png">
+  <link rel="stylesheet" href="TemplateData/style.css">
+</head>
+<style>
+  @font-face {
+  font-family: myFirstFont;
+  src: url(Chainwhacks.otf);
+  }
+  #logo-canvas, body
+  {
+    font-family: myFirstFont;
+  }
+</style>
+
+<body class="dark">
+  <div id="unity-container" class="unity-desktop"><p style="opacity: 0;position: absolute;">_</p>
+    <canvas id="unity-canvas"></canvas>
+  </div>
+  <div id="loading-cover" style="display:none;background: black;">
+    <div id="unity-loading-bar">
+      <img src="loading.png?v=1" id="bg" style="width: 100%; height: 100%;object-fit: cover;">
+      <canvas id="logo-canvas" style="position: absolute; background-color: transparent;">
+
+        <img src="loading_bg.png" id="ld_bar">
+        <img src="loading_fill.png" id="ld_fill">
+        <img src="loading_mask.png" id="ld_mask">
+        <img src="loading_bg_mask.png" id="ld_bar_mask">
+        <img src="logo.png" id="ld_logo">
+
+      </canvas>
+    </div>
+  </div>
+  <script>
+    const container = document.querySelector("#unity-container");
+    const canvas = document.querySelector("#unity-canvas");
+    const loadingCover = document.querySelector("#loading-cover");
+    const fullscreenButton = document.querySelector("#unity-fullscreen-button");
+
+
+
+    const buildUrl = "Build";
+    const loaderUrl = buildUrl + "/ERH_241017_build.loader.js";
+    const config = {
+      dataUrl: buildUrl + "/ERH_241017_build.data.unityweb",
+      frameworkUrl: buildUrl + "/ERH_241017_build.framework.js.unityweb",
+      codeUrl: buildUrl + "/ERH_241017_build.wasm.unityweb",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "azgames.io",
+      productName: "Escape Road Halloween",
+      productVersion: "2.0",
+    };
+
+
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      container.className = "unity-mobile";
+      config.devicePixelRatio = 1;
+    }
+
+    loadingCover.style.display = "";
+
+    var script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      createUnityInstance(canvas, config, (progress) => {
+        //progressBarEmpty.style.display = "";
+        //progressBarFull.style.width = `${100 * progress}%`;
+        // console.log(progress);
+        logo_loading_percent = progress;
+        drawCanvas(progress);
+      }).then((unityInstance) => {
+        window.unityInstance = unityInstance;//
+        setTimeout(() => {
+          loadingCover.style.display = "none";
+          logo_loaded = true;
+          window.focus();
+        }, 2000);
+      }).catch((message) => {
+        alert(message);
+      });
+    };
+
+    // setTimeout(() => {
+    //     var progress = 0.5;
+    //     logo_loading_percent = progress;
+    //     drawCanvas(progress);
+    //   }, 1000);
+
+    // var progress = 0;
+    // setInterval(() => {
+    //   logo_loading_percent = progress;
+    //   drawCanvas(progress);
+    //   progress += 0.01;
+    // }, 30);
+
+
+    var logo_loaded = false;
+    var logo_loading_percent = 0;
+
+    window.onresize = () => {
+      // console.log('onresize');
+      drawCanvas(logo_loading_percent);
+    }
+    window.onload = () => {
+      // console.log('onload');
+      drawCanvas(logo_loading_percent);
+    }
+
+    var logo_canvas = document.getElementById("logo-canvas");
+    function drawCanvas(_percent = 0) {
+      if (logo_loaded) {
+        return;
+      }
+      resizeLogoCanvas();
+      var ctx = logo_canvas.getContext("2d");
+      var ld_bg = document.getElementById("ld_bg");
+      var ld_bar = document.getElementById("ld_bar");
+      var ld_fill = document.getElementById("ld_fill");
+      var ld_mask = document.getElementById("ld_mask");
+      var ld_bar_mask = document.getElementById("ld_bar_mask");
+      var ld_logo = document.getElementById("ld_logo");
+      var _sw = logo_canvas.width / 1920;
+      var _sh = logo_canvas.height / 1080;
+
+      if (_percent > 1) {
+        _percent = 1;
+      }
+
+     //bgbar
+          var bgbar_H = 53;
+          var bgbar_W = 713;
+               //bg_bar_mask
+          var bgbar_mask_H = 53;
+          var bgbar_mask_W = 713;
+
+          //fillbar
+          var fillbar_H = 40;
+          var fillbar_W = 700;
+          //Mask
+          var maskbar_H = 42;
+          var maskbar_W = 702;
+         
+          var logo_H=353;
+          var logo_W=704;
+          var posShowLogo_X=1125;
+          var posShowLogo_Y=1000;
+
+          var posshowbar_Y= 150;   //position loadingbar 
+          
+          var posbgbar_X=(1920-bgbar_W)/2; // center
+          var posbgbar_Y=posshowbar_Y;
+
+          var posfillbar_X=(1920-fillbar_W)/2;
+          var posfillbar_Y=posshowbar_Y-5;
+
+          var posmaskbar_X=(1920-maskbar_W)/2;
+          var posmaskbar_Y=posshowbar_Y-5;
+
+          var _fl = 0;
+          var _fl1 = posmaskbar_X + _percent * maskbar_W ;
+
+          var _fw = maskbar_W - _percent * maskbar_W;
+
+
+
+          // console.log(`${logo_canvas.width} ${logo_canvas.height}`);
+           // ctx.drawImage(ld_bg, 0, 0, logo_canvas.width, logo_canvas.height);
+            // draw bg bar
+            ctx.drawImage(ld_bar, posbgbar_X * _sw, logo_canvas.height - (posbgbar_Y * _sh), bgbar_W * _sw, bgbar_H * _sh);
+            // draw fill
+            ctx.drawImage(ld_fill, posfillbar_X * _sw, logo_canvas.height - (posfillbar_Y * _sh), fillbar_W * _sw, fillbar_H * _sh);
+            // draw mask
+            ctx.drawImage(ld_mask, _fl1 * _sw, logo_canvas.height - (posmaskbar_Y * _sh), _fw * _sw, maskbar_H * _sh);
+            //draw bg mask uing w_h of bg
+            ctx.drawImage(ld_bar_mask, posbgbar_X * _sw, logo_canvas.height - (posbgbar_Y * _sh), bgbar_W * _sw, bgbar_H * _sh);
+            //draw logo
+           // ctx.drawImage(ld_logo, posShowLogo_X * _sw, logo_canvas.height - (posShowLogo_Y * _sh), logo_W * _sw, logo_H * _sh);
+            /*
+            console.log(document.fonts.ready);
+
+            ctx.font = "30px myFirstFont";
+            const match = /(?<value>\d+\.?\d*)/;
+            const setFontSize = (size) => ctx.font = ctx.font.replace(match, size);
+            setFontSize(35*_sh);
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#fff";
+            ctx.shadowColor = "black";
+            ctx.shadowOffsetY = 2;
+            var new_per = parseInt (_percent* 100);
+            ctx.fillText("Loading... " + new_per  + "%", logo_canvas.width / 2, logo_canvas.height / 2 + _sh * 370);
+           */
+
+
+    }
+    function resizeLogoCanvas() {
+      var _w = window.innerWidth;
+      var _h = window.innerHeight;
+      var _nw = _h * 16 / 9;
+      // console.log(`${_w} ${_h} ${_nw}`);
+      if (_nw <= _w) {
+        logo_canvas.width = _nw;
+        logo_canvas.height = _h;
+      }
+      else {
+        logo_canvas.width = _w;
+        logo_canvas.height = _w * 9 / 16;
+      }
+
+    }
+
+
+    document.body.appendChild(script);
+  </script>
+
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-analytics-compat.js"></script>
+
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-analytics.js";
+  import { getAuth  } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+  apiKey: "AIzaSyCzlc-hQLfsnQOe0QrLiEs5_Sjt-t-OduM",
+  authDomain: "escape-road-halloween.firebaseapp.com",
+  projectId: "escape-road-halloween",
+  storageBucket: "escape-road-halloween.appspot.com",
+  messagingSenderId: "108246446013",
+  appId: "1:108246446013:web:f70c48bcdbc0cae4752cd4",
+  measurementId: "G-RSRBSWEGB6"
+};
+window.dataLayer = window.dataLayer || [];
+window.gtag = function(){dataLayer.push(arguments);}
+
+window.gtag("config", firebaseConfig.measurementId, {
+    cookie_domain: location.hostname,
+    cookie_flags: "SameSite=None;Secure",
+});
+	
+
+  // Initialize Firebase
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+</script>
+
+</body>
+
+</html>

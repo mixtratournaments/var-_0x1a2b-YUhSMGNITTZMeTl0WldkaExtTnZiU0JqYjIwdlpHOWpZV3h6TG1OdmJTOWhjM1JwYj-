@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hubble - Chat & Social</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+        :root {
+            --primary: #009CFC;
+            --secondary: #A0AAFF;
+            --accent: #C97FFD;
+            --background-light: #f7f8fa;
+            --star: #A0AAFF;
+            --planet: #C97FFD;
+            --text-light: #222;
+            --auth-bg-light: #fff;
+            --background-dark: #181e2a;
+            --text-dark: #f7f8fa;
+            --auth-bg-dark: #232a3a;
+        }
+        body {
+            font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            overflow-x: hidden;
+            position: relative;
+        }
+        body[data-theme="light"] {
+            background: var(--background-light);
+            color: var(--text-light);
+        }
+        body[data-theme="dark"] {
+            background: var(--background-dark);
+            color: var(--text-dark);
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: 
+                radial-gradient(circle at 80% 20%, rgba(201,127,253,0.13) 0 8vw, transparent 12vw),
+                radial-gradient(circle at 15% 80%, rgba(0,156,252,0.10) 0 5vw, transparent 8vw),
+                repeating-radial-gradient(circle at 30% 30%, #a2dbff 0 1px, transparent 2px 100px),
+                repeating-radial-gradient(circle at 50% 50%, #A0AAFF 0 1px, transparent 2px 100px),
+                repeating-radial-gradient(circle at 30% 30%, #fff 0 1px, transparent 2px 100px),
+                repeating-radial-gradient(circle at 50% 50%, rgba(160,170,255,0.08) 0 60px, transparent 62px 100vw);
+            opacity: 0.22;
+        }
+        .topbar {
+            width: 100vw;
+            height: 56px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            position: relative;
+        }
+        body[data-theme="dark"] .topbar {
+            background: #20263a;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+        }
+        .hubble-gradient {
+            font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 700;
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            background: linear-gradient(90deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            margin-left: 2.2rem;
+            letter-spacing: 2px;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .center-wrap {
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+        }
+        .auth-container {
+            background: var(--auth-bg-light);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 2.5rem 2rem;
+            width: 100%;
+            max-width: 370px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            color: var(--text-light);
+        }
+        body[data-theme="dark"] .auth-container {
+            background: var(--auth-bg-dark);
+            color: var(--text-dark);
+        }
+        h1 {
+            display: none;
+        }
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: 500;
+            color: inherit;
+        }
+        input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+            padding: 0.7rem;
+            border: 1px solid var(--secondary);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--auth-bg-light);
+            color: var(--text-light);
+        }
+        body[data-theme="dark"] input[type="text"],
+        body[data-theme="dark"] input[type="email"],
+        body[data-theme="dark"] input[type="password"],
+        body[data-theme="dark"] input[type="number"] {
+            background: var(--auth-bg-dark);
+            color: var(--text-dark);
+        }
+        .invalid {
+            border: 2px solid #d32f2f !important;
+            background: #fff0f0;
+            color: #222;
+        }
+        .btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background 0.2s;
+        }
+        .btn:active {
+            background: var(--primary);
+        }
+        .switch-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.2rem;
+            color: var(--accent);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .error {
+            color: #d32f2f;
+            font-size: 0.95rem;
+            margin-bottom: 0.7rem;
+            text-align: center;
+        }
+        .timer {
+            color: var(--primary);
+            font-weight: 600;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        
+        .link-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background 0.18s;
+        }
+        
+        .link-btn:hover {
+            background: rgba(0, 156, 252, 0.1);
+        }
+        
+        /* Verification Screen Styles */
+        .verification-container {
+            text-align: center;
+            padding: 1rem 0;
+        }
+        
+
+        
+        .verification-container h1 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .verification-message {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
+        
+        .email-highlight {
+            color: var(--primary);
+            font-weight: 600;
+            background: rgba(0, 156, 252, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .verification-status {
+            margin-bottom: 2rem;
+        }
+        
+        .verification-steps {
+            background: rgba(0, 156, 252, 0.05);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        
+        .step:last-child {
+            margin-bottom: 0;
+        }
+        
+        .step-number {
+            background: var(--primary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .step-text {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+        
+        .verification-btn {
+            background: var(--primary) !important;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            padding: 0.9rem 2rem;
+        }
+        
+        .verification-actions {
+            border-top: 1px solid rgba(0, 156, 252, 0.2);
+            padding-top: 1.5rem;
+        }
+        
+        
+
+        
+        /* Dark theme adjustments for verification */
+        body[data-theme="dark"] .verification-message {
+            color: var(--text-dark);
+        }
+        
+        body[data-theme="dark"] .step-text {
+            color: var(--text-dark);
+        }
+        
+        
+        body[data-theme="dark"] .verification-steps {
+            background: rgba(0, 156, 252, 0.1);
+        }
+        
+        /* Custom Popup Styles */
+        .custom-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(3px);
+        }
+        
+        .custom-popup {
+            background: var(--auth-bg-light);
+            color: var(--text-light);
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 2px solid var(--secondary);
+            animation: popupSlideIn 0.3s ease-out;
+        }
+        
+        body[data-theme="dark"] .custom-popup {
+            background: var(--auth-bg-dark);
+            color: var(--text-dark);
+            border-color: #2c3550;
+        }
+        
+        @keyframes popupSlideIn {
+            from {
+                transform: scale(0.8) translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .popup-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .popup-message {
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+            color: inherit;
+        }
+        
+        .popup-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid var(--secondary);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--auth-bg-light);
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+            box-sizing: border-box;
+        }
+        
+        body[data-theme="dark"] .popup-input {
+            background: var(--auth-bg-dark);
+            color: var(--text-dark);
+            border-color: #2c3550;
+        }
+        
+        .popup-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .popup-btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .popup-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .popup-btn.primary:hover {
+            background: #0088e5;
+            transform: translateY(-1px);
+        }
+        
+        .popup-btn.secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .popup-btn.secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+        .info {
+            color: #0077b6;
+            font-size: 0.95rem;
+            margin-bottom: 0.7rem;
+            text-align: center;
+        }
+        /* Theme toggle button */
+        .theme-toggle {
+            position: fixed;
+            right: 2.2rem;
+            bottom: 2.2rem;
+            z-index: 100;
+            background: #fff;
+            color: #222;
+            border: 2px solid var(--secondary);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+        body[data-theme="dark"] .theme-toggle {
+            background: #232a3a;
+            color: #f7f8fa;
+            border: 2px solid #2c3550;
+        }
+        
+        /* Help button */
+        .help-button {
+            position: fixed;
+            left: 2.2rem;
+            bottom: 2.2rem;
+            z-index: 100;
+            background: #fff;
+            color: #222;
+            border: 2px solid var(--secondary);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(1);
+        }
+        .help-button:hover {
+            background: var(--primary);
+            color: #fff;
+            transform: scale(1.1) rotate(-15deg);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .help-button:active {
+            transform: scale(0.9) rotate(0deg);
+            transition: all 0.1s ease-out;
+        }
+        body[data-theme="dark"] .help-button {
+            background: #232a3a;
+            color: #f7f8fa;
+            border: 2px solid #2c3550;
+        }
+        body[data-theme="dark"] .help-button:hover {
+            background: var(--primary);
+            color: #fff;
+            transform: scale(1.1) rotate(-15deg);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+        
+        /* Help Popup Styles */
+        .help-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            backdrop-filter: blur(5px);
+        }
+        
+        .help-popup {
+            background: var(--auth-bg-light);
+            color: var(--text-light);
+            padding: 2.5rem;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border: 2px solid var(--secondary);
+            transition: all 0.3s ease;
+        }
+        
+        body[data-theme="dark"] .help-popup {
+            background: var(--auth-bg-dark);
+            color: var(--text-dark);
+            border-color: #2c3550;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        
+        .help-popup-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .help-popup-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+        }
+        
+        body[data-theme="dark"] .help-popup-text {
+            color: var(--text-dark);
+        }
+        
+        .help-popup-buttons {
+            display: flex;
+            gap: 1.2rem;
+            justify-content: center;
+            align-items: center;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .help-popup-btn {
+            padding: 0.9rem 1.8rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 140px;
+        }
+        
+        .help-popup-btn.create {
+            background: linear-gradient(135deg, #009CFC, #0088e5);
+            box-shadow: 0 4px 15px rgba(0, 156, 252, 0.3);
+        }
+        
+        .help-popup-btn.create:hover {
+            background: linear-gradient(135deg, #0088e5, #0077d1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 156, 252, 0.4);
+        }
+        
+        .help-popup-btn.faq {
+            background: linear-gradient(135deg, #A0AAFF, #8b9cff);
+            box-shadow: 0 4px 15px rgba(160, 170, 255, 0.3);
+        }
+        
+        .help-popup-btn.faq:hover {
+            background: linear-gradient(135deg, #8b9cff, #7a8eff);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(160, 170, 255, 0.4);
+        }
+        
+        .help-popup-close {
+            background: #1565C0;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(21, 101, 192, 0.3);
+        }
+        
+        .help-popup-close:hover {
+            background: #0D47A1;
+            transform: scale(1.08);
+            box-shadow: 0 6px 20px rgba(13, 71, 161, 0.4);
+        }
+        
+        /* Ticket Creation Popup */
+        .ticket-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10002;
+            backdrop-filter: blur(5px);
+        }
+        
+        .ticket-popup {
+            background: var(--auth-bg-light);
+            color: var(--text-light);
+            padding: 2.5rem;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border: 2px solid var(--secondary);
+            transition: all 0.3s ease;
+        }
+        
+        body[data-theme="dark"] .ticket-popup {
+            background: var(--auth-bg-dark);
+            color: var(--text-dark);
+            border-color: #2c3550;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        
+        .ticket-popup-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            background: linear-gradient(90deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .ticket-form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        
+        .ticket-form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        body[data-theme="dark"] .ticket-form-label {
+            color: var(--text-dark);
+        }
+        
+        .ticket-form-input,
+        .ticket-form-textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--secondary);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--auth-bg-light);
+            color: var(--text-light);
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+        
+        .ticket-form-input:focus,
+        .ticket-form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        body[data-theme="dark"] .ticket-form-input,
+        body[data-theme="dark"] .ticket-form-textarea {
+            background: var(--auth-bg-dark);
+            color: var(--text-dark);
+            border-color: #2c3550;
+        }
+        
+        .ticket-form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .ticket-form-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .ticket-form-btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .ticket-form-btn.send {
+            background: linear-gradient(135deg, #009CFC, #0088e5);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 156, 252, 0.3);
+        }
+        
+        .ticket-form-btn.send:hover {
+            background: linear-gradient(135deg, #0088e5, #0077d1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 156, 252, 0.4);
+        }
+        
+        .ticket-form-btn.cancel {
+            background: #6c757d;
+            color: white;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+        
+        .ticket-form-btn.cancel:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+        }
+        
+        /* FAQ Popup */
+        .faq-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            backdrop-filter: blur(5px);
+        }
+        
+        .faq-popup {
+            background: var(--auth-bg-light);
+            color: var(--text-light);
+            padding: 2.5rem;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border: 2px solid var(--secondary);
+            transition: all 0.3s ease;
+        }
+        
+        body[data-theme="dark"] .faq-popup {
+            background: var(--auth-bg-dark);
+            color: var(--text-dark);
+            border-color: #2c3550;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        
+        .faq-popup-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            background: linear-gradient(90deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .faq-item {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        
+        .faq-question {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .faq-answer {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text-light);
+            padding-left: 1rem;
+        }
+        
+        body[data-theme="dark"] .faq-answer {
+            color: var(--text-dark);
+        }
+        @media (max-width: 600px) {
+            .auth-container {
+                margin-top: 1.5rem;
+                border-radius: 0;
+                box-shadow: none;
+                padding: 1.2rem 0.5rem;
+            }
+            .topbar { height: 48px; }
+            .hubble-gradient { font-size: 1.3rem; margin-left: 1rem; }
+            .theme-toggle { right: 1rem; bottom: 1rem; }
+            .help-button { left: 1rem; bottom: 1rem; }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <div class="topbar">
+        <span class="hubble-gradient">Hubble</span>
+    </div>
+    <div class="center-wrap">
+      <div class="auth-container" id="auth-container">
+      </div>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">🌙</button>
+    <button class="help-button" id="help-button" title="Get Help">❓</button>
+    
+    <div class="custom-popup-overlay" id="custom-popup">
+        <div class="custom-popup">
+            <div class="popup-title" id="popup-title"></div>
+            <div class="popup-message" id="popup-message"></div>
+            <input type="text" class="popup-input" id="popup-input" style="display: none;">
+            <div class="popup-buttons" id="popup-buttons"></div>
+        </div>
+    </div>
+    
+    <div class="help-popup-overlay" id="help-popup-overlay">
+        <div class="help-popup">
+            <h2 class="help-popup-title">Need Help?</h2>
+            <p class="help-popup-text">Click Create below to create a ticket for an issue you may have. Make sure you check the FAQ to see if your question is answered or if your issue has a solution.</p>
+            <div class="help-popup-buttons">
+                <button class="help-popup-btn create" onclick="showTicketPopup()">Create</button>
+                <button class="help-popup-btn faq" onclick="showFAQPopup()">FAQ</button>
+            </div>
+            <button class="help-popup-close" onclick="closeHelpPopup()">Close</button>
+        </div>
+    </div>
+    
+    <div class="ticket-popup-overlay" id="ticket-popup-overlay">
+        <div class="ticket-popup">
+            <h2 class="ticket-popup-title" id="ticket-popup-title">Create Support Ticket</h2>
+            <div id="ticket-form-content">
+                <div class="ticket-form-group">
+                    <label for="ticket-subject" class="ticket-form-label">Subject</label>
+                    <input type="text" id="ticket-subject" class="ticket-form-input" placeholder="Brief description of your issue">
+                </div>
+                <div class="ticket-form-group">
+                    <label for="ticket-description" class="ticket-form-label">Describe the Issue</label>
+                    <textarea id="ticket-description" class="ticket-form-textarea" placeholder="Please provide detailed information about your issue..."></textarea>
+                </div>
+                <div class="ticket-form-group">
+                    <label for="ticket-email" class="ticket-form-label">Account Email</label>
+                    <input type="email" id="ticket-email" class="ticket-form-input" placeholder="1XXXXXX@lwsd.org">
+                </div>
+                <div class="ticket-form-buttons">
+                    <button class="ticket-form-btn cancel" onclick="closeTicketPopup()">Cancel</button>
+                    <button class="ticket-form-btn send" onclick="sendTicket()">Send</button>
+                </div>
+            </div>
+            <div id="ticket-sent-content" style="display: none; text-align: center;">
+                <h3 style="color: var(--primary); margin-bottom: 1rem;">✅ Ticket Sent!</h3>
+                <p style="margin-bottom: 2rem;">Our support team will get to you shortly.</p>
+                <button class="ticket-form-btn send" onclick="closeAllPopups()">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="faq-popup-overlay" id="faq-popup-overlay">
+        <div class="faq-popup">
+            <h2 class="faq-popup-title">Frequently Asked Questions</h2>
+            <div class="faq-item">
+                <div class="faq-question">How do I sign up for Hubble?</div>
+                <div class="faq-answer">You can sign up using your LWSD email address (format: 1XXXXXX@lwsd.org). Click "Sign Up" on the login page and follow the verification process.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">I forgot my password. What should I do?</div>
+                <div class="faq-answer">Click "Forgot password?" on the login page and enter your LWSD email address. You'll receive a password reset link in your email.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Why can't I access certain games?</div>
+                <div class="faq-answer">Some games may be temporarily unavailable due to maintenance or technical issues. Try refreshing the page or check back later.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">How do I change my theme (light/dark mode)?</div>
+                <div class="faq-answer">Click the theme toggle button in the bottom right corner of the screen to switch between light and dark modes.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Can I play games in fullscreen?</div>
+                <div class="faq-answer">Yes! When you open a game, you'll see a "Fullscreen" button in the top bar. You can also press the Escape key to exit fullscreen mode.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">My email verification isn't working. What should I do?</div>
+                <div class="faq-answer">Check your spam folder first. If the verification link has expired, try clicking "Resend Email" on the verification page. Make sure you're using your LWSD email address.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">How do I search for games?</div>
+                <div class="faq-answer">Use the search bar at the top of the games page. You can search by game name, and the results will be sorted by relevance.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Is Hubble free to use?</div>
+                <div class="faq-answer">Yes! Hubble is completely free for LWSD students. All games and features are available at no cost.</div>
+            </div>
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="help-popup-close" onclick="closeFAQPopup()">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showHelpPopup() {
+            const popup = document.getElementById('help-popup-overlay');
+            if (popup) {
+                popup.style.display = 'flex';
+                setTimeout(() => {
+                    popup.style.opacity = '1';
+                }, 10);
+            }
+        }
+        
+        function closeHelpPopup() {
+            const popup = document.getElementById('help-popup-overlay');
+            if (popup) {
+                popup.style.display = 'none';
+                popup.style.opacity = '0';
+            }
+        }
+        
+        function showTicketPopup() {
+            closeHelpPopup();
+            const popup = document.getElementById('ticket-popup-overlay');
+            const formContent = document.getElementById('ticket-form-content');
+            const sentContent = document.getElementById('ticket-sent-content');
+            
+            if (popup) {
+                // Reset form
+                formContent.style.display = 'block';
+                sentContent.style.display = 'none';
+                document.getElementById('ticket-subject').value = '';
+                document.getElementById('ticket-description').value = '';
+                document.getElementById('ticket-email').value = '';
+                
+                popup.style.display = 'flex';
+                setTimeout(() => {
+                    popup.style.opacity = '1';
+                }, 10);
+            }
+        }
+        
+        function closeTicketPopup() {
+            const popup = document.getElementById('ticket-popup-overlay');
+            if (popup) {
+                popup.style.display = 'none';
+                popup.style.opacity = '0';
+            }
+        }
+        
+        async function sendTicket() {
+            const subject = document.getElementById('ticket-subject').value.trim();
+            const description = document.getElementById('ticket-description').value.trim();
+            const email = document.getElementById('ticket-email').value.trim();
+            
+            // Basic validation
+            if (!subject || !description || !email) {
+                alert('Please fill in all fields.');
+                return;
+            }
+            
+            // Email validation
+            if (!email.includes('@lwsd.org')) {
+                alert('Please enter a valid LWSD email address.');
+                return;
+            }
+            
+            try {
+                console.log('Starting ticket submission...');
+                
+                // Save ticket to Firebase
+                const { getFirestore, collection, addDoc } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                const { app } = await import('./firebase.js');
+                const db = getFirestore(app);
+                
+                console.log('Firebase modules loaded, creating ticket data...');
+                
+                const ticketData = {
+                    subject: subject,
+                    description: description,
+                    email: email,
+                    timestamp: new Date(),
+                    status: 'open',
+                    priority: 'normal'
+                };
+                
+                console.log('Ticket data prepared:', ticketData);
+                console.log('Attempting to save to Firebase...');
+                
+                const docRef = await addDoc(collection(db, 'tickets'), ticketData);
+                console.log('Ticket saved with ID:', docRef.id);
+                
+                // Show sent confirmation
+                const formContent = document.getElementById('ticket-form-content');
+                const sentContent = document.getElementById('ticket-sent-content');
+                
+                formContent.style.display = 'none';
+                sentContent.style.display = 'block';
+                
+                console.log('Ticket submitted successfully to Firebase');
+            } catch (error) {
+                console.error('Error submitting ticket:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    code: error.code,
+                    stack: error.stack
+                });
+                alert(`Failed to submit ticket: ${error.message}. Please try again.`);
+            }
+        }
+        
+        function showFAQPopup() {
+            closeHelpPopup();
+            const popup = document.getElementById('faq-popup-overlay');
+            if (popup) {
+                popup.style.display = 'flex';
+                setTimeout(() => {
+                    popup.style.opacity = '1';
+                }, 10);
+            }
+        }
+        
+        function closeFAQPopup() {
+            const popup = document.getElementById('faq-popup-overlay');
+            if (popup) {
+                popup.style.display = 'none';
+                popup.style.opacity = '0';
+            }
+        }
+        
+        function closeAllPopups() {
+            closeHelpPopup();
+            closeTicketPopup();
+            closeFAQPopup();
+        }
+        
+        // Close popups when clicking outside
+        document.addEventListener('click', function(e) {
+            // Help popup
+            const helpPopup = document.getElementById('help-popup-overlay');
+            if (helpPopup && e.target === helpPopup) {
+                closeHelpPopup();
+            }
+            
+            // FAQ popup
+            const faqPopup = document.getElementById('faq-popup-overlay');
+            if (faqPopup && e.target === faqPopup) {
+                closeFAQPopup();
+            }
+            
+            // Ticket popup - only close if clicking outside, not if it's the sent confirmation
+            const ticketPopup = document.getElementById('ticket-popup-overlay');
+            const sentContent = document.getElementById('ticket-sent-content');
+            if (ticketPopup && e.target === ticketPopup && sentContent.style.display === 'none') {
+                closeTicketPopup();
+            }
+        });
+        
+        (async function() {
+            try {
+                const { auth } = await import('./firebase.js');
+                const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                const { getFirestore, collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                const { app } = await import('./firebase.js');
+                const db = getFirestore(app);
+                
+                onAuthStateChanged(auth, async (user) => {
+                    if (user && !isProcessingVerification) {
+                        // Check if user exists in Firestore (completed registration)
+                        try {
+                            const userDoc = await getDocs(query(collection(db, "users"), where("email", "==", user.email)));
+                            if (!userDoc.empty) {
+                                // User exists in Firestore, which means they've completed registration
+                                // Only redirect if we're not in the middle of email verification
+                                const urlParams = new URLSearchParams(window.location.search);
+                                const actionCode = urlParams.get('oobCode');
+                                const mode = urlParams.get('mode');
+                                
+                                // Don't redirect if we're processing an email verification action code
+                                if (!(actionCode && mode === 'verifyEmail')) {
+                                    window.location.href = 'main.html';
+                                }
+                            }
+                            // If user is authenticated but not in Firestore, stay on index.html for verification completion
+                        } catch (error) {
+                            console.error('Error checking user registration:', error);
+                            // Stay on index.html if there's an error
+                        }
+                    }
+                    // If user is not authenticated, stay on index.html
+                });
+            } catch (e) {
+                console.error('Auth state check failed:', e);
+            }
+        })();
+        const themeToggle = document.getElementById('theme-toggle');
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('hubble-theme', theme);
+            themeToggle.textContent = theme === 'light' ? '🌙' : '☀️';
+        }
+        themeToggle.onclick = () => {
+            const current = document.body.getAttribute('data-theme');
+            setTheme(current === 'light' ? 'dark' : 'light');
+        };
+        (function() {
+            const saved = localStorage.getItem('hubble-theme');
+            if (saved === 'dark' || saved === 'light') setTheme(saved);
+            else setTheme('light');
+        })();
+        
+        async function handleEmailVerification() {
+            try {
+                const { auth } = await import('./firebase.js');
+                const { applyActionCode, checkActionCode } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                
+                // Check if there's an action code in the URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const actionCode = urlParams.get('oobCode');
+                const mode = urlParams.get('mode');
+                
+                if (actionCode && mode === 'verifyEmail') {
+                    try {
+                        // Set flag to prevent auth state listener from interfering
+                        isProcessingVerification = true;
+                        
+                        // Verify the action code is valid
+                        await checkActionCode(auth, actionCode);
+                        
+                        // Apply the action code to verify the email
+                        await applyActionCode(auth, actionCode);
+                        
+                        // Complete registration in Firestore
+                        const module = await import('./auth.js');
+                        await module.completeRegistration();
+                        
+                        clearUsernameCleanup();
+                        
+                        // Clear URL parameters first to prevent auth state listener from interfering
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        
+                        // Show success message
+                        await showCustomAlert('Email Verified!', 'Your email has been successfully verified. You can now sign in.');
+                        
+                        // Clear the flag and redirect to sign in
+                        isProcessingVerification = false;
+                        renderSignIn('Email verified successfully! You can now sign in.', {}, {});
+                        
+                    } catch (error) {
+                        console.error('Email verification error:', error);
+                        // Clear the flag on error
+                        isProcessingVerification = false;
+                        let errorMessage = 'Email verification failed. ';
+                        let showResendOption = false;
+                        
+                        if (error.code === 'auth/expired-action-code') {
+                            errorMessage += 'The verification link has expired.';
+                            showResendOption = true;
+                        } else if (error.code === 'auth/invalid-action-code') {
+                            errorMessage += 'The verification link is invalid or has already been used.';
+                            showResendOption = true;
+                        } else if (error.code === 'auth/user-disabled') {
+                            errorMessage += 'This account has been disabled.';
+                        } else {
+                            errorMessage += 'Please try again or request a new verification email.';
+                            showResendOption = true;
+                        }
+                        
+                        // Clear URL parameters
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        
+                        if (showResendOption) {
+                            // Show verification screen with resend option
+                            renderVerification(errorMessage, 'Click "Resend Email" to get a new verification link.');
+                        } else {
+                            await showCustomAlert('Verification Failed', errorMessage);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error handling email verification:', error);
+            }
+        }
+
+        function showCustomAlert(title, message) {
+            return new Promise((resolve) => {
+                const popup = document.getElementById('custom-popup');
+                const titleEl = document.getElementById('popup-title');
+                const messageEl = document.getElementById('popup-message');
+                const inputEl = document.getElementById('popup-input');
+                const buttonsEl = document.getElementById('popup-buttons');
+                
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                inputEl.style.display = 'none';
+                buttonsEl.innerHTML = '<button class="popup-btn primary" onclick="closeCustomPopup()">OK</button>';
+                
+                popup.style.display = 'flex';
+                
+                window.closeCustomPopup = () => {
+                    popup.style.display = 'none';
+                    resolve();
+                };
+            });
+        }
+        
+        function showCustomPrompt(title, message, placeholder = '') {
+            return new Promise((resolve) => {
+                const popup = document.getElementById('custom-popup');
+                const titleEl = document.getElementById('popup-title');
+                const messageEl = document.getElementById('popup-message');
+                const inputEl = document.getElementById('popup-input');
+                const buttonsEl = document.getElementById('popup-buttons');
+                
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                inputEl.style.display = 'block';
+                inputEl.value = '';
+                inputEl.placeholder = placeholder;
+                buttonsEl.innerHTML = `
+                    <button class="popup-btn secondary" onclick="cancelCustomPrompt()">Cancel</button>
+                    <button class="popup-btn primary" onclick="confirmCustomPrompt()">OK</button>
+                `;
+                
+                popup.style.display = 'flex';
+                setTimeout(() => inputEl.focus(), 100);
+                
+                window.cancelCustomPrompt = () => {
+                    popup.style.display = 'none';
+                    resolve(null);
+                };
+                
+                window.confirmCustomPrompt = () => {
+                    const value = inputEl.value.trim();
+                    popup.style.display = 'none';
+                    resolve(value || null);
+                };
+                
+                // Allow Enter key to confirm
+                inputEl.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        window.confirmCustomPrompt();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        window.cancelCustomPrompt();
+                    }
+                };
+            });
+        }
+
+        let currentScreen = 'signin';
+        let isProcessingVerification = false;
+
+        let lastSignupData = {};
+        let pendingUsernameCleanupTimeout = null;
+
+        async function cleanupPendingUsername() {
+            try {
+                const pendingData = localStorage.getItem('pendingUserData');
+                if (pendingData) {
+                    const data = JSON.parse(pendingData);
+                    console.log('Cleaning up pending username and email:', data.username, data.email);
+                    
+                    // Delete the Firebase Auth account to free up the email
+                    try {
+                        const { auth } = await import('./firebase.js');
+                        const { signInWithEmailAndPassword, deleteUser } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                        
+                        // We need to sign in to delete the account
+                        if (data.password) {
+                            const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+                            await deleteUser(userCredential.user);
+                            console.log('Successfully deleted abandoned Firebase Auth account for:', data.email);
+                        } else {
+                            console.warn('No password stored for cleanup, cannot delete Firebase Auth account');
+                        }
+                    } catch (authError) {
+                        console.warn('Could not delete Firebase Auth account during cleanup:', authError);
+                        // Continue with localStorage cleanup even if auth deletion fails
+                    }
+                    
+                    localStorage.removeItem('pendingUserData');
+                }
+            } catch (error) {
+                console.error('Error cleaning up pending username and email:', error);
+            }
+        }
+        
+        function setupUsernameCleanup() {
+            // Clear any existing timeout
+            if (pendingUsernameCleanupTimeout) {
+                clearTimeout(pendingUsernameCleanupTimeout);
+            }
+            
+            // Set up cleanup on page unload (tab close, navigation, etc.)
+            const handleUnload = () => {
+                cleanupPendingUsername().catch(console.error);
+            };
+            
+            // Multiple event listeners to catch different ways users can leave
+            window.addEventListener('beforeunload', handleUnload);
+            window.addEventListener('unload', handleUnload);
+            window.addEventListener('pagehide', handleUnload);
+            
+            // Also set a timeout to clean up after 30 minutes of inactivity
+            pendingUsernameCleanupTimeout = setTimeout(() => {
+                console.log('Cleaning up pending username due to timeout');
+                cleanupPendingUsername().catch(console.error);
+            }, 30 * 60 * 1000); // 30 minutes
+        }
+        
+        function clearUsernameCleanup() {
+            // Clear timeout when user completes registration
+            if (pendingUsernameCleanupTimeout) {
+                clearTimeout(pendingUsernameCleanupTimeout);
+                pendingUsernameCleanupTimeout = null;
+            }
+            
+            // Clear pending data from localStorage for security
+            try {
+                const pendingData = localStorage.getItem('pendingUserData');
+                if (pendingData) {
+                    const data = JSON.parse(pendingData);
+                    // Remove password from stored data for security
+                    delete data.password;
+                    localStorage.setItem('pendingUserData', JSON.stringify(data));
+                }
+            } catch (error) {
+                console.error('Error clearing password from pending data:', error);
+            }
+        }
+
+        function validateEmail(email) {
+            return /^1\d{6}@lwsd\.org$/.test(email);
+        }
+        function validateUsername(username) {
+            return username.length >= 3 && username.length <= 75;
+        }
+        function validatePassword(password) {
+            return password.length >= 8 && password.length <= 75;
+        }
+        function showError(msg) {
+            return `<div class="error">${msg}</div>`;
+        }
+
+        function renderSignIn(errorMsg = '', values = {}, invalidFields = {}) {
+            currentScreen = 'signin';
+            document.getElementById('auth-container').innerHTML = `
+                <h1>Hubble</h1>
+                ${errorMsg ? showError(errorMsg) : ''}
+                <form id="signin-form">
+                    <div class="input-group">
+                        <label for="signin-email">Email Address</label>
+                        <input type="email" id="signin-email" required autocomplete="username" value="${values.email || ''}" class="${invalidFields.email ? 'invalid' : ''}">
+                    </div>
+                    <div class="input-group">
+                        <label for="signin-password">Password</label>
+                        <input type="password" id="signin-password" required autocomplete="current-password" value="${values.password || ''}" class="${invalidFields.password ? 'invalid' : ''}">
+                    </div>
+                    <button class="btn" type="submit">Sign In</button>
+                </form>
+                <span class="switch-link" id="forgot-password">Forgot password?</span>
+                <span class="switch-link" id="to-signup">Don't have an account? Sign up</span>
+            `;
+            document.getElementById('to-signup').onclick = () => {
+                // Clear any existing cleanup when switching to signup
+                clearUsernameCleanup();
+                renderSignUp();
+            };
+            document.getElementById('forgot-password').onclick = async () => {
+                const email = await showCustomPrompt('Reset Password', 'Enter your email address to reset your password:', '1XXXXXX@lwsd.org');
+                if (!email || !validateEmail(email)) {
+                    if (email !== null) { // Only show error if user didn't cancel
+                        await showCustomAlert('Invalid Email', 'Please enter a valid LWSD email address.');
+                    }
+                    return;
+                }
+                try {
+                    const { auth } = await import('./firebase.js');
+                    const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                    await sendPasswordResetEmail(auth, email);
+                    await showCustomAlert('Email Sent', 'Password reset email sent. Check your inbox.');
+                } catch (err) {
+                    let errorMessage = 'Failed to send reset email. Please try again.';
+                    
+                    if (err.code) {
+                        switch (err.code) {
+                            case 'auth/user-not-found':
+                                errorMessage = 'No account found with this email address.';
+                                break;
+                            case 'auth/invalid-email':
+                                errorMessage = 'Invalid email format. Please use your LWSD email address.';
+                                break;
+                            case 'auth/too-many-requests':
+                                errorMessage = 'Too many attempts. Please try again later.';
+                                break;
+                            case 'auth/network-request-failed':
+                                errorMessage = 'Network error. Please check your internet connection.';
+                                break;
+                        }
+                    }
+                    
+                    await showCustomAlert('Error', errorMessage);
+                }
+            };
+            document.getElementById('signin-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signin-email').value.trim();
+                const password = document.getElementById('signin-password').value;
+                let invalid = {};
+                if (!validateEmail(email)) invalid.email = true;
+                if (!validatePassword(password)) invalid.password = true;
+                if (Object.keys(invalid).length > 0) {
+                    renderSignIn(
+                        !validateEmail(email) ? 'Invalid email format.' : 'Password must be 8-75 characters.',
+                        { email, password },
+                        invalid
+                    );
+                    return;
+                }
+                try {
+                    const module = await import('./auth.js');
+                    const user = await module.login(email, password);
+                    window.location.href = 'main.html';
+                } catch (err) {
+                    let errorMessage = 'Sign in failed. Please check your email and password.';
+                    
+                    // Check for custom error messages first
+                    if (err.message === 'EMAIL_NOT_VERIFIED') {
+                        // Check if there's pending registration data to continue verification
+                        const pendingData = localStorage.getItem('pendingUserData');
+                        if (pendingData) {
+                            const data = JSON.parse(pendingData);
+                            if (data.email === email) {
+                                lastSignupData = { email, username: data.username, password };
+                                renderVerification('', 'Please complete your email verification to access your account.');
+                                return;
+                            }
+                        }
+                        errorMessage = 'Please verify your email before signing in. Check your inbox for a verification link.';
+                    } else if (err.message === 'ACCOUNT_NOT_COMPLETED') {
+                        errorMessage = 'Account setup incomplete. Please complete the registration process.';
+                    } else if (err.code) {
+                        // Provide specific error messages based on Firebase error codes
+                        switch (err.code) {
+                            case 'auth/user-not-found':
+                                errorMessage = 'No account found with this email address.';
+                                break;
+                            case 'auth/wrong-password':
+                                errorMessage = 'Incorrect password. Please try again.';
+                                break;
+                            case 'auth/invalid-email':
+                                errorMessage = 'Invalid email format. Please use your LWSD email address.';
+                                break;
+                            case 'auth/too-many-requests':
+                                errorMessage = 'Too many failed attempts. Please try again later.';
+                                break;
+                            case 'auth/user-disabled':
+                                errorMessage = 'This account has been disabled. Please contact support.';
+                                break;
+                            case 'auth/network-request-failed':
+                                errorMessage = 'Network error. Please check your internet connection.';
+                                break;
+                            default:
+                                errorMessage = 'Sign in failed. Please check your email and password.';
+                        }
+                    }
+                    
+                    renderSignIn(errorMessage, { email, password }, { email: true, password: true });
+                }
+            };
+        }
+
+        function renderSignUp(errorMsg = '', values = {}, invalidFields = {}) {
+            currentScreen = 'signup';
+            document.getElementById('auth-container').innerHTML = `
+                <h1>Sign Up</h1>
+                ${errorMsg ? showError(errorMsg) : ''}
+                <form id="signup-form">
+                    <div class="input-group">
+                        <label for="signup-username">Username</label>
+                        <input type="text" id="signup-username" required minlength="3" maxlength="75" autocomplete="username" value="${values.username || ''}" class="${invalidFields.username ? 'invalid' : ''}">
+                    </div>
+                    <div class="input-group">
+                        <label for="signup-email">Email Address</label>
+                        <input type="email" id="signup-email" required autocomplete="email" value="${values.email || ''}" class="${invalidFields.email ? 'invalid' : ''}">
+                    </div>
+                    <div class="input-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" required minlength="8" maxlength="75" autocomplete="new-password" value="${values.password || ''}" class="${invalidFields.password ? 'invalid' : ''}">
+                    </div>
+                    <div class="input-group">
+                        <label for="signup-password2">Confirm Password</label>
+                        <input type="password" id="signup-password2" required minlength="8" maxlength="75" autocomplete="new-password" value="${values.password2 || ''}" class="${invalidFields.password2 ? 'invalid' : ''}">
+                    </div>
+                    <button class="btn" type="submit">Create Account</button>
+                </form>
+                <span class="switch-link" id="to-signin">Already have an account? Sign in</span>
+            `;
+            document.getElementById('to-signin').onclick = () => {
+                // Clear username cleanup when user abandons verification
+                clearUsernameCleanup();
+                renderSignIn();
+            };
+            document.getElementById('signup-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('signup-username').value.trim();
+                const email = document.getElementById('signup-email').value.trim();
+                const password = document.getElementById('signup-password').value;
+                const password2 = document.getElementById('signup-password2').value;
+                let invalid = {};
+                if (!validateUsername(username)) invalid.username = true;
+                if (!validateEmail(email)) invalid.email = true;
+                if (!validatePassword(password)) invalid.password = true;
+                if (password !== password2) invalid.password2 = true;
+                if (Object.keys(invalid).length > 0) {
+                    let msg = '';
+                    if (invalid.username) msg = 'Username must be 3-75 characters.';
+                    else if (invalid.email) msg = 'Email must be in the format 1XXXXXX@lwsd.org.';
+                    else if (invalid.password) msg = 'Password must be 8-75 characters.';
+                    else if (invalid.password2) msg = 'Passwords do not match.';
+                    renderSignUp(msg, { username, email, password, password2 }, invalid);
+                    return;
+                }
+                // Check for duplicate username in pending data and existing users
+                try {
+                    const { db } = await import('./firebase.js');
+                    const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                    
+                    // Check existing verified users
+                    const q = query(collection(db, 'users'), where('username', '==', username));
+                    const snap = await getDocs(q);
+                    if (!snap.empty) {
+                        renderSignUp('That username is already taken.', { username, email, password, password2 }, { username: true });
+                        return;
+                    }
+                    
+                    // Check pending registration data in localStorage
+                    const pendingData = localStorage.getItem('pendingUserData');
+                    if (pendingData) {
+                        const data = JSON.parse(pendingData);
+                        if (data.username === username) {
+                            renderSignUp('That username is already reserved for a pending account.', { username, email, password, password2 }, { username: true });
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Could not check username uniqueness:', err);
+                    // Continue with registration - will be caught if duplicate exists
+                }
+                try {
+                    const module = await import('./auth.js');
+                    const { auth } = await import('./firebase.js');
+                    const { sendEmailVerification } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                    const user = await module.register(email, password, username);
+                    
+                    // Send verification email with action code settings
+                    if (auth.currentUser && !auth.currentUser.emailVerified) {
+                        await sendEmailVerification(auth.currentUser, {
+                            url: window.location.origin + '/index.html',
+                            handleCodeInApp: true
+                        });
+                        lastSignupData = { email, username, password };
+                        
+                        // Set up username cleanup in case user abandons registration
+                        setupUsernameCleanup();
+                        
+                        renderVerification('', 'Verification email sent! Please check your inbox and click the link within 1 hour.');
+                    } else {
+                        renderSignIn('Account created! Please verify your email before signing in.', { email }, {});
+                    }
+                } catch (err) {
+                    let errorMessage = 'Sign up failed. Please try again.';
+                    
+                    // Provide specific error messages based on Firebase error codes
+                    if (err.code) {
+                        switch (err.code) {
+                            case 'auth/email-already-in-use':
+                                errorMessage = 'An account with this email already exists. Please sign in instead.';
+                                break;
+                            case 'auth/invalid-email':
+                                errorMessage = 'Invalid email format. Please use your LWSD email address.';
+                                break;
+                            case 'auth/weak-password':
+                                errorMessage = 'Password is too weak. Please choose a stronger password.';
+                                break;
+                            case 'auth/network-request-failed':
+                                errorMessage = 'Network error. Please check your internet connection.';
+                                break;
+                            case 'auth/too-many-requests':
+                                errorMessage = 'Too many attempts. Please try again later.';
+                                break;
+                            default:
+                                errorMessage = 'Sign up failed. Please try again.';
+                        }
+                    }
+                    
+                    renderSignUp(errorMessage, { username, email, password, password2 }, { username: true, email: true, password: true, password2: true });
+                }
+            };
+        }
+
+        function renderVerification(errorMsg = '', infoMsg = '') {
+            currentScreen = 'verify';
+            document.getElementById('auth-container').innerHTML = `
+                <div class="verification-container">
+                    <h1>Check Your Email</h1>
+                    <div class="verification-message">
+                        We've sent a verification link to<br>
+                        <span class="email-highlight">${lastSignupData.email}</span>
+                    </div>
+                    
+                    <div id="verify-messages" class="verification-status">
+                        ${infoMsg ? `<div class="info">${infoMsg}</div>` : ''}
+                        ${errorMsg ? showError(errorMsg) : ''}
+                        <div class="info" style="margin-top: 1rem; font-weight: 500;">
+                            💡 <strong>Tip:</strong> If verification doesn't work the first time, try clicking [Resend Email]. This is normal and expected!
+                        </div>
+                    </div>
+                    
+                    <div class="verification-steps">
+                        <div class="step">
+                            <span class="step-number">1</span>
+                            <span class="step-text">Check your email inbox</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">2</span>
+                            <span class="step-text">Click the verification link</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">3</span>
+                            <span class="step-text">If you see "Try verifying your email again" - that's normal! Complete the next step</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">4</span>
+                            <span class="step-text">Come back and click "I've Verified My Email"</span>
+                        </div>
+                        <div class="step">
+                            <span class="step-number">5</span>
+                            <span class="step-text">If verification fails, you may need to try resending the email link</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn verification-btn" id="verify-btn" type="button">I've Verified My Email</button>
+                    
+                    <div class="verification-actions">
+                        <span class="switch-link" id="resend-btn">Didn't receive the email or link expired? Resend Email</span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('verify-btn').onclick = async () => {
+                // No code validation needed since we're checking email verification status
+                
+                try {
+                    const { auth } = await import('./firebase.js');
+                    const { signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                    
+                    if (!auth.currentUser) {
+                        await signInWithEmailAndPassword(auth, lastSignupData.email, lastSignupData.password);
+                    }
+                    
+                    // Reload user to check verification status
+                    await auth.currentUser.reload();
+                    
+                    // Check if user exists in Firestore (completed registration)
+                    const { getFirestore, collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                    const { app } = await import('./firebase.js');
+                    const db = getFirestore(app);
+                    const userDoc = await getDocs(query(collection(db, "users"), where("email", "==", auth.currentUser.email)));
+                    
+                    if (!userDoc.empty) {
+                        // User exists in Firestore, which means they've completed registration
+                        clearUsernameCleanup();
+                        
+                        window.location.href = './main.html';
+                    } else if (auth.currentUser.emailVerified) {
+                        // Email is verified but user not in Firestore, complete registration
+                        const module = await import('./auth.js');
+                        await module.completeRegistration();
+                        
+                        clearUsernameCleanup();
+                        
+                        window.location.href = './main.html';
+                    } else {
+                        // Show error - email not verified yet
+                        const msgDiv = document.getElementById('verify-messages');
+                        msgDiv.innerHTML = `${showError('Email not verified yet. Please check your inbox and click the verification link. If the link expired, click "Resend Email" to get a new one.')}`;
+                    }
+                } catch (err) {
+                    console.error('Verification error:', err);
+                    const msgDiv = document.getElementById('verify-messages');
+                    msgDiv.innerHTML = `${showError('Verification failed. Please try again or resend the code.')}`;
+                }
+            };
+            document.getElementById('resend-btn').onclick = async () => {
+                try {
+                    const { auth } = await import('./firebase.js');
+                    const { sendEmailVerification, signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                    
+                    // Check if we have pending data
+                    if (!lastSignupData.email || !lastSignupData.password) {
+                        const msgDiv = document.getElementById('verify-messages');
+                        msgDiv.innerHTML = `${showError('No pending registration found. Please start the registration process again.')}`;
+                        return;
+                    }
+                    
+                    if (!auth.currentUser) {
+                        try {
+                            await signInWithEmailAndPassword(auth, lastSignupData.email, lastSignupData.password);
+                        } catch (signInError) {
+                            console.error('Sign in error during resend:', signInError);
+                            const msgDiv = document.getElementById('verify-messages');
+                            msgDiv.innerHTML = `${showError('Unable to resend email. Please start the registration process again.')}`;
+                            return;
+                        }
+                    }
+                    
+                    // Resend verification email with action code settings
+                    await sendEmailVerification(auth.currentUser, {
+                        url: window.location.origin + '/index.html',
+                        handleCodeInApp: true
+                    });
+                    
+                    // Show success message
+                    const msgDiv = document.getElementById('verify-messages');
+                    msgDiv.innerHTML = `<div class="info">New verification email sent! Please check your inbox and click the link within 1 hour.</div>`;
+                    
+                } catch (err) {
+                    console.error('Resend error:', err);
+                    const msgDiv = document.getElementById('verify-messages');
+                    let errorMessage = 'Failed to resend verification email. ';
+                    
+                    if (err.code === 'auth/too-many-requests') {
+                        errorMessage += 'Too many requests. Please wait a few minutes before trying again.';
+                    } else if (err.code === 'auth/user-not-found') {
+                        errorMessage += 'Account not found. Please start the registration process again.';
+                    } else {
+                        errorMessage += 'Please try again or start the registration process over.';
+                    }
+                    
+                    msgDiv.innerHTML = `${showError(errorMessage)}`;
+                }
+            };
+        }
+
+
+
+        (function() {
+            const saved = localStorage.getItem('hubble-theme');
+            if (saved === 'dark' || saved === 'light') setTheme(saved);
+            else setTheme('light');
+        })();
+
+        handleEmailVerification();
+        
+        renderSignIn();
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const helpButton = document.getElementById('help-button');
+            if (helpButton) {
+                helpButton.addEventListener('click', showHelpPopup);
+            }
+        });
+        
+        (function() {
+            'use strict';
+            
+            // Disable right-click context menu (silent - no alerts)
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }, true);
+            
+            // Disable inspection keyboard shortcuts (triggers alert/redirect)
+            document.addEventListener('keydown', function(e) {
+                // F12
+                if (e.keyCode === 123 || e.key === 'F12') {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+Shift+I (Inspector)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 73 || e.key === 'I')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+Shift+J (Console)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 74 || e.key === 'J')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+Shift+C (Element Selector)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 67 || e.key === 'C')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+U (View Source)
+                if ((e.ctrlKey || e.metaKey) && (e.keyCode === 85 || e.key === 'u')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+Shift+K (Console Firefox)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 75 || e.key === 'K')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+            }, true);
+            
+            // Detect DevTools opening by window size changes (more accurate)
+            let devtoolsOpen = false;
+            let lastInnerWidth = window.innerWidth;
+            let lastInnerHeight = window.innerHeight;
+            
+            setInterval(function() {
+                const currentInnerWidth = window.innerWidth;
+                const currentInnerHeight = window.innerHeight;
+                
+                // Only check if window size actually changed (not just zoom)
+                if (currentInnerWidth !== lastInnerWidth || currentInnerHeight !== lastInnerHeight) {
+                    lastInnerWidth = currentInnerWidth;
+                    lastInnerHeight = currentInnerHeight;
+                    
+                    // More accurate detection - DevTools typically add 300+ pixels
+                    let heightThreshold = window.outerHeight - window.innerHeight > 300;
+                    let widthThreshold = window.outerWidth - window.innerWidth > 300;
+                    
+                    // Additional check: DevTools usually make the window significantly larger
+                    let significantSizeIncrease = (window.outerHeight > window.innerHeight * 1.2) || 
+                                                (window.outerWidth > window.innerWidth * 1.2);
+                    
+                    if ((heightThreshold || widthThreshold) && significantSizeIncrease) {
+                        if (!devtoolsOpen) {
+                            devtoolsOpen = true;
+                            document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                            setTimeout(() => window.location.href = 'about:blank', 500);
+                        }
+                    }
+                }
+            }, 1000); // Less frequent checks
+            
+            // Console detection (less aggressive)
+            let consoleDetectionCount = 0;
+            let element = new Image();
+            Object.defineProperty(element, 'id', {
+                get: function() {
+                    consoleDetectionCount++;
+                    // Only trigger after multiple detections to avoid false positives
+                    if (consoleDetectionCount > 3) {
+                        document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                        setTimeout(() => window.location.href = 'about:blank', 500);
+                    }
+                }
+            });
+            
+            // Less frequent console checks
+            setInterval(function() {
+                console.log(element);
+                console.clear();
+            }, 5000);
+            
+            // Disable text selection and copying (but allow input interaction)
+            document.onselectstart = function(e) { 
+                // Allow selection in input fields
+                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+                    return true;
+                }
+                return false; 
+            };
+            document.onmousedown = function(e) { 
+                // Allow mouse down in input fields and buttons
+                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON')) {
+                    return true;
+                }
+                return false; 
+            };
+            document.ondragstart = function(e) { 
+                // Allow dragging in input fields
+                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+                    return true;
+                }
+                return false; 
+            };
+            
+        })();
+    </script>
+    <script type="module" src="./firebase.js"></script>
+</body>
+</html>
