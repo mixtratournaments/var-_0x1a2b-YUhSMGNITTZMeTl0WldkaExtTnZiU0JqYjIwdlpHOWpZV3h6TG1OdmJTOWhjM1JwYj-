@@ -2038,21 +2038,56 @@
                     const module = await import('./auth.js');
                     const { auth } = await import('./firebase.js');
                     const { sendEmailVerification } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                    
+                    console.log('Starting registration for:', email, username);
                     const user = await module.register(email, password, username);
+                    console.log('Registration successful, user created:', user.uid);
                     
                     // Send verification email with action code settings
                     if (auth.currentUser && !auth.currentUser.emailVerified) {
-                        await sendEmailVerification(auth.currentUser, {
-                            url: window.location.origin + '/index.html',
-                            handleCodeInApp: true
-                        });
-                        lastSignupData = { email, username, password };
-                        
-                        // Set up username cleanup in case user abandons registration
-                        setupUsernameCleanup();
-                        
-                        renderVerification('', 'Verification email sent! Please check your inbox and click the link within 1 hour.');
+                        console.log('Sending email verification...');
+                        try {
+                            await sendEmailVerification(auth.currentUser, {
+                                url: window.location.origin + '/index.html',
+                                handleCodeInApp: true
+                            });
+                            console.log('Email verification sent successfully');
+                            lastSignupData = { email, username, password };
+                            
+                            // Set up username cleanup in case user abandons registration
+                            setupUsernameCleanup();
+                            
+                            renderVerification('', 'Verification email sent! Please check your inbox and click the link within 1 hour.');
+                        } catch (emailError) {
+                            console.error('Email verification failed:', emailError);
+                            // Track the email error
+                            trackError('Email verification error: ' + (emailError.message || emailError.code || 'Unknown error'));
+                            
+                            // Check if email verification is not configured in Firebase
+                            if (emailError.code === 'auth/operation-not-allowed' || 
+                                emailError.code === 'auth/invalid-action-code' ||
+                                emailError.message.includes('email verification') ||
+                                emailError.message.includes('not allowed')) {
+                                console.log('Email verification not configured in Firebase, completing registration without verification...');
+                                try {
+                                    await module.completeRegistration();
+                                    console.log('Registration completed without email verification');
+                                    clearUsernameCleanup();
+                                    window.location.href = './main.html';
+                                    return;
+                                } catch (completeError) {
+                                    console.error('Failed to complete registration:', completeError);
+                                    // Show error message
+                                    renderSignUp('Registration completed but there was an issue with email verification. Please contact support.', { username, email, password, password2 }, {});
+                                    return;
+                                }
+                            }
+                            
+                            // Show error but don't fail the registration
+                            renderVerification('Email verification failed to send. Please try the resend button or contact support.', '');
+                        }
                     } else {
+                        console.log('User already verified or no current user');
                         renderSignIn('Account created! Please verify your email before signing in.', { email }, {});
                     }
                 } catch (err) {
@@ -2281,10 +2316,12 @@
                     }
                     
                     // Resend verification email with action code settings
+                    console.log('Resending email verification for:', auth.currentUser.email);
                     await sendEmailVerification(auth.currentUser, {
                         url: window.location.origin + '/index.html',
                         handleCodeInApp: true
                     });
+                    console.log('Email verification resent successfully');
                     
                     // Show success message
                     const msgDiv = document.getElementById('verify-messages');
@@ -2305,6 +2342,22 @@
                         errorMessage += 'Too many requests. Please wait a few minutes before trying again.';
                     } else if (err.code === 'auth/user-not-found') {
                         errorMessage += 'Account not found. Please start the registration process again.';
+                    } else if (err.code === 'auth/operation-not-allowed' || 
+                               err.message.includes('email verification') ||
+                               err.message.includes('not allowed')) {
+                        // Email verification not configured, try to complete registration
+                        console.log('Email verification not configured, attempting to complete registration...');
+                        try {
+                            const module = await import('./auth.js');
+                            await module.completeRegistration();
+                            console.log('Registration completed without email verification');
+                            clearUsernameCleanup();
+                            window.location.href = './main.html';
+                            return;
+                        } catch (completeError) {
+                            console.error('Failed to complete registration:', completeError);
+                            errorMessage += 'Email verification is not configured. Please contact support.';
+                        }
                     } else {
                         errorMessage += 'Please try again or start the registration process over.';
                     }
