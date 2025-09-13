@@ -744,6 +744,66 @@
             box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
         }
         
+        /* Error Notification Styles */
+        .error-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+            z-index: 10003;
+            max-width: 350px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            animation: errorNotificationSlideIn 0.4s ease-out;
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes errorNotificationSlideIn {
+            from {
+                transform: translateX(100%) scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .error-notification-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .error-notification-message {
+            margin-bottom: 1rem;
+        }
+        
+        .error-notification-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background 0.2s ease;
+            float: right;
+        }
+        
+        .error-notification-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
         /* FAQ Popup */
         .faq-popup-overlay {
             position: fixed;
@@ -838,6 +898,17 @@
     <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">🌙</button>
     <button class="help-button" id="help-button" title="Get Help">❓</button>
     
+    <!-- Error Notification -->
+    <div class="error-notification" id="error-notification" style="display: none;">
+        <div class="error-notification-title">
+            ⚠️ Having Trouble?
+        </div>
+        <div class="error-notification-message">
+            Go to ❓ on the bottom left of your screen for support.
+        </div>
+        <button class="error-notification-close" onclick="closeErrorNotification()">Got it</button>
+    </div>
+    
     <div class="custom-popup-overlay" id="custom-popup">
         <div class="custom-popup">
             <div class="popup-title" id="popup-title"></div>
@@ -854,6 +925,9 @@
             <div class="help-popup-buttons">
                 <button class="help-popup-btn create" onclick="showTicketPopup()">Create</button>
                 <button class="help-popup-btn faq" onclick="showFAQPopup()">FAQ</button>
+            </div>
+            <div style="text-align: center; margin: 1rem 0;">
+                <button class="help-popup-close" onclick="testErrorTracking()" style="background: #ff6b6b; font-size: 0.9rem; padding: 0.5rem 1rem;">Test Error Tracking</button>
             </div>
             <button class="help-popup-close" onclick="closeHelpPopup()">Close</button>
         </div>
@@ -930,6 +1004,69 @@
     </div>
     
     <script>
+        // Error tracking system
+        function getErrorCount() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'hubble_error_count') {
+                    return parseInt(value) || 0;
+                }
+            }
+            return 0;
+        }
+        
+        function incrementErrorCount() {
+            const currentCount = getErrorCount();
+            const newCount = currentCount + 1;
+            
+            // Set cookie to expire in 24 hours
+            const expirationDate = new Date();
+            expirationDate.setDate(expirationDate.getDate() + 1);
+            
+            document.cookie = `hubble_error_count=${newCount}; expires=${expirationDate.toUTCString()}; path=/`;
+            
+            // Check if we should show the notification
+            if (newCount >= 5) {
+                showErrorNotification();
+                // Reset the count after showing notification
+                document.cookie = `hubble_error_count=0; expires=${expirationDate.toUTCString()}; path=/`;
+            }
+            
+            return newCount;
+        }
+        
+        function showErrorNotification() {
+            const notification = document.getElementById('error-notification');
+            if (notification) {
+                notification.style.display = 'block';
+                
+                // Auto-hide after 10 seconds
+                setTimeout(() => {
+                    closeErrorNotification();
+                }, 10000);
+            }
+        }
+        
+        function closeErrorNotification() {
+            const notification = document.getElementById('error-notification');
+            if (notification) {
+                notification.style.display = 'none';
+            }
+        }
+        
+        // Track errors in existing error handling
+        function trackError(errorMessage) {
+            console.log('Error tracked:', errorMessage);
+            incrementErrorCount();
+        }
+        
+        // Test function for error tracking (for development/testing)
+        function testErrorTracking() {
+            trackError('Test error for error tracking system');
+            console.log('Current error count:', getErrorCount());
+        }
+        
         function showHelpPopup() {
             const popup = document.getElementById('help-popup-overlay');
             if (popup) {
@@ -1029,6 +1166,9 @@
                 console.log('Ticket submitted successfully to Firebase');
             } catch (error) {
                 console.error('Error submitting ticket:', error);
+                // Track the error
+                trackError('Ticket submission error: ' + (error.message || error.code || 'Unknown error'));
+                
                 console.error('Error details:', {
                     message: error.message,
                     code: error.code,
@@ -1177,6 +1317,9 @@
                         
                     } catch (error) {
                         console.error('Email verification error:', error);
+                        // Track the error
+                        trackError('Email verification error: ' + (error.message || error.code || 'Unknown error'));
+                        
                         // Clear the flag on error
                         isProcessingVerification = false;
                         let errorMessage = 'Email verification failed. ';
@@ -1411,6 +1554,9 @@
                     await sendPasswordResetEmail(auth, email);
                     await showCustomAlert('Email Sent', 'Password reset email sent. Check your inbox.');
                 } catch (err) {
+                    // Track the error
+                    trackError('Password reset error: ' + (err.message || err.code || 'Unknown error'));
+                    
                     let errorMessage = 'Failed to send reset email. Please try again.';
                     
                     if (err.code) {
@@ -1441,6 +1587,9 @@
                 if (!validateEmail(email)) invalid.email = true;
                 if (!validatePassword(password)) invalid.password = true;
                 if (Object.keys(invalid).length > 0) {
+                    // Track validation errors
+                    trackError('Sign in validation error: Invalid email or password format');
+                    
                     renderSignIn(
                         !validateEmail(email) ? 'Invalid email format.' : 'Password must be 8-75 characters.',
                         { email, password },
@@ -1453,6 +1602,9 @@
                     const user = await module.login(email, password);
                     window.location.href = 'main.html';
                 } catch (err) {
+                    // Track the error
+                    trackError('Sign in error: ' + (err.message || err.code || 'Unknown error'));
+                    
                     let errorMessage = 'Sign in failed. Please check your email and password.';
                     
                     // Check for custom error messages first
@@ -1544,6 +1696,9 @@
                 if (!validatePassword(password)) invalid.password = true;
                 if (password !== password2) invalid.password2 = true;
                 if (Object.keys(invalid).length > 0) {
+                    // Track validation errors
+                    trackError('Sign up validation error: Invalid form data');
+                    
                     let msg = '';
                     if (invalid.username) msg = 'Username must be 3-75 characters.';
                     else if (invalid.email) msg = 'Email must be in the format 1XXXXXX@lwsd.org.';
@@ -1561,6 +1716,9 @@
                     const q = query(collection(db, 'users'), where('username', '==', username));
                     const snap = await getDocs(q);
                     if (!snap.empty) {
+                        // Track username duplication error
+                        trackError('Sign up error: Username already taken');
+                        
                         renderSignUp('That username is already taken.', { username, email, password, password2 }, { username: true });
                         return;
                     }
@@ -1570,6 +1728,9 @@
                     if (pendingData) {
                         const data = JSON.parse(pendingData);
                         if (data.username === username) {
+                            // Track pending username error
+                            trackError('Sign up error: Username reserved for pending account');
+                            
                             renderSignUp('That username is already reserved for a pending account.', { username, email, password, password2 }, { username: true });
                             return;
                         }
@@ -1600,6 +1761,9 @@
                         renderSignIn('Account created! Please verify your email before signing in.', { email }, {});
                     }
                 } catch (err) {
+                    // Track the error
+                    trackError('Sign up error: ' + (err.message || err.code || 'Unknown error'));
+                    
                     let errorMessage = 'Sign up failed. Please try again.';
                     
                     // Provide specific error messages based on Firebase error codes
@@ -1718,6 +1882,9 @@
                     }
                 } catch (err) {
                     console.error('Verification error:', err);
+                    // Track the error
+                    trackError('Verification button error: ' + (err.message || err.code || 'Unknown error'));
+                    
                     const msgDiv = document.getElementById('verify-messages');
                     msgDiv.innerHTML = `${showError('Verification failed. Please try again or resend the code.')}`;
                 }
@@ -1757,6 +1924,9 @@
                     
                 } catch (err) {
                     console.error('Resend error:', err);
+                    // Track the error
+                    trackError('Resend email error: ' + (err.message || err.code || 'Unknown error'));
+                    
                     const msgDiv = document.getElementById('verify-messages');
                     let errorMessage = 'Failed to resend verification email. ';
                     
