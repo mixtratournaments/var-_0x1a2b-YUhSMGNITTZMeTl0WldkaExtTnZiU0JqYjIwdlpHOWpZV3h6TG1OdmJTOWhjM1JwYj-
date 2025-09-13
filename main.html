@@ -1064,7 +1064,7 @@
                 </div>
                 <div class="ticket-form-group">
                     <label for="ticket-email" class="ticket-form-label">Account Email</label>
-                    <input type="email" id="ticket-email" class="ticket-form-input" placeholder="1XXXXXX@lwsd.org">
+                    <input type="email" id="ticket-email" class="ticket-form-input" placeholder="your-email@example.com">
                 </div>
                 <div class="ticket-form-buttons">
                     <button class="ticket-form-btn cancel" onclick="closeTicketPopup()">Cancel</button>
@@ -1130,7 +1130,7 @@
             <div class="faq-item">
                 <div class="faq-question">I forgot my password. What should I do?</div>
                 <div class="faq-answer">
-                    Click "Forgot password?" on the login page and enter your LWSD email address. 
+                    Click "Forgot password?" on the login page and enter your email address. 
                     You'll receive a password reset link in your email.
                 </div>
             </div>
@@ -1231,8 +1231,8 @@
             }
             
             // Email validation
-            if (!email.includes('@lwsd.org')) {
-                alert('Please enter a valid LWSD email address.');
+            if (!email.includes('@') || !email.includes('.')) {
+                alert('Please enter a valid email address.');
                 return;
             }
             
