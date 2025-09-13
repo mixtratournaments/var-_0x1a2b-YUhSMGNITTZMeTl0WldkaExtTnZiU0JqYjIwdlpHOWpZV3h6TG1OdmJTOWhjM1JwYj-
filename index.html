@@ -744,7 +744,7 @@
             box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
         }
         
-        /* Error Notification */
+        /* Error Notification Styles */
         .error-notification {
             position: fixed;
             top: 20px;
@@ -758,46 +758,50 @@
             max-width: 350px;
             font-size: 0.95rem;
             line-height: 1.4;
-            transform: translateX(400px);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border: 2px solid rgba(255, 255, 255, 0.2);
+            animation: errorNotificationSlideIn 0.4s ease-out;
+            backdrop-filter: blur(10px);
         }
         
-        .error-notification.show {
-            transform: translateX(0);
+        @keyframes errorNotificationSlideIn {
+            from {
+                transform: translateX(100%) scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
         }
         
-        .error-notification-content {
+        .error-notification-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
             display: flex;
-            align-items: flex-start;
-            gap: 0.8rem;
+            align-items: center;
+            gap: 0.5rem;
         }
         
-        .error-notification-icon {
-            font-size: 1.2rem;
-            margin-top: 0.1rem;
-            flex-shrink: 0;
-        }
-        
-        .error-notification-text {
-            flex: 1;
+        .error-notification-message {
+            margin-bottom: 1rem;
         }
         
         .error-notification-close {
-            background: none;
+            background: rgba(255, 255, 255, 0.2);
             border: none;
             color: white;
-            font-size: 1.2rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
             cursor: pointer;
-            padding: 0;
-            margin-left: 0.5rem;
-            opacity: 0.8;
-            transition: opacity 0.2s;
-            flex-shrink: 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background 0.2s ease;
+            float: right;
         }
         
         .error-notification-close:hover {
-            opacity: 1;
+            background: rgba(255, 255, 255, 0.3);
         }
         
         /* FAQ Popup */
@@ -895,14 +899,14 @@
     <button class="help-button" id="help-button" title="Get Help">❓</button>
     
     <!-- Error Notification -->
-    <div class="error-notification" id="error-notification">
-        <div class="error-notification-content">
-            <div class="error-notification-icon">⚠️</div>
-            <div class="error-notification-text">
-                Go to ❓ on the bottom left of your screen for support
-            </div>
-            <button class="error-notification-close" onclick="closeErrorNotification()">×</button>
+    <div class="error-notification" id="error-notification" style="display: none;">
+        <div class="error-notification-title">
+            ⚠️ Having Trouble?
         </div>
+        <div class="error-notification-message">
+            Go to ❓ on the bottom left of your screen for support.
+        </div>
+        <button class="error-notification-close" onclick="closeErrorNotification()">Got it</button>
     </div>
     
     <div class="custom-popup-overlay" id="custom-popup">
@@ -921,6 +925,9 @@
             <div class="help-popup-buttons">
                 <button class="help-popup-btn create" onclick="showTicketPopup()">Create</button>
                 <button class="help-popup-btn faq" onclick="showFAQPopup()">FAQ</button>
+            </div>
+            <div style="text-align: center; margin: 1rem 0;">
+                <button class="help-popup-close" onclick="testErrorTracking()" style="background: #ff6b6b; font-size: 0.9rem; padding: 0.5rem 1rem;">Test Error Tracking</button>
             </div>
             <button class="help-popup-close" onclick="closeHelpPopup()">Close</button>
         </div>
@@ -1023,12 +1030,16 @@
             document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
         }
         
+        function getErrorCount() {
+            return parseInt(getCookie(ERROR_COUNT_COOKIE) || '0');
+        }
+        
         // Error tracking function
-        function trackError() {
-            const currentCount = parseInt(getCookie(ERROR_COUNT_COOKIE) || '0');
+        function trackError(errorMessage = '') {
+            const currentCount = getErrorCount();
             const newCount = currentCount + 1;
             
-            console.log(`Error count: ${newCount}/${ERROR_THRESHOLD}`);
+            console.log(`Error count: ${newCount}/${ERROR_THRESHOLD}${errorMessage ? ' - ' + errorMessage : ''}`);
             
             if (newCount >= ERROR_THRESHOLD) {
                 // Reset the error count
@@ -1045,7 +1056,7 @@
         function showErrorNotification() {
             const notification = document.getElementById('error-notification');
             if (notification) {
-                notification.classList.add('show');
+                notification.style.display = 'block';
                 
                 // Auto-hide after 10 seconds
                 setTimeout(() => {
@@ -1058,10 +1069,12 @@
         function closeErrorNotification() {
             const notification = document.getElementById('error-notification');
             if (notification) {
-                notification.classList.remove('show');
+                notification.style.display = 'none';
+                
+                // Reset error count after user acknowledges the notification
+                deleteCookie(ERROR_COUNT_COOKIE);
             }
         }
-        
         function showHelpPopup() {
             const popup = document.getElementById('help-popup-overlay');
             if (popup) {
@@ -1164,6 +1177,9 @@
                 trackError();
                 
                 console.error('Error submitting ticket:', error);
+                // Track the error
+                trackError('Ticket submission error: ' + (error.message || error.code || 'Unknown error'));
+                
                 console.error('Error details:', {
                     message: error.message,
                     code: error.code,
@@ -1312,6 +1328,9 @@
                         
                     } catch (error) {
                         console.error('Email verification error:', error);
+                        // Track the error
+                        trackError('Email verification error: ' + (error.message || error.code || 'Unknown error'));
+                        
                         // Clear the flag on error
                         isProcessingVerification = false;
                         let errorMessage = 'Email verification failed. ';
@@ -1547,7 +1566,7 @@
                     await showCustomAlert('Email Sent', 'Password reset email sent. Check your inbox.');
                 } catch (err) {
                     // Track the error
-                    trackError();
+                    trackError('Password reset error: ' + (err.message || err.code || 'Unknown error'));
                     
                     let errorMessage = 'Failed to send reset email. Please try again.';
                     
@@ -1579,6 +1598,9 @@
                 if (!validateEmail(email)) invalid.email = true;
                 if (!validatePassword(password)) invalid.password = true;
                 if (Object.keys(invalid).length > 0) {
+                    // Track validation errors
+                    trackError('Sign in validation error: Invalid email or password format');
+                    
                     renderSignIn(
                         !validateEmail(email) ? 'Invalid email format.' : 'Password must be 8-75 characters.',
                         { email, password },
@@ -1592,7 +1614,7 @@
                     window.location.href = 'main.html';
                 } catch (err) {
                     // Track the error
-                    trackError();
+                    trackError('Sign in error: ' + (err.message || err.code || 'Unknown error'));
                     
                     let errorMessage = 'Sign in failed. Please check your email and password.';
                     
@@ -1685,6 +1707,9 @@
                 if (!validatePassword(password)) invalid.password = true;
                 if (password !== password2) invalid.password2 = true;
                 if (Object.keys(invalid).length > 0) {
+                    // Track validation errors
+                    trackError('Sign up validation error: Invalid form data');
+                    
                     let msg = '';
                     if (invalid.username) msg = 'Username must be 3-75 characters.';
                     else if (invalid.email) msg = 'Email must be in the format 1XXXXXX@lwsd.org.';
@@ -1702,6 +1727,9 @@
                     const q = query(collection(db, 'users'), where('username', '==', username));
                     const snap = await getDocs(q);
                     if (!snap.empty) {
+                        // Track username duplication error
+                        trackError('Sign up error: Username already taken');
+                        
                         renderSignUp('That username is already taken.', { username, email, password, password2 }, { username: true });
                         return;
                     }
@@ -1711,6 +1739,9 @@
                     if (pendingData) {
                         const data = JSON.parse(pendingData);
                         if (data.username === username) {
+                            // Track pending username error
+                            trackError('Sign up error: Username reserved for pending account');
+                            
                             renderSignUp('That username is already reserved for a pending account.', { username, email, password, password2 }, { username: true });
                             return;
                         }
@@ -1742,7 +1773,7 @@
                     }
                 } catch (err) {
                     // Track the error
-                    trackError();
+                    trackError('Sign up error: ' + (err.message || err.code || 'Unknown error'));
                     
                     let errorMessage = 'Sign up failed. Please try again.';
                     
@@ -1865,6 +1896,9 @@
                     trackError();
                     
                     console.error('Verification error:', err);
+                    // Track the error
+                    trackError('Verification button error: ' + (err.message || err.code || 'Unknown error'));
+                    
                     const msgDiv = document.getElementById('verify-messages');
                     msgDiv.innerHTML = `${showError('Verification failed. Please try again or resend the code.')}`;
                 }
@@ -1907,6 +1941,9 @@
                     trackError();
                     
                     console.error('Resend error:', err);
+                    // Track the error
+                    trackError('Resend email error: ' + (err.message || err.code || 'Unknown error'));
+                    
                     const msgDiv = document.getElementById('verify-messages');
                     let errorMessage = 'Failed to resend verification email. ';
                     
