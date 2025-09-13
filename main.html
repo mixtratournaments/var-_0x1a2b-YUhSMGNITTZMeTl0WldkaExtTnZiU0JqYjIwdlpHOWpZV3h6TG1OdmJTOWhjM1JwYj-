@@ -809,7 +809,7 @@
             width: 100%;
             height: 180px;
             border-radius: 12px;
-            object-fit: cover;
+            object-fit: contain;
             margin-bottom: 0.1rem;
             background: var(--background-light);
             border: 2px solid var(--secondary);
@@ -1629,9 +1629,11 @@
         function initGamesSection() {
             // Initialize allGames here to avoid initialization order issues
             allGames = [...gamesList];
+            console.log('Initializing games section with', allGames.length, 'games');
             
             // Add a delay to ensure DOM is ready
             setTimeout(() => {
+                console.log('Populating games grid...');
                 populateGamesGrid();
                 setupGamesSearch();
                 // Setup sticky search after everything is initialized with additional delay
@@ -1645,13 +1647,17 @@
             const gamesGrid = document.getElementById('games-grid');
             
             if (!gamesGrid) {
+                console.error('Games grid element not found');
                 return;
             }
             
             if (allGames.length === 0) {
+                console.log('No games to display');
                 gamesGrid.innerHTML = '<div class="games-loading">No games found</div>';
                 return;
             }
+            
+            console.log('Populating grid with', allGames.length, 'games');
             
             // Check if games have scores (from search) or sort alphabetically
             let sortedGames;
@@ -1665,10 +1671,13 @@
             
             const gamesHTML = sortedGames.map(game => `
                 <div class="game-card" onclick="openGame('${game.name}', '${game.url}')">
-                    <img src="${game.image}" alt="${game.name}" class="game-image" loading="lazy" onerror="console.error('Failed to load image:', this.src)">
+                    <img src="${game.image}" alt="${game.name}" class="game-image" onload="console.log('Image loaded successfully:', this.src)" onerror="console.error('Failed to load image:', this.src)">
                     <h3 class="game-name">${game.name}</h3>
                 </div>
             `).join('');
+            
+            console.log('Generated HTML for first game:', sortedGames[0] ? sortedGames[0].name : 'none');
+            console.log('First game image path:', sortedGames[0] ? sortedGames[0].image : 'none');
             
             gamesGrid.innerHTML = gamesHTML;
         }
