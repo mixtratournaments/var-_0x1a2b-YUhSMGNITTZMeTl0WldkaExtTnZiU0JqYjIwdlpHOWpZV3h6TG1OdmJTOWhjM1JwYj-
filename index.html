@@ -1005,37 +1005,54 @@
     
     <script>
         // Error tracking system
-        function getErrorCount() {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                const [name, value] = cookie.trim().split('=');
-                if (name === 'hubble_error_count') {
-                    return parseInt(value) || 0;
-                }
-            }
-            return 0;
+        const ERROR_COUNT_COOKIE = 'hubble_error_count';
+        const ERROR_THRESHOLD = 5;
+        
+        // Cookie management functions
+        function setCookie(name, value, days = 30) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
         }
         
-        function incrementErrorCount() {
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+        
+        function deleteCookie(name) {
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+        }
+        
+        function getErrorCount() {
+            return parseInt(getCookie(ERROR_COUNT_COOKIE) || '0');
+        }
+        
+        // Error tracking function
+        function trackError(errorMessage = '') {
             const currentCount = getErrorCount();
             const newCount = currentCount + 1;
             
-            // Set cookie to expire in 24 hours
-            const expirationDate = new Date();
-            expirationDate.setDate(expirationDate.getDate() + 1);
+            console.log(`Error count: ${newCount}/${ERROR_THRESHOLD}${errorMessage ? ' - ' + errorMessage : ''}`);
             
-            document.cookie = `hubble_error_count=${newCount}; expires=${expirationDate.toUTCString()}; path=/`;
-            
-            // Check if we should show the notification
-            if (newCount >= 5) {
+            if (newCount >= ERROR_THRESHOLD) {
+                // Reset the error count
+                deleteCookie(ERROR_COUNT_COOKIE);
+                // Show support notification
                 showErrorNotification();
-                // Reset the count after showing notification
-                document.cookie = `hubble_error_count=0; expires=${expirationDate.toUTCString()}; path=/`;
+            } else {
+                // Increment error count
+                setCookie(ERROR_COUNT_COOKIE, newCount.toString());
             }
-            
-            return newCount;
         }
         
+        // Show error notification
         function showErrorNotification() {
             const notification = document.getElementById('error-notification');
             if (notification) {
@@ -1048,25 +1065,16 @@
             }
         }
         
+        // Close error notification
         function closeErrorNotification() {
             const notification = document.getElementById('error-notification');
             if (notification) {
                 notification.style.display = 'none';
+                
+                // Reset error count after user acknowledges the notification
+                deleteCookie(ERROR_COUNT_COOKIE);
             }
         }
-        
-        // Track errors in existing error handling
-        function trackError(errorMessage) {
-            console.log('Error tracked:', errorMessage);
-            incrementErrorCount();
-        }
-        
-        // Test function for error tracking (for development/testing)
-        function testErrorTracking() {
-            trackError('Test error for error tracking system');
-            console.log('Current error count:', getErrorCount());
-        }
-        
         function showHelpPopup() {
             const popup = document.getElementById('help-popup-overlay');
             if (popup) {
@@ -1165,6 +1173,9 @@
                 
                 console.log('Ticket submitted successfully to Firebase');
             } catch (error) {
+                // Track the error
+                trackError();
+                
                 console.error('Error submitting ticket:', error);
                 // Track the error
                 trackError('Ticket submission error: ' + (error.message || error.code || 'Unknown error'));
@@ -1881,6 +1892,9 @@
                         msgDiv.innerHTML = `${showError('Email not verified yet. Please check your inbox and click the verification link. If the link expired, click "Resend Email" to get a new one.')}`;
                     }
                 } catch (err) {
+                    // Track the error
+                    trackError();
+                    
                     console.error('Verification error:', err);
                     // Track the error
                     trackError('Verification button error: ' + (err.message || err.code || 'Unknown error'));
@@ -1923,6 +1937,9 @@
                     msgDiv.innerHTML = `<div class="info">New verification email sent! Please check your inbox and click the link within 1 hour.</div>`;
                     
                 } catch (err) {
+                    // Track the error
+                    trackError();
+                    
                     console.error('Resend error:', err);
                     // Track the error
                     trackError('Resend email error: ' + (err.message || err.code || 'Unknown error'));
