@@ -2063,28 +2063,21 @@
                             // Track the email error
                             trackError('Email verification error: ' + (emailError.message || emailError.code || 'Unknown error'));
                             
-                            // Check if email verification is not configured in Firebase
-                            if (emailError.code === 'auth/operation-not-allowed' || 
-                                emailError.code === 'auth/invalid-action-code' ||
-                                emailError.message.includes('email verification') ||
-                                emailError.message.includes('not allowed')) {
-                                console.log('Email verification not configured in Firebase, completing registration without verification...');
-                                try {
-                                    await module.completeRegistration();
-                                    console.log('Registration completed without email verification');
-                                    clearUsernameCleanup();
-                                    window.location.href = './main.html';
-                                    return;
-                                } catch (completeError) {
-                                    console.error('Failed to complete registration:', completeError);
-                                    // Show error message
-                                    renderSignUp('Registration completed but there was an issue with email verification. Please contact support.', { username, email, password, password2 }, {});
-                                    return;
-                                }
+                            // Show specific error message based on the error type
+                            let errorMessage = 'Email verification failed to send. ';
+                            if (emailError.code === 'auth/operation-not-allowed') {
+                                errorMessage += 'Email verification is not enabled in Firebase Auth settings. The administrator needs to enable email verification in the Firebase Console.';
+                            } else if (emailError.code === 'auth/invalid-action-code') {
+                                errorMessage += 'Invalid verification configuration. Please contact support.';
+                            } else if (emailError.code === 'auth/too-many-requests') {
+                                errorMessage += 'Too many requests. Please wait a few minutes before trying again.';
+                            } else if (emailError.code === 'auth/network-request-failed') {
+                                errorMessage += 'Network error. Please check your internet connection and try again.';
+                            } else {
+                                errorMessage += `Error: ${emailError.message || emailError.code || 'Unknown error'}. Please try the resend button or contact support.`;
                             }
                             
-                            // Show error but don't fail the registration
-                            renderVerification('Email verification failed to send. Please try the resend button or contact support.', '');
+                            renderVerification(errorMessage, '');
                         }
                     } else {
                         console.log('User already verified or no current user');
@@ -2342,22 +2335,12 @@
                         errorMessage += 'Too many requests. Please wait a few minutes before trying again.';
                     } else if (err.code === 'auth/user-not-found') {
                         errorMessage += 'Account not found. Please start the registration process again.';
-                    } else if (err.code === 'auth/operation-not-allowed' || 
-                               err.message.includes('email verification') ||
-                               err.message.includes('not allowed')) {
-                        // Email verification not configured, try to complete registration
-                        console.log('Email verification not configured, attempting to complete registration...');
-                        try {
-                            const module = await import('./auth.js');
-                            await module.completeRegistration();
-                            console.log('Registration completed without email verification');
-                            clearUsernameCleanup();
-                            window.location.href = './main.html';
-                            return;
-                        } catch (completeError) {
-                            console.error('Failed to complete registration:', completeError);
-                            errorMessage += 'Email verification is not configured. Please contact support.';
-                        }
+                    } else if (err.code === 'auth/operation-not-allowed') {
+                        errorMessage += 'Email verification is not enabled in Firebase Auth settings. Please contact support to enable email verification.';
+                    } else if (err.code === 'auth/invalid-action-code') {
+                        errorMessage += 'Invalid verification configuration. Please contact support.';
+                    } else if (err.code === 'auth/network-request-failed') {
+                        errorMessage += 'Network error. Please check your internet connection and try again.';
                     } else {
                         errorMessage += 'Please try again or start the registration process over.';
                     }
