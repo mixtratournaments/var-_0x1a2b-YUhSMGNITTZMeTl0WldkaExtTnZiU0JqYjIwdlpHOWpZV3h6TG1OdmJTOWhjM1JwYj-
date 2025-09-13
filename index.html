@@ -142,6 +142,11 @@
             background: #fff0f0;
             color: #222;
         }
+        body[data-theme="dark"] .invalid {
+            border: 2px solid #f44336 !important;
+            background: #2d1b1b;
+            color: #f7f8fa;
+        }
         .btn {
             width: 100%;
             padding: 0.8rem;
@@ -1590,7 +1595,17 @@
                 return { success: false, message: 'Account is verified, cannot clean up' };
             } catch (error) {
                 console.warn('Could not handle abandoned account:', error);
-                return { success: false, message: 'Could not clean up abandoned account: ' + (error.message || 'Unknown error') };
+                
+                // Provide more specific error messages based on the error type
+                if (error.code === 'auth/wrong-password') {
+                    return { success: false, message: 'Password is incorrect for existing account' };
+                } else if (error.code === 'auth/user-not-found') {
+                    return { success: false, message: 'No existing account found' };
+                } else if (error.code === 'auth/too-many-requests') {
+                    return { success: false, message: 'Too many attempts, please wait before trying again' };
+                } else {
+                    return { success: false, message: 'Could not clean up abandoned account: ' + (error.message || 'Unknown error') };
+                }
             }
         }
         
@@ -1711,6 +1726,7 @@
 
         function renderSignIn(errorMsg = '', values = {}, invalidFields = {}) {
             currentScreen = 'signin';
+            clearAllValidationErrors(); // Clear any existing validation errors
             document.getElementById('auth-container').innerHTML = `
                 <h1>Hubble</h1>
                 ${errorMsg ? showError(errorMsg) : ''}
@@ -1782,6 +1798,15 @@
                     await showCustomAlert('Error', errorMessage);
                 }
             };
+            
+            // Add event listeners to clear validation errors when user starts typing
+            document.getElementById('signin-email').addEventListener('input', function() {
+                this.classList.remove('invalid');
+            });
+            document.getElementById('signin-password').addEventListener('input', function() {
+                this.classList.remove('invalid');
+            });
+            
             document.getElementById('signin-form').onsubmit = async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('signin-email').value.trim();
@@ -1856,8 +1881,17 @@
             };
         }
 
+        function clearAllValidationErrors() {
+            // Clear any existing validation errors from all form fields
+            const allInputs = document.querySelectorAll('input');
+            allInputs.forEach(input => {
+                input.classList.remove('invalid');
+            });
+        }
+
         function renderSignUp(errorMsg = '', values = {}, invalidFields = {}) {
             currentScreen = 'signup';
+            clearAllValidationErrors(); // Clear any existing validation errors
             document.getElementById('auth-container').innerHTML = `
                 <h1>Sign Up</h1>
                 ${errorMsg ? showError(errorMsg) : ''}
@@ -1897,6 +1931,20 @@
                 });
                 renderSignIn();
             };
+            // Add event listeners to clear validation errors when user starts typing
+            document.getElementById('signup-username').addEventListener('input', function() {
+                this.classList.remove('invalid');
+            });
+            document.getElementById('signup-email').addEventListener('input', function() {
+                this.classList.remove('invalid');
+            });
+            document.getElementById('signup-password').addEventListener('input', function() {
+                this.classList.remove('invalid');
+            });
+            document.getElementById('signup-password2').addEventListener('input', function() {
+                this.classList.remove('invalid');
+            });
+            
             document.getElementById('signup-form').onsubmit = async (e) => {
                 e.preventDefault();
                 const username = document.getElementById('signup-username').value.trim();
@@ -2052,7 +2100,7 @@
                                             errorMessage = 'Account cleanup was attempted but the email is still in use. Please try signing in instead.';
                                             invalidFields = { email: true };
                                         } else {
-                                            errorMessage = 'Registration failed after cleanup. Please try again or contact support if the issue persists.';
+                                            errorMessage = 'Registration failed. Please try again with a different email or contact support if the issue persists.';
                                             invalidFields = { email: true, password: true };
                                         }
                                     }
@@ -2060,6 +2108,12 @@
                                     // Cleanup failed, provide helpful message
                                     if (cleanupResult.message.includes('verified')) {
                                         errorMessage = 'An account with this email already exists and is verified. Please sign in instead.';
+                                        invalidFields = { email: true };
+                                    } else if (cleanupResult.message.includes('Password is incorrect')) {
+                                        errorMessage = 'An account with this email already exists but the password is different. Please sign in instead or use a different email.';
+                                        invalidFields = { email: true };
+                                    } else if (cleanupResult.message.includes('Too many attempts')) {
+                                        errorMessage = 'Too many registration attempts. Please wait a few minutes before trying again.';
                                         invalidFields = { email: true };
                                     } else {
                                         errorMessage = 'An account with this email already exists. Please sign in instead, or try again in a few minutes if you recently started registration.';
