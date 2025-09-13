@@ -744,6 +744,62 @@
             box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
         }
         
+        /* Error Notification */
+        .error-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+            z-index: 10003;
+            max-width: 350px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            transform: translateX(400px);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .error-notification.show {
+            transform: translateX(0);
+        }
+        
+        .error-notification-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+        }
+        
+        .error-notification-icon {
+            font-size: 1.2rem;
+            margin-top: 0.1rem;
+            flex-shrink: 0;
+        }
+        
+        .error-notification-text {
+            flex: 1;
+        }
+        
+        .error-notification-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 0.5rem;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .error-notification-close:hover {
+            opacity: 1;
+        }
+        
         /* FAQ Popup */
         .faq-popup-overlay {
             position: fixed;
@@ -838,6 +894,17 @@
     <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">🌙</button>
     <button class="help-button" id="help-button" title="Get Help">❓</button>
     
+    <!-- Error Notification -->
+    <div class="error-notification" id="error-notification">
+        <div class="error-notification-content">
+            <div class="error-notification-icon">⚠️</div>
+            <div class="error-notification-text">
+                Go to ❓ on the bottom left of your screen for support
+            </div>
+            <button class="error-notification-close" onclick="closeErrorNotification()">×</button>
+        </div>
+    </div>
+    
     <div class="custom-popup-overlay" id="custom-popup">
         <div class="custom-popup">
             <div class="popup-title" id="popup-title"></div>
@@ -930,6 +997,71 @@
     </div>
     
     <script>
+        // Error tracking system
+        const ERROR_COUNT_COOKIE = 'hubble_error_count';
+        const ERROR_THRESHOLD = 5;
+        
+        // Cookie management functions
+        function setCookie(name, value, days = 30) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+        }
+        
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+        
+        function deleteCookie(name) {
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+        }
+        
+        // Error tracking function
+        function trackError() {
+            const currentCount = parseInt(getCookie(ERROR_COUNT_COOKIE) || '0');
+            const newCount = currentCount + 1;
+            
+            console.log(`Error count: ${newCount}/${ERROR_THRESHOLD}`);
+            
+            if (newCount >= ERROR_THRESHOLD) {
+                // Reset the error count
+                deleteCookie(ERROR_COUNT_COOKIE);
+                // Show support notification
+                showErrorNotification();
+            } else {
+                // Increment error count
+                setCookie(ERROR_COUNT_COOKIE, newCount.toString());
+            }
+        }
+        
+        // Show error notification
+        function showErrorNotification() {
+            const notification = document.getElementById('error-notification');
+            if (notification) {
+                notification.classList.add('show');
+                
+                // Auto-hide after 10 seconds
+                setTimeout(() => {
+                    closeErrorNotification();
+                }, 10000);
+            }
+        }
+        
+        // Close error notification
+        function closeErrorNotification() {
+            const notification = document.getElementById('error-notification');
+            if (notification) {
+                notification.classList.remove('show');
+            }
+        }
+        
         function showHelpPopup() {
             const popup = document.getElementById('help-popup-overlay');
             if (popup) {
@@ -1028,6 +1160,9 @@
                 
                 console.log('Ticket submitted successfully to Firebase');
             } catch (error) {
+                // Track the error
+                trackError();
+                
                 console.error('Error submitting ticket:', error);
                 console.error('Error details:', {
                     message: error.message,
@@ -1411,6 +1546,9 @@
                     await sendPasswordResetEmail(auth, email);
                     await showCustomAlert('Email Sent', 'Password reset email sent. Check your inbox.');
                 } catch (err) {
+                    // Track the error
+                    trackError();
+                    
                     let errorMessage = 'Failed to send reset email. Please try again.';
                     
                     if (err.code) {
@@ -1453,6 +1591,9 @@
                     const user = await module.login(email, password);
                     window.location.href = 'main.html';
                 } catch (err) {
+                    // Track the error
+                    trackError();
+                    
                     let errorMessage = 'Sign in failed. Please check your email and password.';
                     
                     // Check for custom error messages first
@@ -1600,6 +1741,9 @@
                         renderSignIn('Account created! Please verify your email before signing in.', { email }, {});
                     }
                 } catch (err) {
+                    // Track the error
+                    trackError();
+                    
                     let errorMessage = 'Sign up failed. Please try again.';
                     
                     // Provide specific error messages based on Firebase error codes
@@ -1717,6 +1861,9 @@
                         msgDiv.innerHTML = `${showError('Email not verified yet. Please check your inbox and click the verification link. If the link expired, click "Resend Email" to get a new one.')}`;
                     }
                 } catch (err) {
+                    // Track the error
+                    trackError();
+                    
                     console.error('Verification error:', err);
                     const msgDiv = document.getElementById('verify-messages');
                     msgDiv.innerHTML = `${showError('Verification failed. Please try again or resend the code.')}`;
@@ -1756,6 +1903,9 @@
                     msgDiv.innerHTML = `<div class="info">New verification email sent! Please check your inbox and click the link within 1 hour.</div>`;
                     
                 } catch (err) {
+                    // Track the error
+                    trackError();
+                    
                     console.error('Resend error:', err);
                     const msgDiv = document.getElementById('verify-messages');
                     let errorMessage = 'Failed to resend verification email. ';
