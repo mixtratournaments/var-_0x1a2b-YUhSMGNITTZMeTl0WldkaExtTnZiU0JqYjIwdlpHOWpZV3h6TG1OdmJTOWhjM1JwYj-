@@ -1469,6 +1469,50 @@
                 console.error('Error cleaning up pending username and email:', error);
             }
         }
+
+        // Enhanced cleanup function that also handles expired sessions
+        async function cleanupExpiredPendingSessions() {
+            try {
+                const pendingData = localStorage.getItem('pendingUserData');
+                if (pendingData) {
+                    const data = JSON.parse(pendingData);
+                    const now = Date.now();
+                    const sessionAge = now - (data.createdAt || 0);
+                    const maxSessionAge = 2 * 60 * 60 * 1000; // 2 hours
+                    
+                    // If session is older than 2 hours, clean it up
+                    if (sessionAge > maxSessionAge) {
+                        console.log('Cleaning up expired pending session for:', data.email);
+                        await cleanupPendingUsername();
+                    }
+                }
+            } catch (error) {
+                console.error('Error cleaning up expired pending sessions:', error);
+            }
+        }
+
+        // Function to handle abandoned unverified accounts
+        async function handleAbandonedUnverifiedAccount(email, password) {
+            try {
+                const { auth } = await import('./firebase.js');
+                const { signInWithEmailAndPassword, deleteUser } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                
+                // Try to sign in to the existing account
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                
+                // If the account exists but is not verified, delete it to allow re-registration
+                if (!userCredential.user.emailVerified) {
+                    console.log('Deleting abandoned unverified account for:', email);
+                    await deleteUser(userCredential.user);
+                    return true; // Successfully cleaned up
+                }
+                
+                return false; // Account is verified, cannot clean up
+            } catch (error) {
+                console.warn('Could not handle abandoned account:', error);
+                return false;
+            }
+        }
         
         function setupUsernameCleanup() {
             // Clear any existing timeout
@@ -1486,11 +1530,39 @@
             window.addEventListener('unload', handleUnload);
             window.addEventListener('pagehide', handleUnload);
             
-            // Also set a timeout to clean up after 30 minutes of inactivity
+            // Also set a timeout to clean up after 15 minutes of inactivity (reduced from 30)
             pendingUsernameCleanupTimeout = setTimeout(() => {
                 console.log('Cleaning up pending username due to timeout');
                 cleanupPendingUsername().catch(console.error);
-            }, 30 * 60 * 1000); // 30 minutes
+            }, 15 * 60 * 1000); // 15 minutes
+            
+            // Set up periodic cleanup check for expired sessions
+            const cleanupInterval = setInterval(() => {
+                cleanupExpiredPendingSessions().catch(console.error);
+            }, 5 * 60 * 1000); // Check every 5 minutes
+            
+            // Store interval ID for cleanup
+            window.pendingSessionCleanupInterval = cleanupInterval;
+            
+            // Also set up cleanup when page becomes hidden (user switches tabs, minimizes browser, etc.)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    // Page is hidden, check if we should clean up
+                    const pendingData = localStorage.getItem('pendingUserData');
+                    if (pendingData) {
+                        const data = JSON.parse(pendingData);
+                        const now = Date.now();
+                        const sessionAge = now - (data.createdAt || 0);
+                        const maxSessionAge = 2 * 60 * 60 * 1000; // 2 hours
+                        
+                        // If session is older than 2 hours and page is hidden, clean it up
+                        if (sessionAge > maxSessionAge) {
+                            console.log('Cleaning up expired session due to page visibility change');
+                            cleanupPendingUsername().catch(console.error);
+                        }
+                    }
+                }
+            });
         }
         
         function clearUsernameCleanup() {
@@ -1498,6 +1570,12 @@
             if (pendingUsernameCleanupTimeout) {
                 clearTimeout(pendingUsernameCleanupTimeout);
                 pendingUsernameCleanupTimeout = null;
+            }
+            
+            // Clear the periodic cleanup interval
+            if (window.pendingSessionCleanupInterval) {
+                clearInterval(window.pendingSessionCleanupInterval);
+                window.pendingSessionCleanupInterval = null;
             }
             
             // Clear pending data from localStorage for security
@@ -1549,6 +1627,8 @@
             document.getElementById('to-signup').onclick = () => {
                 // Clear any existing cleanup when switching to signup
                 clearUsernameCleanup();
+                // Also clean up any pending data since user is switching away from verification
+                cleanupPendingUsername().catch(console.error);
                 renderSignUp();
             };
             document.getElementById('forgot-password').onclick = async () => {
@@ -1693,6 +1773,8 @@
             document.getElementById('to-signin').onclick = () => {
                 // Clear username cleanup when user abandons verification
                 clearUsernameCleanup();
+                // Also clean up the pending data since user is abandoning
+                cleanupPendingUsername().catch(console.error);
                 renderSignIn();
             };
             document.getElementById('signup-form').onsubmit = async (e) => {
@@ -1738,12 +1820,21 @@
                     const pendingData = localStorage.getItem('pendingUserData');
                     if (pendingData) {
                         const data = JSON.parse(pendingData);
-                        if (data.username === username) {
+                        const now = Date.now();
+                        const sessionAge = now - (data.createdAt || 0);
+                        const maxSessionAge = 2 * 60 * 60 * 1000; // 2 hours
+                        
+                        // Only consider it reserved if the session is still valid (less than 2 hours old)
+                        if (data.username === username && sessionAge < maxSessionAge) {
                             // Track pending username error
                             trackError('Sign up error: Username reserved for pending account');
                             
-                            renderSignUp('That username is already reserved for a pending account.', { username, email, password, password2 }, { username: true });
+                            renderSignUp('That username is already reserved for a pending account. Please wait a few minutes or try a different username.', { username, email, password, password2 }, { username: true });
                             return;
+                        } else if (data.username === username && sessionAge >= maxSessionAge) {
+                            // Session is expired, clean it up and allow the username
+                            console.log('Cleaning up expired pending session for username:', username);
+                            await cleanupPendingUsername();
                         }
                     }
                 } catch (err) {
@@ -1781,7 +1872,37 @@
                     if (err.code) {
                         switch (err.code) {
                             case 'auth/email-already-in-use':
-                                errorMessage = 'An account with this email already exists. Please sign in instead.';
+                                // Try to handle abandoned unverified account
+                                const cleanedUp = await handleAbandonedUnverifiedAccount(email, password);
+                                if (cleanedUp) {
+                                    // Successfully cleaned up, try registration again
+                                    try {
+                                        const module = await import('./auth.js');
+                                        const { auth } = await import('./firebase.js');
+                                        const { sendEmailVerification } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                                        const user = await module.register(email, password, username);
+                                        
+                                        // Send verification email with action code settings
+                                        if (auth.currentUser && !auth.currentUser.emailVerified) {
+                                            await sendEmailVerification(auth.currentUser, {
+                                                url: window.location.origin + '/index.html',
+                                                handleCodeInApp: true
+                                            });
+                                            lastSignupData = { email, username, password };
+                                            
+                                            // Set up username cleanup in case user abandons registration
+                                            setupUsernameCleanup();
+                                            
+                                            renderVerification('', 'Verification email sent! Please check your inbox and click the link within 1 hour.');
+                                            return; // Exit early since we successfully registered
+                                        }
+                                    } catch (retryError) {
+                                        console.error('Retry registration failed:', retryError);
+                                        errorMessage = 'Registration failed after cleanup. Please try again.';
+                                    }
+                                } else {
+                                    errorMessage = 'An account with this email already exists. Please sign in instead.';
+                                }
                                 break;
                             case 'auth/invalid-email':
                                 errorMessage = 'Invalid email format. Please use your LWSD email address.';
@@ -1968,6 +2089,17 @@
             else setTheme('light');
         })();
 
+        // Check for expired pending sessions on page load
+        cleanupExpiredPendingSessions().catch(console.error);
+        
+        // Also check for expired sessions when the page becomes visible again
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                // Page is visible again, check for expired sessions
+                cleanupExpiredPendingSessions().catch(console.error);
+            }
+        });
+        
         handleEmailVerification();
         
         renderSignIn();
