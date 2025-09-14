@@ -1524,7 +1524,7 @@
                         
                             if (actionCode && mode === 'verifyEmail') {
                               try {
-                                // Do not redeem yet — scanners will only “load” the page
+                                // Do not redeem yet — scanners will only "load" the page
                                 await checkActionCode(auth, actionCode);
                         
                                 // Minimal inline UI so user can explicitly redeem
@@ -1550,7 +1550,7 @@
                                     status.textContent = 'Verifying…';
                                     await applyActionCode(auth, actionCode);
                         
-                                    // Clean URL so refresh doesn’t retry
+                                    // Clean URL so refresh doesn't retry
                                     window.history.replaceState({}, document.title, window.location.pathname);
                         
                                     status.innerHTML = '✅ Your email has been verified. Return to your other tab to continue.';
@@ -2404,7 +2404,7 @@
                         console.log('Sending email verification...');
                         try {
                             await sendEmailVerification(auth.currentUser, {
-                              url: 'https://hubblesetup.github.io/verification/',
+                              url: window.location.origin + '/verification/',
                               handleCodeInApp: true
                             });
 
@@ -2464,7 +2464,7 @@
                                         // Send verification email with action code settings
                                         if (auth.currentUser && !auth.currentUser.emailVerified) {
                                             await sendEmailVerification(auth.currentUser, {
-                                              url: 'https://hubblesetup.github.io/verification/',
+                                              url: window.location.origin + '/verification/',
                                               handleCodeInApp: true
                                             });
 
@@ -2689,7 +2689,7 @@
                     // Resend verification email with action code settings
                     console.log('Resending email verification for:', auth.currentUser.email);
                     await sendEmailVerification(auth.currentUser, {
-                      url: 'https://hubblesetup.github.io/verification/',
+                      url: window.location.origin + '/verification/',
                       handleCodeInApp: true
                     });
 
