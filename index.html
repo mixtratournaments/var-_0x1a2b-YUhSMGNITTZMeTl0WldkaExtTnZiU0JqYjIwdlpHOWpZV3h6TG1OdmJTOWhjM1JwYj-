@@ -2620,13 +2620,29 @@
                     const userDoc = await getDocs(query(collection(db, "users"), where("email", "==", auth.currentUser.email)));
                     
                     if (!userDoc.empty) {
-                        // User exists in Firestore, which means they've completed registration via email link
-                        clearUsernameCleanup();
+                        // User exists in Firestore - check if we need to add username
+                        const userData = userDoc.docs[0].data();
                         
+                        if (!userData.username && lastSignupData.username) {
+                            // User document exists but missing username - update it
+                            console.log('Updating existing user document with username...');
+                            
+                            const { updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                            const userDocRef = doc(db, "users", userDoc.docs[0].id);
+                            
+                            await updateDoc(userDocRef, {
+                                username: lastSignupData.username,
+                                uid: auth.currentUser.uid,
+                                registrationCompleted: true
+                            });
+                            
+                            console.log('User document updated with username successfully');
+                        }
+                        
+                        clearUsernameCleanup();
                         window.location.href = './main.html';
                     } else {
-                        // SECURITY FIX: Do NOT allow manual completion of registration
-                        // Only allow completion through proper email verification flow
+                        // No user document found
                         const msgDiv = document.getElementById('verify-messages');
                         msgDiv.innerHTML = `${showError('Please check your email and click the verification link to complete your registration.')}`;
                     }
