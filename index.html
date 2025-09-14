@@ -451,6 +451,59 @@
             background: #5a6268;
             transform: translateY(-1px);
         }
+        
+        .popup-content .form-group {
+            margin: 1rem 0;
+        }
+        
+        .popup-content .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .popup-content .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 156, 252, 0.2);
+        }
+        
+        .popup-content .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .popup-content .btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .popup-content .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .popup-content .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .popup-content .btn:not(.btn-secondary) {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .popup-content .btn:not(.btn-secondary):hover {
+            background: #0088e5;
+        }
         .info {
             color: #0077b6;
             font-size: 0.95rem;
@@ -1706,6 +1759,99 @@
         let lastSignupData = {};
         let pendingUsernameCleanupTimeout = null;
 
+        // Handle incomplete verification (user verified email but no Firestore doc)
+        async function handleIncompleteVerification(email, password) {
+            // Check if username is stored in cookies
+            const storedUsername = getCookie('pendingUsername');
+            
+            if (storedUsername) {
+                // Username found, proceed to verification
+                lastSignupData = { email, username: storedUsername, password };
+                renderVerification('', 'Please complete your email verification to access your account.');
+            } else {
+                // No username found, show popup to get username
+                showUsernamePopup(email, password);
+            }
+        }
+
+        // Show popup to get username for incomplete verification
+        function showUsernamePopup(email, password) {
+            const popup = document.createElement('div');
+            popup.className = 'popup-overlay';
+            popup.innerHTML = `
+                <div class='popup-content'>
+                    <h3>Complete Your Registration</h3>
+                    <p>You need to enter a username to complete your email verification.</p>
+                    <div class='form-group'>
+                        <input type='text' id='popup-username' placeholder='Enter username' maxlength='75' required>
+                        <div class='error-message' id='popup-username-error'></div>
+                    </div>
+                    <div class='popup-buttons'>
+                        <button type='button' class='btn btn-secondary' id='popup-cancel'>Cancel</button>
+                        <button type='button' class='btn' id='popup-continue'>Continue</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(popup);
+            
+            // Handle popup events
+            document.getElementById('popup-cancel').onclick = () => {
+                document.body.removeChild(popup);
+            };
+            
+            document.getElementById('popup-continue').onclick = async () => {
+                const username = document.getElementById('popup-username').value.trim();
+                const errorDiv = document.getElementById('popup-username-error');
+                
+                if (!validateUsername(username)) {
+                    errorDiv.textContent = 'Username must be 3-75 characters.';
+                    return;
+                }
+                
+                // Check if username is already taken
+                try {
+                    const { db } = await import('./firebase.js');
+                    const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                    
+                    const q = query(collection(db, 'users'), where('username', '==', username));
+                    const snap = await getDocs(q);
+                    if (!snap.empty) {
+                        errorDiv.textContent = 'That username is already taken.';
+                        return;
+                    }
+                    
+                    // Username is available, store it and proceed
+                    setCookie('pendingUsername', username, 1); // Store for 1 day
+                    lastSignupData = { email, username, password };
+                    document.body.removeChild(popup);
+                    renderVerification('', 'Please complete your email verification to access your account.');
+                    
+                } catch (error) {
+                    console.error('Error checking username:', error);
+                    errorDiv.textContent = 'Error checking username. Please try again.';
+                }
+            };
+        }
+
+        // Cookie helper functions
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + '=';
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
         async function cleanupPendingUsername(showTimeoutUI = false) {
             try {
                 const pendingData = localStorage.getItem('pendingUserData');
@@ -2196,6 +2342,10 @@
                             }
                         }
                         errorMessage = 'Please verify your email before signing in. Check your inbox for a verification link.';
+                    } else if (err.message === 'INCOMPLETE_VERIFICATION') {
+                        // User has verified email but hasn't completed registration
+                        await handleIncompleteVerification(email, password);
+                        return;
                     } else if (err.message === 'ACCOUNT_NOT_COMPLETED') {
                         errorMessage = 'Account setup incomplete. Please complete the registration process.';
                     } else if (err.code) {
@@ -2443,60 +2593,80 @@
                     if (err.code) {
                         switch (err.code) {
                             case 'auth/email-already-in-use':
-                                // Try to handle abandoned unverified account
-                                const cleanupResult = await cleanupAbandonedAccount(email, password);
-                                if (cleanupResult.success) {
-                                    // Successfully cleaned up, try registration again
-                                    try {
-                                        const module = await import('./auth.js');
-                                        const { auth } = await import('./firebase.js');
-                                        const { sendEmailVerification } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
-                                        const user = await module.register(email, password, username);
-                                        
-                                        // Send verification email with action code settings
-                                        if (auth.currentUser && !auth.currentUser.emailVerified) {
-                                            await sendEmailVerification(auth.currentUser, {
-                                              url: 'https://hubblesetup.github.io/verification/',
-                                              handleCodeInApp: true
-                                            });
-
-                                            lastSignupData = { email, username, password };
-                                            
-                                            // Set up username cleanup in case user abandons registration
-                                            setupUsernameCleanup();
-                                            
-                                            renderVerification('', 'Verification email sent! Please check your inbox and click the link within 5 minutes.');
-                                            return; // Exit early since we successfully registered
-                                        }
-                                    } catch (retryError) {
-                                        console.error('Retry registration failed:', retryError);
-                                        // Track the retry error
-                                        trackError('Retry registration error: ' + (retryError.message || retryError.code || 'Unknown error'));
-                                        
-                                        // Provide more specific error message based on retry failure
-                                        if (retryError.code === 'auth/email-already-in-use') {
-                                            errorMessage = 'Account cleanup was attempted but the email is still in use. Please try signing in instead.';
-                                            invalidFields = { email: true };
-                                        } else {
-                                            errorMessage = 'Registration failed. Please try again with a different email or contact support if the issue persists.';
-                                            invalidFields = { email: true, password: true };
-                                        }
-                                    }
-                                } else {
-                                    // Cleanup failed, provide helpful message
-                                    if (cleanupResult.message.includes('verified')) {
-                                        errorMessage = 'An account with this email already exists and is verified. Please sign in instead.';
-                                        invalidFields = { email: true };
-                                    } else if (cleanupResult.message.includes('Password is incorrect')) {
-                                        errorMessage = 'An account with this email already exists but the password is different. Please sign in instead or use a different email.';
-                                        invalidFields = { email: true };
-                                    } else if (cleanupResult.message.includes('Too many attempts')) {
-                                        errorMessage = 'Too many registration attempts. Please wait a few minutes before trying again.';
-                                        invalidFields = { email: true };
+                                // Check if this is an existing verified account
+                                try {
+                                    const { auth } = await import('./firebase.js');
+                                    const { signInWithEmailAndPassword, signOut } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                                    
+                                    // Try to sign in to check if account is verified
+                                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                                    await signOut(auth);
+                                    
+                                    if (userCredential.user.emailVerified) {
+                                        // Account exists and is verified - tell user to sign in
+                                        errorMessage = 'An account with this email already exists. Please sign in to access your account.';
+                                        break;
                                     } else {
-                                        errorMessage = 'An account with this email already exists. Please sign in instead, or try again in a few minutes if you recently started registration.';
-                                        invalidFields = { email: true };
+                                        // Account exists but not verified - try cleanup
+                                        const cleanupResult = await cleanupAbandonedAccount(email, password);
+                                        if (cleanupResult.success) {
+                                            // Successfully cleaned up, try registration again
+                                            try {
+                                                const module = await import('./auth.js');
+                                                const { auth } = await import('./firebase.js');
+                                                const { sendEmailVerification } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                                                const user = await module.register(email, password, username);
+                                                
+                                                // Send verification email with action code settings
+                                                if (auth.currentUser && !auth.currentUser.emailVerified) {
+                                                    await sendEmailVerification(auth.currentUser, {
+                                                      url: 'https://hubblesetup.github.io/verification/',
+                                                      handleCodeInApp: true
+                                                    });
+
+                                                    lastSignupData = { email, username, password };
+                                                    
+                                                    // Set up username cleanup in case user abandons registration
+                                                    setupUsernameCleanup();
+                                                    
+                                                    renderVerification('', 'Verification email sent! Please check your inbox and click the link within 5 minutes.');
+                                                    return; // Exit early since we successfully registered
+                                                }
+                                            } catch (retryError) {
+                                                console.error('Retry registration failed:', retryError);
+                                                // Track the retry error
+                                                trackError('Retry registration error: ' + (retryError.message || retryError.code || 'Unknown error'));
+                                                
+                                                // Provide more specific error message based on retry failure
+                                                if (retryError.code === 'auth/email-already-in-use') {
+                                                    errorMessage = 'Account cleanup was attempted but the email is still in use. Please try signing in instead.';
+                                                    invalidFields = { email: true };
+                                                } else {
+                                                    errorMessage = 'Registration failed. Please try again with a different email or contact support if the issue persists.';
+                                                    invalidFields = { email: true, password: true };
+                                                }
+                                            }
+                                        } else {
+                                            // Cleanup failed, provide helpful message
+                                            if (cleanupResult.message.includes('verified')) {
+                                                errorMessage = 'An account with this email already exists and is verified. Please sign in instead.';
+                                                invalidFields = { email: true };
+                                            } else if (cleanupResult.message.includes('Password is incorrect')) {
+                                                errorMessage = 'An account with this email already exists but the password is different. Please sign in instead or use a different email.';
+                                                invalidFields = { email: true };
+                                            } else if (cleanupResult.message.includes('Too many attempts')) {
+                                                errorMessage = 'Too many registration attempts. Please wait a few minutes before trying again.';
+                                                invalidFields = { email: true };
+                                            } else {
+                                                errorMessage = 'An account with this email already exists. Please sign in instead, or try again in a few minutes if you recently started registration.';
+                                                invalidFields = { email: true };
+                                            }
+                                        }
                                     }
+                                } catch (error) {
+                                    console.error('Error during account cleanup check:', error);
+                                    errorMessage = 'An account with this email already exists. Please sign in instead.';
+                                    invalidFields = { email: true };
                                 }
                                 break;
                             case 'auth/invalid-email':
