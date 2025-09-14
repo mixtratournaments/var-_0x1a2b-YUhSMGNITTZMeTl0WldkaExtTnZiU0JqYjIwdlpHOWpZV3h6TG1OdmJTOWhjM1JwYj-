@@ -29,6 +29,7 @@
             justify-content: flex-start;
             overflow-x: hidden;
             position: relative;
+            transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
         body[data-theme="light"] {
             background: var(--background-light);
@@ -62,6 +63,7 @@
             z-index: 10;
             box-shadow: 0 2px 12px rgba(0,0,0,0.06);
             position: relative;
+            transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
         body[data-theme="dark"] .topbar {
             background: #20263a;
@@ -598,6 +600,10 @@
             backdrop-filter: blur(5px);
         }
         
+        body[data-theme="dark"] .help-popup-overlay {
+            backdrop-filter: blur(2px);
+        }
+        
         .help-popup {
             background: var(--auth-bg-light);
             color: var(--text-light);
@@ -720,6 +726,10 @@
             align-items: center;
             z-index: 10002;
             backdrop-filter: blur(5px);
+        }
+        
+        body[data-theme="dark"] .ticket-popup-overlay {
+            backdrop-filter: blur(2px);
         }
         
         .ticket-popup {
@@ -915,6 +925,10 @@
             backdrop-filter: blur(5px);
         }
         
+        body[data-theme="dark"] .faq-popup-overlay {
+            backdrop-filter: blur(2px);
+        }
+        
         .faq-popup {
             background: var(--auth-bg-light);
             color: var(--text-light);
@@ -1031,7 +1045,7 @@
             animation: none;
         }
         
-        .popup-title {
+        .popup-overlay .popup-title {
             font-size: 28px;
             font-weight: 900;
             margin-bottom: 20px;
@@ -1045,7 +1059,7 @@
             to { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 20px #ff6b6b, 0 0 30px #ff6b6b; }
         }
         
-        .popup-message {
+        .popup-overlay .popup-message {
             font-size: 18px;
             line-height: 1.6;
             margin-bottom: 30px;
@@ -2263,8 +2277,15 @@
                 try {
                     const { auth } = await import('./firebase.js');
                     const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
-                    await sendPasswordResetEmail(auth, email);
-                    await showCustomAlert('Email Sent', 'Password reset email sent. Check your inbox.');
+                    
+                    // Configure the password reset email to use our verification site
+                    const actionCodeSettings = {
+                        url: window.location.origin + '/verification/',
+                        handleCodeInApp: true
+                    };
+                    
+                    await sendPasswordResetEmail(auth, email, actionCodeSettings);
+                    await showCustomAlert('Email Sent', 'Password reset email sent. Check your inbox and click the link to reset your password.');
                 } catch (err) {
                     // Track the error
                     trackError('Password reset error: ' + (err.message || err.code || 'Unknown error'));
@@ -2546,7 +2567,7 @@
                         console.log('Sending email verification...');
                         try {
                             await sendEmailVerification(auth.currentUser, {
-                              url: 'https://hubblesetup.github.io/verification/',
+                              url: window.location.origin + '/verification/',
                               handleCodeInApp: true
                             });
 
@@ -2620,7 +2641,7 @@
                                                 // Send verification email with action code settings
                                                 if (auth.currentUser && !auth.currentUser.emailVerified) {
                                                     await sendEmailVerification(auth.currentUser, {
-                                                      url: 'https://hubblesetup.github.io/verification/',
+                                                      url: window.location.origin + '/verification/',
                                                       handleCodeInApp: true
                                                     });
 
@@ -2864,7 +2885,7 @@
                     // Resend verification email with action code settings
                     console.log('Resending email verification for:', auth.currentUser.email);
                     await sendEmailVerification(auth.currentUser, {
-                      url: 'https://hubblesetup.github.io/verification/',
+                      url: window.location.origin + '/verification/',
                       handleCodeInApp: true
                     });
 
