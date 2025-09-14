@@ -1511,19 +1511,70 @@
                         
                         console.log('Processing email verification with action code...');
                         
-                        // Verify the action code is valid
-                        await checkActionCode(auth, actionCode);
-                        console.log('Action code is valid');
+                        async function handleEmailVerification() {
+                          try {
+                            const { auth } = await import('./firebase.js');
+                            const { checkActionCode, applyActionCode } =
+                              await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
                         
-                        // Apply the action code to verify the email
-                        await applyActionCode(auth, actionCode);
-                        console.log('Action code applied successfully');
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const actionCode = urlParams.get('oobCode');
+                            const mode = urlParams.get('mode');
                         
-                        // Wait a moment for the email verification to propagate
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                            console.log('Email verification check:', { actionCode: !!actionCode, mode });
                         
-                        // Reload the user to get updated verification status
-                        await auth.currentUser.reload();
+                            if (actionCode && mode === 'verifyEmail') {
+                              try {
+                                // Do not redeem yet — scanners will only “load” the page
+                                await checkActionCode(auth, actionCode);
+                        
+                                // Minimal inline UI so user can explicitly redeem
+                                const host = document.getElementById('auth-container') || document.body;
+                                const panel = document.createElement('div');
+                                panel.style.marginTop = '1rem';
+                                panel.innerHTML = `
+                                  <div class="verification-container">
+                                    <h1>Verify your email</h1>
+                                    <div class="verification-message" id="verify-status">
+                                      Code looks valid. Click <b>Verify</b> to finish.
+                                    </div>
+                                    <button class="btn verification-btn" id="verify-now" type="button">Verify</button>
+                                  </div>
+                                `;
+                                host.prepend(panel);
+                        
+                                const status = panel.querySelector('#verify-status');
+                                const btn = panel.querySelector('#verify-now');
+                                btn.onclick = async () => {
+                                  try {
+                                    btn.disabled = true;
+                                    status.textContent = 'Verifying…';
+                                    await applyActionCode(auth, actionCode);
+                        
+                                    // Clean URL so refresh doesn’t retry
+                                    window.history.replaceState({}, document.title, window.location.pathname);
+                        
+                                    status.innerHTML = '✅ Your email has been verified. Return to your other tab to continue.';
+                                  } catch (e) {
+                                    btn.disabled = false;
+                                    status.textContent = `Failed to verify: ${e.code || e.message}`;
+                                  }
+                                };
+                              } catch (error) {
+                                // Invalid/expired/used link
+                                window.history.replaceState({}, document.title, window.location.pathname);
+                                const msg = (error.code === 'auth/expired-action-code' || error.code === 'auth/invalid-action-code')
+                                  ? 'This link is invalid, expired, or already used. Please resend a new email.'
+                                  : (error.code || error.message || 'Could not verify email.');
+                                const host = document.getElementById('auth-container') || document.body;
+                                host.insertAdjacentHTML('afterbegin', `<div class="error" style="margin:1rem 0">${msg}</div>`);
+                              }
+                            }
+                          } catch (err) {
+                            console.error('Error handling email verification:', err);
+                          }
+                        }
+
                         console.log('User reloaded, email verified:', auth.currentUser.emailVerified);
                         
                         // Complete registration in Firestore
@@ -2353,9 +2404,10 @@
                         console.log('Sending email verification...');
                         try {
                             await sendEmailVerification(auth.currentUser, {
-                                url: 'https://hubblesetup.github.io/verification/',
-                                handleCodeInApp: true
+                              url: 'https://hubblesetup.github.io/verification/',
+                              handleCodeInApp: true
                             });
+
                             console.log('Email verification sent successfully');
                             lastSignupData = { email, username, password };
                             
@@ -2412,9 +2464,10 @@
                                         // Send verification email with action code settings
                                         if (auth.currentUser && !auth.currentUser.emailVerified) {
                                             await sendEmailVerification(auth.currentUser, {
-                                                url: 'https://hubblesetup.github.io/verification/',
-                                                handleCodeInApp: true
+                                              url: 'https://hubblesetup.github.io/verification/',
+                                              handleCodeInApp: true
                                             });
+
                                             lastSignupData = { email, username, password };
                                             
                                             // Set up username cleanup in case user abandons registration
@@ -2551,9 +2604,6 @@
                 </div>
             `;
             document.getElementById('verify-btn').onclick = async () => {
-                // SECURITY FIX: This button should only check if verification was completed via email link
-                // It should NOT allow manual completion of registration without proper email verification
-                
                 try {
                     // Clear the verification timeout since user is actively trying to verify
                     if (window.verificationTimeoutId) {
@@ -2639,9 +2689,10 @@
                     // Resend verification email with action code settings
                     console.log('Resending email verification for:', auth.currentUser.email);
                     await sendEmailVerification(auth.currentUser, {
-                        url: 'https://hubblesetup.github.io/verification/',
-                        handleCodeInApp: true
+                      url: 'https://hubblesetup.github.io/verification/',
+                      handleCodeInApp: true
                     });
+
                     console.log('Email verification resent successfully');
                     
                     // Show success message
