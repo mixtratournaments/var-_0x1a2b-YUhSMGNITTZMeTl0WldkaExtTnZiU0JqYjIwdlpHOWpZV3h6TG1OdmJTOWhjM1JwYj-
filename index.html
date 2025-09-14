@@ -2611,22 +2611,25 @@
                     await auth.currentUser.reload();
                     
                     // Check if user exists in Firestore (completed registration)
-                    const { getFirestore, doc, getDoc, updateDoc } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                    const { getFirestore, collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
                     const { app } = await import('./firebase.js');
                     const db = getFirestore(app);
-                    const userDocRef = doc(db, "users", auth.currentUser.uid);
-                    const userDoc = await getDoc(userDocRef);
+                    const userDoc = await getDocs(query(collection(db, "users"), where("email", "==", auth.currentUser.email)));
                     
-                    if (userDoc.exists()) {
-                        // User document exists - check if we need to add username
-                        const userData = userDoc.data();
+                    if (!userDoc.empty) {
+                        // User exists in Firestore - check if we need to add username
+                        const userData = userDoc.docs[0].data();
                         
                         if (!userData.username && lastSignupData.username) {
                             // User document exists but missing username - update it
                             console.log('Updating existing user document with username...');
                             
+                            const { updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                            const userDocRef = doc(db, "users", userDoc.docs[0].id);
+                            
                             await updateDoc(userDocRef, {
                                 username: lastSignupData.username,
+                                uid: auth.currentUser.uid,
                                 registrationCompleted: true
                             });
                             
