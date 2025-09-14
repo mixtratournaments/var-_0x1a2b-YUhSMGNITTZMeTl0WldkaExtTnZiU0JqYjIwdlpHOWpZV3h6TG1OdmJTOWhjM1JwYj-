@@ -2184,7 +2184,8 @@
                 try {
                     const module = await import('./auth.js');
                     const user = await module.login(email, password);
-                    window.location.href = 'main.html';
+                    // Don't redirect here - let onAuthStateChanged handle it
+                    // This prevents double redirection that causes tab reload
                 } catch (err) {
                     // Track the error
                     trackError('Sign in error: ' + (err.message || err.code || 'Unknown error'));
