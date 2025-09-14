@@ -53,6 +53,10 @@ export async function register(email, password, username) {
   return userCredential.user;
 }
 
+// SECURITY NOTE: This function should ONLY be called after proper email verification
+// has been completed via the email verification link (action code). It should NOT
+// be called manually or through the "I've Verified My Email" button without
+// the user having clicked a valid email verification link.
 export async function completeRegistration() {
   const pendingData = localStorage.getItem('pendingUserData');
   if (!pendingData) {

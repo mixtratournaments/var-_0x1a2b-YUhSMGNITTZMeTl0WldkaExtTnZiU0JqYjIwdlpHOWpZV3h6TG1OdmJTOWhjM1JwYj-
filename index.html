@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hubble - Chat & Social</title>
+    <title>Hubble | Alpha</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
         :root {
@@ -299,6 +299,44 @@
         
         body[data-theme="dark"] .verification-steps {
             background: rgba(0, 156, 252, 0.1);
+        }
+        
+        /* Verification Timeout Styles */
+        .verification-timeout-container {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        .verification-timeout-container h1 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .verification-timeout-message {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
+        
+        body[data-theme="dark"] .verification-timeout-message {
+            color: var(--text-dark);
+        }
+        
+        .verification-timeout-info {
+            background: rgba(255, 193, 7, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .verification-timeout-btn {
+            background: var(--primary) !important;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            padding: 0.9rem 2rem;
         }
         
         /* Custom Popup Styles */
@@ -1079,9 +1117,6 @@
                 <button class="help-popup-btn create" onclick="showTicketPopup()">Create</button>
                 <button class="help-popup-btn faq" onclick="showFAQPopup()">FAQ</button>
             </div>
-            <div style="text-align: center; margin: 1rem 0;">
-                <button class="help-popup-close" onclick="testErrorTracking()" style="background: #ff6b6b; font-size: 0.9rem; padding: 0.5rem 1rem;">Test Error Tracking</button>
-            </div>
             <button class="help-popup-close" onclick="closeHelpPopup()">Close</button>
         </div>
     </div>
@@ -1467,20 +1502,34 @@
                 const actionCode = urlParams.get('oobCode');
                 const mode = urlParams.get('mode');
                 
+                console.log('Email verification check:', { actionCode: !!actionCode, mode });
+                
                 if (actionCode && mode === 'verifyEmail') {
                     try {
                         // Set flag to prevent auth state listener from interfering
                         isProcessingVerification = true;
                         
+                        console.log('Processing email verification with action code...');
+                        
                         // Verify the action code is valid
                         await checkActionCode(auth, actionCode);
+                        console.log('Action code is valid');
                         
                         // Apply the action code to verify the email
                         await applyActionCode(auth, actionCode);
+                        console.log('Action code applied successfully');
+                        
+                        // Wait a moment for the email verification to propagate
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        // Reload the user to get updated verification status
+                        await auth.currentUser.reload();
+                        console.log('User reloaded, email verified:', auth.currentUser.emailVerified);
                         
                         // Complete registration in Firestore
                         const module = await import('./auth.js');
                         await module.completeRegistration();
+                        console.log('Registration completed in Firestore');
                         
                         clearUsernameCleanup();
                         
@@ -1496,6 +1545,12 @@
                         
                     } catch (error) {
                         console.error('Email verification error:', error);
+                        console.error('Error details:', {
+                            code: error.code,
+                            message: error.message,
+                            stack: error.stack
+                        });
+                        
                         // Track the error
                         trackError('Email verification error: ' + (error.message || error.code || 'Unknown error'));
                         
@@ -1505,15 +1560,18 @@
                         let showResendOption = false;
                         
                         if (error.code === 'auth/expired-action-code') {
-                            errorMessage += 'The verification link has expired.';
+                            errorMessage += 'The verification link has expired. Please request a new one.';
                             showResendOption = true;
                         } else if (error.code === 'auth/invalid-action-code') {
-                            errorMessage += 'The verification link is invalid or has already been used.';
+                            errorMessage += 'The verification link is invalid or has already been used. Please request a new one.';
                             showResendOption = true;
                         } else if (error.code === 'auth/user-disabled') {
                             errorMessage += 'This account has been disabled.';
+                        } else if (error.code === 'auth/network-request-failed') {
+                            errorMessage += 'Network error. Please check your internet connection and try again.';
+                            showResendOption = true;
                         } else {
-                            errorMessage += 'Please try again or request a new verification email.';
+                            errorMessage += `Error: ${error.message || error.code || 'Unknown error'}. Please try requesting a new verification email.`;
                             showResendOption = true;
                         }
                         
@@ -1606,7 +1664,7 @@
         let lastSignupData = {};
         let pendingUsernameCleanupTimeout = null;
 
-        async function cleanupPendingUsername() {
+        async function cleanupPendingUsername(showTimeoutUI = false) {
             try {
                 const pendingData = localStorage.getItem('pendingUserData');
                 if (pendingData) {
@@ -1638,6 +1696,35 @@
                     localStorage.removeItem('pendingUserData');
                     console.log('Successfully cleaned up pending registration data');
                     
+                    // Show timeout UI if requested and we're currently showing verification screen
+                    if (showTimeoutUI) {
+                        const authContainer = document.getElementById('auth-container');
+                        if (authContainer && authContainer.innerHTML.includes('verification-container')) {
+                            authContainer.innerHTML = `
+                                <div class="verification-timeout-container">
+                                    <h1>Account Creation Timed Out</h1>
+                                    <div class="verification-timeout-message">
+                                        Your account creation session has timed out after 5 minutes.
+                                    </div>
+                                    
+                                    <div class="verification-timeout-info">
+                                        <p><strong>What happened?</strong></p>
+                                        <p>For security reasons, account creation sessions expire after 5 minutes of inactivity.</p>
+                                        <p><strong>What to do next:</strong></p>
+                                        <p>Click "Back to Login" below to start over with a new registration.</p>
+                                    </div>
+                                    
+                                    <button class="btn verification-timeout-btn" id="back-to-login-btn" type="button">Back to Login</button>
+                                </div>
+                            `;
+                            
+                            // Add event listener for the back to login button
+                            document.getElementById('back-to-login-btn').onclick = () => {
+                                renderSignIn();
+                            };
+                        }
+                    }
+                    
                     // Return success status for better error handling
                     return { success: true, authCleanupSuccess };
                 }
@@ -1655,80 +1742,13 @@
             }
         }
 
-        // Enhanced cleanup function that also handles expired sessions
-        async function cleanupExpiredPendingSessions() {
-            try {
-                const pendingData = localStorage.getItem('pendingUserData');
-                if (pendingData) {
-                    const data = JSON.parse(pendingData);
-                    const now = Date.now();
-                    const sessionAge = now - (data.createdAt || 0);
-                    const maxSessionAge = 2 * 60 * 60 * 1000; // 2 hours
-                    
-                    // If session is older than 2 hours, clean it up
-                    if (sessionAge > maxSessionAge) {
-                        console.log('Cleaning up expired pending session for:', data.email);
-                        const result = await cleanupPendingUsername();
-                        if (result.success) {
-                            console.log('Successfully cleaned up expired session');
-                        } else {
-                            console.warn('Failed to clean up expired session:', result.error);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error cleaning up expired pending sessions:', error);
-            }
-        }
-
-        // Function to initialize cleanup on page load
-        async function initializeCleanup() {
-            try {
-                await cleanupExpiredPendingSessions();
-            } catch (error) {
-                console.error('Error during initialization cleanup:', error);
-            }
-        }
-
-        // Debug function to check pending data status (for testing)
-        function debugPendingData() {
-            const pendingData = localStorage.getItem('pendingUserData');
-            if (pendingData) {
-                const data = JSON.parse(pendingData);
-                const now = Date.now();
-                const sessionAge = now - (data.createdAt || 0);
-                const maxSessionAge = 2 * 60 * 60 * 1000; // 2 hours
-                const isExpired = sessionAge > maxSessionAge;
-                
-                console.log('Pending Data Debug Info:');
-                console.log('- Username:', data.username);
-                console.log('- Email:', data.email);
-                console.log('- Created:', new Date(data.createdAt).toLocaleString());
-                console.log('- Age:', Math.round(sessionAge / 60000), 'minutes');
-                console.log('- Is Expired:', isExpired);
-                console.log('- Time until expiry:', Math.round((maxSessionAge - sessionAge) / 60000), 'minutes');
-                
-                return {
-                    exists: true,
-                    username: data.username,
-                    email: data.email,
-                    isExpired: isExpired,
-                    ageMinutes: Math.round(sessionAge / 60000)
-                };
-            } else {
-                console.log('No pending data found');
-                return { exists: false };
-            }
-        }
-
-        // Make debug function available globally for testing
-        window.debugPendingData = debugPendingData;
-
-        // Function to handle abandoned unverified accounts
-        async function handleAbandonedUnverifiedAccount(email, password) {
+        // Enhanced cleanup function that handles abandoned accounts more aggressively
+        async function cleanupAbandonedAccount(email, password) {
             try {
                 const { auth } = await import('./firebase.js');
                 const { signInWithEmailAndPassword, deleteUser } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                
+                console.log('Attempting to clean up abandoned account for:', email);
                 
                 // Try to sign in to the existing account
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -1756,6 +1776,143 @@
                 }
             }
         }
+
+        // Enhanced cleanup function that also handles expired sessions
+        async function cleanupExpiredPendingSessions() {
+            try {
+                const pendingData = localStorage.getItem('pendingUserData');
+                if (pendingData) {
+                    const data = JSON.parse(pendingData);
+                    const now = Date.now();
+                    const sessionAge = now - (data.createdAt || 0);
+                    const maxSessionAge = 30 * 60 * 1000; // 30 minutes (reduced from 2 hours)
+                    
+                    // If session is older than 30 minutes, clean it up
+                    if (sessionAge > maxSessionAge) {
+                        console.log('Cleaning up expired pending session for:', data.email);
+                        const result = await cleanupPendingUsername();
+                        if (result.success) {
+                            console.log('Successfully cleaned up expired session');
+                        } else {
+                            console.warn('Failed to clean up expired session:', result.error);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error cleaning up expired pending sessions:', error);
+            }
+        }
+
+        // Function to initialize cleanup on page load
+        async function initializeCleanup() {
+            try {
+                await cleanupExpiredPendingSessions();
+                
+                // Also clean up any very old pending data (older than 1 hour)
+                const pendingData = localStorage.getItem('pendingUserData');
+                if (pendingData) {
+                    const data = JSON.parse(pendingData);
+                    const now = Date.now();
+                    const sessionAge = now - (data.createdAt || 0);
+                    const maxAge = 60 * 60 * 1000; // 1 hour
+                    
+                    if (sessionAge > maxAge) {
+                        console.log('Cleaning up very old pending session on page load');
+                        await cleanupPendingUsername();
+                    }
+                }
+            } catch (error) {
+                console.error('Error during initialization cleanup:', error);
+            }
+        }
+
+        // Debug function to check pending data status (for testing)
+        function debugPendingData() {
+            const pendingData = localStorage.getItem('pendingUserData');
+            if (pendingData) {
+                const data = JSON.parse(pendingData);
+                const now = Date.now();
+                const sessionAge = now - (data.createdAt || 0);
+                const maxSessionAge = 30 * 60 * 1000; // 30 minutes
+                const isExpired = sessionAge > maxSessionAge;
+                
+                console.log('Pending Data Debug Info:');
+                console.log('- Username:', data.username);
+                console.log('- Email:', data.email);
+                console.log('- Created:', new Date(data.createdAt).toLocaleString());
+                console.log('- Age:', Math.round(sessionAge / 60000), 'minutes');
+                console.log('- Is Expired:', isExpired);
+                console.log('- Time until expiry:', Math.round((maxSessionAge - sessionAge) / 60000), 'minutes');
+                
+                return {
+                    exists: true,
+                    username: data.username,
+                    email: data.email,
+                    isExpired: isExpired,
+                    ageMinutes: Math.round(sessionAge / 60000)
+                };
+            } else {
+                console.log('No pending data found');
+                return { exists: false };
+            }
+        }
+
+        // Make debug function available globally for testing
+        window.debugPendingData = debugPendingData;
+        
+        // Debug function to test email verification status
+        async function debugEmailVerification() {
+            try {
+                const { auth } = await import('./firebase.js');
+                const { getFirestore, collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                const { app } = await import('./firebase.js');
+                const db = getFirestore(app);
+                
+                console.log('=== Email Verification Debug Info ===');
+                console.log('Current user:', auth.currentUser ? {
+                    uid: auth.currentUser.uid,
+                    email: auth.currentUser.email,
+                    emailVerified: auth.currentUser.emailVerified
+                } : 'No current user');
+                
+                const pendingData = localStorage.getItem('pendingUserData');
+                if (pendingData) {
+                    const data = JSON.parse(pendingData);
+                    console.log('Pending data:', {
+                        email: data.email,
+                        username: data.username,
+                        createdAt: new Date(data.createdAt).toLocaleString()
+                    });
+                    
+                    // Check if user exists in Firestore
+                    const userDoc = await getDocs(query(collection(db, "users"), where("email", "==", data.email)));
+                    console.log('User in Firestore:', !userDoc.empty ? 'EXISTS' : 'NOT FOUND');
+                } else {
+                    console.log('No pending data found');
+                }
+                
+                // Check URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const actionCode = urlParams.get('oobCode');
+                const mode = urlParams.get('mode');
+                console.log('URL parameters:', { actionCode: !!actionCode, mode });
+                
+                console.log('=== End Debug Info ===');
+                
+                return {
+                    currentUser: auth.currentUser,
+                    pendingData: pendingData ? JSON.parse(pendingData) : null,
+                    urlParams: { actionCode: !!actionCode, mode }
+                };
+            } catch (error) {
+                console.error('Debug error:', error);
+                return { error: error.message };
+            }
+        }
+        
+        // Make debug function available globally
+        window.debugEmailVerification = debugEmailVerification;
+
         
         function setupUsernameCleanup() {
             // Clear any existing timeout
@@ -1781,10 +1938,10 @@
             window.addEventListener('unload', handleUnload);
             window.addEventListener('pagehide', handleUnload);
             
-            // Also set a timeout to clean up after 15 minutes of inactivity (reduced from 30)
+            // Also set a timeout to clean up after 5 minutes of inactivity (reduced from 15)
             pendingUsernameCleanupTimeout = setTimeout(() => {
                 console.log('Cleaning up pending username due to timeout');
-                cleanupPendingUsername().catch(error => {
+                cleanupPendingUsername(true).catch(error => {
                     console.error('Cleanup failed on timeout:', error);
                     // Try to at least remove localStorage data
                     try {
@@ -1793,7 +1950,7 @@
                         console.error('Failed to remove pending data on timeout:', localError);
                     }
                 });
-            }, 15 * 60 * 1000); // 15 minutes
+            }, 5 * 60 * 1000); // 5 minutes
             
             // Set up periodic cleanup check for expired sessions
             const cleanupInterval = setInterval(() => {
@@ -1812,9 +1969,9 @@
                         const data = JSON.parse(pendingData);
                         const now = Date.now();
                         const sessionAge = now - (data.createdAt || 0);
-                        const maxSessionAge = 2 * 60 * 60 * 1000; // 2 hours
+                        const maxSessionAge = 30 * 60 * 1000; // 30 minutes
                         
-                        // If session is older than 2 hours and page is hidden, clean it up
+                        // If session is older than 30 minutes and page is hidden, clean it up
                         if (sessionAge > maxSessionAge) {
                             console.log('Cleaning up expired session due to page visibility change');
                             cleanupPendingUsername().catch(error => {
@@ -2138,7 +2295,7 @@
                         const data = JSON.parse(pendingData);
                         const now = Date.now();
                         const sessionAge = now - (data.createdAt || 0);
-                        const maxSessionAge = 2 * 60 * 60 * 1000; // 2 hours
+                        const maxSessionAge = 30 * 60 * 1000; // 30 minutes
                         
                         // If this is the same username, handle it appropriately
                         if (data.username === username) {
@@ -2196,7 +2353,7 @@
                         console.log('Sending email verification...');
                         try {
                             await sendEmailVerification(auth.currentUser, {
-                                url: window.location.origin + '/index.html',
+                                url: 'https://hubblesetup.github.io/verification',
                                 handleCodeInApp: true
                             });
                             console.log('Email verification sent successfully');
@@ -2243,7 +2400,7 @@
                         switch (err.code) {
                             case 'auth/email-already-in-use':
                                 // Try to handle abandoned unverified account
-                                const cleanupResult = await handleAbandonedUnverifiedAccount(email, password);
+                                const cleanupResult = await cleanupAbandonedAccount(email, password);
                                 if (cleanupResult.success) {
                                     // Successfully cleaned up, try registration again
                                     try {
@@ -2255,7 +2412,7 @@
                                         // Send verification email with action code settings
                                         if (auth.currentUser && !auth.currentUser.emailVerified) {
                                             await sendEmailVerification(auth.currentUser, {
-                                                url: window.location.origin + '/index.html',
+                                                url: 'https://hubblesetup.github.io/verification',
                                                 handleCodeInApp: true
                                             });
                                             lastSignupData = { email, username, password };
@@ -2337,6 +2494,16 @@
 
         function renderVerification(errorMsg = '', infoMsg = '') {
             currentScreen = 'verify';
+            
+            // Set up verification timeout (30 minutes)
+            const verificationTimeout = setTimeout(() => {
+                console.log('Verification session timed out, showing timeout screen');
+                renderVerificationTimeout();
+            }, 30 * 60 * 1000); // 30 minutes
+            
+            // Store timeout ID for cleanup
+            window.verificationTimeoutId = verificationTimeout;
+            
             document.getElementById('auth-container').innerHTML = `
                 <div class="verification-container">
                     <h1>Check Your Email</h1>
@@ -2360,7 +2527,7 @@
                         </div>
                         <div class="step">
                             <span class="step-number">2</span>
-                            <span class="step-text">Click the verification link</span>
+                            <span class="step-text">Click the verification link in the email</span>
                         </div>
                         <div class="step">
                             <span class="step-number">3</span>
@@ -2368,7 +2535,7 @@
                         </div>
                         <div class="step">
                             <span class="step-number">4</span>
-                            <span class="step-text">Come back and click "I've Verified My Email"</span>
+                            <span class="step-text">Come back to this page and click "I've Verified My Email" (only works after clicking the email link)</span>
                         </div>
                         <div class="step">
                             <span class="step-number">5</span>
@@ -2384,9 +2551,16 @@
                 </div>
             `;
             document.getElementById('verify-btn').onclick = async () => {
-                // No code validation needed since we're checking email verification status
+                // SECURITY FIX: This button should only check if verification was completed via email link
+                // It should NOT allow manual completion of registration without proper email verification
                 
                 try {
+                    // Clear the verification timeout since user is actively trying to verify
+                    if (window.verificationTimeoutId) {
+                        clearTimeout(window.verificationTimeoutId);
+                        window.verificationTimeoutId = null;
+                    }
+                    
                     const { auth } = await import('./firebase.js');
                     const { signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
                     
@@ -2404,22 +2578,15 @@
                     const userDoc = await getDocs(query(collection(db, "users"), where("email", "==", auth.currentUser.email)));
                     
                     if (!userDoc.empty) {
-                        // User exists in Firestore, which means they've completed registration
-                        clearUsernameCleanup();
-                        
-                        window.location.href = './main.html';
-                    } else if (auth.currentUser.emailVerified) {
-                        // Email is verified but user not in Firestore, complete registration
-                        const module = await import('./auth.js');
-                        await module.completeRegistration();
-                        
+                        // User exists in Firestore, which means they've completed registration via email link
                         clearUsernameCleanup();
                         
                         window.location.href = './main.html';
                     } else {
-                        // Show error - email not verified yet
+                        // SECURITY FIX: Do NOT allow manual completion of registration
+                        // Only allow completion through proper email verification flow
                         const msgDiv = document.getElementById('verify-messages');
-                        msgDiv.innerHTML = `${showError('Email not verified yet. Please check your inbox and click the verification link. If the link expired, click "Resend Email" to get a new one.')}`;
+                        msgDiv.innerHTML = `${showError('Please check your email and click the verification link to complete your registration.')}`;
                     }
                 } catch (err) {
                     // Track the error
@@ -2435,6 +2602,19 @@
             };
             document.getElementById('resend-btn').onclick = async () => {
                 try {
+                    // Reset the verification timeout when user clicks resend
+                    if (window.verificationTimeoutId) {
+                        clearTimeout(window.verificationTimeoutId);
+                    }
+                    
+                    // Set up a new 30-minute timeout
+                    const verificationTimeout = setTimeout(() => {
+                        console.log('Verification session timed out after resend, showing timeout screen');
+                        renderVerificationTimeout();
+                    }, 30 * 60 * 1000); // 30 minutes
+                    
+                    window.verificationTimeoutId = verificationTimeout;
+                    
                     const { auth } = await import('./firebase.js');
                     const { sendEmailVerification, signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
                     
@@ -2459,7 +2639,7 @@
                     // Resend verification email with action code settings
                     console.log('Resending email verification for:', auth.currentUser.email);
                     await sendEmailVerification(auth.currentUser, {
-                        url: window.location.origin + '/index.html',
+                        url: 'https://hubblesetup.github.io/verification',
                         handleCodeInApp: true
                     });
                     console.log('Email verification resent successfully');
@@ -2498,6 +2678,60 @@
             };
         }
 
+        function renderVerificationTimeout() {
+            currentScreen = 'verify-timeout';
+            
+            // Clear any existing timeout
+            if (window.verificationTimeoutId) {
+                clearTimeout(window.verificationTimeoutId);
+                window.verificationTimeoutId = null;
+            }
+            
+            // Clean up pending data since session timed out
+            cleanupPendingUsername().catch(error => {
+                console.error('Cleanup failed on verification timeout:', error);
+                // Try to at least remove localStorage data
+                try {
+                    localStorage.removeItem('pendingUserData');
+                } catch (localError) {
+                    console.error('Failed to remove pending data on timeout:', localError);
+                }
+            });
+            
+            document.getElementById('auth-container').innerHTML = `
+                <div class="verification-timeout-container">
+                    <h1>Session Expired</h1>
+                    <div class="verification-timeout-message">
+                        Your verification session has timed out after 30 minutes.
+                    </div>
+                    
+                    <div class="verification-timeout-info">
+                        <p><strong>What happened?</strong></p>
+                        <p>For security reasons, email verification sessions expire after 30 minutes of inactivity.</p>
+                        <p><strong>What to do next:</strong></p>
+                        <p>Click "Back to Login" below to start over with a new registration.</p>
+                    </div>
+                    
+                    <button class="btn verification-timeout-btn" id="back-to-login-btn" type="button">Back to Login</button>
+                </div>
+            `;
+            
+            document.getElementById('back-to-login-btn').onclick = () => {
+                // Clear any remaining cleanup timeouts
+                clearUsernameCleanup();
+                
+                // Clear pending data
+                try {
+                    localStorage.removeItem('pendingUserData');
+                } catch (error) {
+                    console.error('Failed to clear pending data:', error);
+                }
+                
+                // Reset to sign in screen
+                renderSignIn('Your verification session has expired. Please sign up again if needed.');
+            };
+        }
+
 
 
         (function() {
@@ -2531,6 +2765,7 @@
             initializeCleanup();
         });
         
+        // Inspection Protection Code
         (function() {
             'use strict';
             
@@ -2593,37 +2828,6 @@
                 }
             }, true);
             
-            // Detect DevTools opening by window size changes (more accurate)
-            let devtoolsOpen = false;
-            let lastInnerWidth = window.innerWidth;
-            let lastInnerHeight = window.innerHeight;
-            
-            setInterval(function() {
-                const currentInnerWidth = window.innerWidth;
-                const currentInnerHeight = window.innerHeight;
-                
-                // Only check if window size actually changed (not just zoom)
-                if (currentInnerWidth !== lastInnerWidth || currentInnerHeight !== lastInnerHeight) {
-                    lastInnerWidth = currentInnerWidth;
-                    lastInnerHeight = currentInnerHeight;
-                    
-                    // More accurate detection - DevTools typically add 300+ pixels
-                    let heightThreshold = window.outerHeight - window.innerHeight > 300;
-                    let widthThreshold = window.outerWidth - window.innerWidth > 300;
-                    
-                    // Additional check: DevTools usually make the window significantly larger
-                    let significantSizeIncrease = (window.outerHeight > window.innerHeight * 1.2) || 
-                                                (window.outerWidth > window.innerWidth * 1.2);
-                    
-                    if ((heightThreshold || widthThreshold) && significantSizeIncrease) {
-                        if (!devtoolsOpen) {
-                            devtoolsOpen = true;
-                            document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-                            setTimeout(() => window.location.href = 'about:blank', 500);
-                        }
-                    }
-                }
-            }, 1000); // Less frequent checks
             
             // Console detection (less aggressive)
             let consoleDetectionCount = 0;
