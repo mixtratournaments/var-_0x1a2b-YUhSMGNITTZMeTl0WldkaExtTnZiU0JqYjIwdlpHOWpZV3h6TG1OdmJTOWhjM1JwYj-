@@ -1072,7 +1072,6 @@
     <!-- Account Sign Up Notice Popup -->
     <div class="popup-overlay" id="signupNoticePopup">
         <div class="popup-content">
-            <button class="popup-close" onclick="closeSignupNotice()">&times;</button>
             <div class="popup-title">Notice</div>
             <div class="popup-message">Account sign up is currently not working as intended. Please wait for further notice.</div>
             <button class="popup-button" onclick="closeSignupNotice()">Understood</button>
@@ -2937,13 +2936,6 @@
         function closeSignupNotice() {
             document.getElementById('signupNoticePopup').classList.remove('show');
         }
-        
-        // Close popup when clicking outside of it
-        document.getElementById('signupNoticePopup').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeSignupNotice();
-            }
-        });
     </script>
     <script type="module" src="./firebase.js"></script>
 </body>
