@@ -1069,14 +1069,6 @@
     </style>
 </head>
 <body data-theme="light">
-    <!-- Account Sign Up Notice Popup -->
-    <div class="popup-overlay" id="signupNoticePopup">
-        <div class="popup-content">
-            <div class="popup-title">Notice</div>
-            <div class="popup-message">Account sign up is currently not working as intended. Please wait for further notice.</div>
-            <button class="popup-button" onclick="closeSignupNotice()">Understood</button>
-        </div>
-    </div>
 
     <div class="topbar">
         <span class="hubble-gradient">Hubble</span>
@@ -2414,7 +2406,7 @@
                             // Set up username cleanup in case user abandons registration
                             setupUsernameCleanup();
                             
-                            renderVerification('', 'Verification email sent! Please check your inbox and click the link within 1 hour.');
+                            renderVerification('', 'Verification email sent! Please check your inbox and click the link within 5 minutes.');
                         } catch (emailError) {
                             console.error('Email verification failed:', emailError);
                             // Track the email error
@@ -2473,7 +2465,7 @@
                                             // Set up username cleanup in case user abandons registration
                                             setupUsernameCleanup();
                                             
-                                            renderVerification('', 'Verification email sent! Please check your inbox and click the link within 1 hour.');
+                                            renderVerification('', 'Verification email sent! Please check your inbox and click the link within 5 minutes.');
                                             return; // Exit early since we successfully registered
                                         }
                                     } catch (retryError) {
@@ -2697,7 +2689,7 @@
                     
                     // Show success message
                     const msgDiv = document.getElementById('verify-messages');
-                    msgDiv.innerHTML = `<div class="info">New verification email sent! Please check your inbox and click the link within 1 hour.</div>`;
+                    msgDiv.innerHTML = `<div class="info">New verification email sent! Please check your inbox and click the link within 5 minutes.</div>`;
                     
                 } catch (err) {
                     // Track the error
@@ -2925,17 +2917,6 @@
             
         })();
         
-        // Show signup notice popup when page loads
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                document.getElementById('signupNoticePopup').classList.add('show');
-            }, 500); // Small delay to ensure page is fully loaded
-        });
-        
-        // Function to close the signup notice popup
-        function closeSignupNotice() {
-            document.getElementById('signupNoticePopup').classList.remove('show');
-        }
     </script>
     <script type="module" src="./firebase.js"></script>
 </body>
