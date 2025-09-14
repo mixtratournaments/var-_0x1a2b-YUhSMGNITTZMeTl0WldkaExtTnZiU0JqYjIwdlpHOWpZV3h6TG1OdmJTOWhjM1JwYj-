@@ -2404,6 +2404,7 @@
                         console.log('Sending email verification...');
                         try {
                             await sendEmailVerification(auth.currentUser, {
+                              url: 'https://hubblesetup.github.io/verification/',
                               handleCodeInApp: true
                             });
 
@@ -2463,6 +2464,7 @@
                                         // Send verification email with action code settings
                                         if (auth.currentUser && !auth.currentUser.emailVerified) {
                                             await sendEmailVerification(auth.currentUser, {
+                                              url: 'https://hubblesetup.github.io/verification/',
                                               handleCodeInApp: true
                                             });
 
@@ -2687,6 +2689,7 @@
                     // Resend verification email with action code settings
                     console.log('Resending email verification for:', auth.currentUser.email);
                     await sendEmailVerification(auth.currentUser, {
+                      url: 'https://hubblesetup.github.io/verification/',
                       handleCodeInApp: true
                     });
 
