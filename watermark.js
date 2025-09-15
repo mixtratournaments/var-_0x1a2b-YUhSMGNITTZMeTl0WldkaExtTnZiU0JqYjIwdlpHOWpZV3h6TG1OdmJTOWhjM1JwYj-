@@ -21,7 +21,7 @@ class Watermark {
             position: fixed;
             bottom: 0;
             right: 0;
-            z-index: 9999;
+            z-index: 1;
             background: rgba(0, 0, 0, 0.6);
             color: white;
             padding: 4px 8px;
