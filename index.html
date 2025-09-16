@@ -1162,6 +1162,8 @@
 }
 
 .back-btn {
+  color: linear-gradient(90deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
+  font-size: clamp(1.5rem, 5vw, 2.2rem);
   border: none;
   background: transparent;
   font-size: 16px;
@@ -2298,7 +2300,7 @@
             `;
             document.getElementById('to-tutorial').onclick = () => {
   const modal = document.getElementById('tutorialModal');
-  const video = document.getElementById('tutorialVideo');
+  const video = document.getElementById('Tutorial.mp4');
   
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
@@ -2311,7 +2313,7 @@
 
 document.getElementById('closeTutorial').onclick = () => {
   const modal = document.getElementById('tutorialModal');
-  const video = document.getElementById('tutorialVideo');
+  const video = document.getElementById('Tutorial.mp4');
   
   modal.classList.remove('open');
   modal.setAttribute('aria-hidden', 'true');
@@ -3197,7 +3199,7 @@ document.getElementById('closeTutorial').onclick = () => {
     <!-- Tutorial modal -->
 <div id="tutorialModal" class="tutorial-modal" aria-hidden="true">
   <div class="tutorial-modal-content">
-    <button id="closeTutorial" class="back-btn">← Back</button>
+    <button id="closeTutorial" class="back-btn">Back</button>
     <video id="tutorialVideo" controls playsinline preload="metadata">
       <source src="tutorial.mp4" type="video/mp4">
       Your browser does not support video.
