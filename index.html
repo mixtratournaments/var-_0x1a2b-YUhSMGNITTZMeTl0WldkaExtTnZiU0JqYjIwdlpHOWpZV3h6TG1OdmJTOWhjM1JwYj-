@@ -1133,52 +1133,6 @@
             40% { transform: translateY(-10px); }
             60% { transform: translateY(-5px); }
         }
-
-        .tutorial-modal {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.6);
-  z-index: 9999;
-  padding: 20px;
-}
-
-.tutorial-modal.open {
-  display: flex;
-}
-
-.tutorial-modal-content {
-  background: #fff;
-  border-radius: 10px;
-  padding: 12px;
-  max-width: 800px;
-  width: 100%;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.back-btn {
-  color: linear-gradient(90deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
-  font-size: clamp(1.5rem, 5vw, 2.2rem);
-  border: none;
-  background: transparent;
-  font-size: 16px;
-  cursor: pointer;
-  align-self: flex-start;
-  margin-bottom: 8px;
-}
-
-.tutorial-modal video {
-  width: 100%;
-  max-height: 70vh;
-  border-radius: 8px;
-  background: black;
-}
-
     </style>
 </head>
 <body data-theme="light">
@@ -2296,31 +2250,7 @@
                 </form>
                 <span class="switch-link" id="forgot-password">Forgot password?</span>
                 <span class="switch-link" id="to-signup">Don't have an account? Sign up</span>
-                <span class="switch-link" id="to-tutorial">Confused? Watch our quick tutorial video</span>
             `;
-            document.getElementById('to-tutorial').onclick = () => {
-  const modal = document.getElementById('tutorialModal');
-  const video = document.getElementById('Tutorial.mp4');
-  
-  modal.classList.add('open');
-  modal.setAttribute('aria-hidden', 'false');
-  
-  try {
-    video.currentTime = 0;
-    video.play().catch(()=>{});
-  } catch(e) {}
-};
-
-document.getElementById('closeTutorial').onclick = () => {
-  const modal = document.getElementById('tutorialModal');
-  const video = document.getElementById('Tutorial.mp4');
-  
-  modal.classList.remove('open');
-  modal.setAttribute('aria-hidden', 'true');
-  video.pause();
-  video.currentTime = 0;
-};
-
             document.getElementById('to-signup').onclick = () => {
                 // Clear any existing cleanup when switching to signup
                 clearUsernameCleanup();
@@ -3196,15 +3126,4 @@ document.getElementById('closeTutorial').onclick = () => {
     <!-- Watermark Component -->
     <script type="module" src="./watermark.js"></script>
 </body>
-    <!-- Tutorial modal -->
-<div id="tutorialModal" class="tutorial-modal" aria-hidden="true">
-  <div class="tutorial-modal-content">
-    <button id="closeTutorial" class="back-btn">Back</button>
-    <video id="tutorialVideo" controls playsinline preload="metadata">
-      <source src="tutorial.mp4" type="video/mp4">
-      Your browser does not support video.
-    </video>
-  </div>
-</div>
-
 </html>
