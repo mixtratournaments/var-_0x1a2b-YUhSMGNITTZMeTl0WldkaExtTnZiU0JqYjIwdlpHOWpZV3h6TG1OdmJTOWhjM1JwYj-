@@ -1507,25 +1507,15 @@
                 
                 onAuthStateChanged(auth, async (user) => {
                     if (user && !isProcessingVerification) {
-                        // Check if user exists in Firestore (completed registration)
-                        try {
-                            const userDoc = await getDocs(query(collection(db, "users"), where("email", "==", user.email)));
-                            if (!userDoc.empty) {
-                                // User exists in Firestore, which means they've completed registration
-                                // Only redirect if we're not in the middle of email verification
-                                const urlParams = new URLSearchParams(window.location.search);
-                                const actionCode = urlParams.get('oobCode');
-                                const mode = urlParams.get('mode');
-                                
-                                // Don't redirect if we're processing an email verification action code
-                                if (!(actionCode && mode === 'verifyEmail')) {
-                                    window.location.href = 'main.html';
-                                }
-                            }
-                            // If user is authenticated but not in Firestore, stay on index.html for verification completion
-                        } catch (error) {
-                            console.error('Error checking user registration:', error);
-                            // Stay on index.html if there's an error
+                        // Always redirect authenticated users to main.html
+                        // Only check if we're not in the middle of email verification
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const actionCode = urlParams.get('oobCode');
+                        const mode = urlParams.get('mode');
+                        
+                        // Don't redirect if we're processing an email verification action code
+                        if (!(actionCode && mode === 'verifyEmail')) {
+                            window.location.href = 'main.html';
                         }
                     }
                     // If user is not authenticated, stay on index.html
@@ -2361,7 +2351,7 @@
                         errorMessage = 'Please verify your email before signing in. Check your inbox for a verification link.';
                     } else if (err.message === 'INCOMPLETE_VERIFICATION') {
                         // User has verified email but hasn't completed registration
-                        await handleIncompleteVerification(email, password);
+                        // Don't show popup, let auth state change handler redirect to main.html
                         return;
                     } else if (err.message === 'ACCOUNT_NOT_COMPLETED') {
                         errorMessage = 'Account setup incomplete. Please complete the registration process.';
