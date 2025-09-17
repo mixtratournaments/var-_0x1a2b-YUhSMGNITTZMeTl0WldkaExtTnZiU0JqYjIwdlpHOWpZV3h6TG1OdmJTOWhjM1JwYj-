@@ -1507,15 +1507,25 @@
                 
                 onAuthStateChanged(auth, async (user) => {
                     if (user && !isProcessingVerification) {
-                        // Always redirect authenticated users to main.html
-                        // Only check if we're not in the middle of email verification
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const actionCode = urlParams.get('oobCode');
-                        const mode = urlParams.get('mode');
-                        
-                        // Don't redirect if we're processing an email verification action code
-                        if (!(actionCode && mode === 'verifyEmail')) {
-                            window.location.href = 'main.html';
+                        // Check if user exists in Firestore (completed registration)
+                        try {
+                            const userDoc = await getDocs(query(collection(db, "users"), where("email", "==", user.email)));
+                            if (!userDoc.empty) {
+                                // User exists in Firestore, which means they've completed registration
+                                // Only redirect if we're not in the middle of email verification
+                                const urlParams = new URLSearchParams(window.location.search);
+                                const actionCode = urlParams.get('oobCode');
+                                const mode = urlParams.get('mode');
+                                
+                                // Don't redirect if we're processing an email verification action code
+                                if (!(actionCode && mode === 'verifyEmail')) {
+                                    window.location.href = 'main.html';
+                                }
+                            }
+                            // If user is authenticated but not in Firestore, stay on index.html for verification completion
+                        } catch (error) {
+                            console.error('Error checking user registration:', error);
+                            // Stay on index.html if there's an error
                         }
                     }
                     // If user is not authenticated, stay on index.html
@@ -2348,10 +2358,10 @@
                                 return;
                             }
                         }
-                        errorMessage = 'Please verify your email before signing in. Check your inbox for a verification link.';
+                        errorMessage = 'Please verify your email before signing in. Check your inbox (and junk/spam folder) for a verification link.';
                     } else if (err.message === 'INCOMPLETE_VERIFICATION') {
                         // User has verified email but hasn't completed registration
-                        // Don't show popup, let auth state change handler redirect to main.html
+                        await handleIncompleteVerification(email, password);
                         return;
                     } else if (err.message === 'ACCOUNT_NOT_COMPLETED') {
                         errorMessage = 'Account setup incomplete. Please complete the registration process.';
@@ -2377,7 +2387,7 @@
                                 errorMessage = 'Network error. Please check your internet connection.';
                                 break;
                             default:
-                                errorMessage = 'Sign in failed. Please check your email and password.';
+                                errorMessage = 'Sign in failed. Please check your email and password. Make sure you have an account. (You can create an account by click "Sign Up" below)';
                         }
                     }
                     
@@ -2467,7 +2477,7 @@
                     
                     let msg = '';
                     if (invalid.username) msg = 'Username must be 3-75 characters.';
-                    else if (invalid.email) msg = 'Email must be in the format 1XXXXXX@lwsd.org.';
+                    else if (invalid.email) msg = 'Email must be your LWSD email address (1XXXXXX@lwsd.org).';
                     else if (invalid.password) msg = 'Password must be 8-75 characters.';
                     else if (invalid.password2) msg = 'Passwords do not match.';
                     renderSignUp(msg, { username, email, password, password2 }, invalid);
@@ -2548,6 +2558,9 @@
                     const user = await module.register(email, password, username);
                     console.log('Registration successful, user created:', user.uid);
                     
+                    // Ensure user object is fully loaded before sending verification
+                    await auth.currentUser.reload();
+                    
                     // Send verification email with action code settings
                     if (auth.currentUser && !auth.currentUser.emailVerified) {
                         console.log('Sending email verification...');
@@ -2563,7 +2576,7 @@
                             // Set up username cleanup in case user abandons registration
                             setupUsernameCleanup();
                             
-                            renderVerification('', 'Verification email sent! Please check your inbox and click the link within 5 minutes.');
+                            renderVerification('', 'Verification email sent! Please check your inbox (and junk/spam folder) and click the link within 5 minutes.');
                         } catch (emailError) {
                             console.error('Email verification failed:', emailError);
                             // Track the email error
@@ -2624,6 +2637,9 @@
                                                 const { sendEmailVerification } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
                                                 const user = await module.register(email, password, username);
                                                 
+                                                // Ensure user object is fully loaded before sending verification
+                                                await auth.currentUser.reload();
+                                                
                                                 // Send verification email with action code settings
                                                 if (auth.currentUser && !auth.currentUser.emailVerified) {
                                                     await sendEmailVerification(auth.currentUser, {
@@ -2636,7 +2652,7 @@
                                                     // Set up username cleanup in case user abandons registration
                                                     setupUsernameCleanup();
                                                     
-                                                    renderVerification('', 'Verification email sent! Please check your inbox and click the link within 5 minutes.');
+                                                    renderVerification('', 'Verification email sent! Please check your inbox (and junk/spam folder) and click the link within 5 minutes.');
                                                     return; // Exit early since we successfully registered
                                                 }
                                             } catch (retryError) {
@@ -2879,7 +2895,7 @@
                     
                     // Show success message
                     const msgDiv = document.getElementById('verify-messages');
-                    msgDiv.innerHTML = `<div class="info">New verification email sent! Please check your inbox and click the link within 5 minutes.</div>`;
+                    msgDiv.innerHTML = `<div class="info">New verification email sent! Please check your inbox (and junk/spam folder) and click the link within 5 minutes.</div>`;
                     
                 } catch (err) {
                     // Track the error
