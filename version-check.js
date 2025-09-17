@@ -4,7 +4,7 @@ import { ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase
 class VersionChecker {
     constructor() {
         // Preset version in the code - change this when you want to force updates
-        this.presetVersion = "0.0.10";
+        this.presetVersion = "0.0.20";
         this.currentVersion = null;
         this.init();
     }
