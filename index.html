@@ -1133,12 +1133,273 @@
             40% { transform: translateY(-10px); }
             60% { transform: translateY(-5px); }
         }
+
+        /* Important Notice Popup Styles */
+        .important-notice-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+
+        .important-notice-popup {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 107, 107, 0.3), 0 0 50px rgba(255, 107, 107, 0.2);
+            border: 3px solid #ff6b6b;
+            animation: important-notice-appear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .important-notice-popup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 107, 107, 0.05) 100%);
+            pointer-events: none;
+        }
+
+        body[data-theme="dark"] .important-notice-popup {
+            background: linear-gradient(135deg, #232a3a 0%, #1a1f2e 100%);
+            border-color: #ff8a8a;
+        }
+
+        body[data-theme="dark"] .important-notice-popup::before {
+            background: linear-gradient(45deg, rgba(255, 138, 138, 0.1) 0%, rgba(255, 138, 138, 0.05) 100%);
+        }
+
+        .important-notice-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 3px solid #ff6b6b;
+            position: relative;
+            z-index: 1;
+        }
+
+        .important-notice-icon {
+            font-size: 3rem;
+            animation: important-notice-pulse 1.5s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(255, 107, 107, 0.5));
+        }
+
+        .important-notice-title {
+            margin: 0;
+            color: #ff6b6b;
+            font-size: 2rem;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .important-notice-content {
+            margin-bottom: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .important-notice-text {
+            margin: 0 0 1.5rem 0;
+            line-height: 1.7;
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        body[data-theme="dark"] .important-notice-text {
+            color: var(--text-dark);
+        }
+
+        .important-notice-apology {
+            margin: 2rem 0 0 0;
+            font-style: italic;
+            color: #666;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        body[data-theme="dark"] .important-notice-apology {
+            color: #999;
+        }
+
+        .important-notice-actions {
+            display: flex;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .important-notice-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ff8a8a);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .important-notice-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .important-notice-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.3);
+        }
+
+        .important-notice-btn:hover::before {
+            left: 100%;
+        }
+
+        .important-notice-btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .important-notice-popup.closing {
+            animation: important-notice-close 0.5s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
+        }
+
+        @keyframes important-notice-appear {
+            0% {
+                opacity: 0;
+                transform: scale(0.7) translateY(-30px) rotateX(15deg);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.05) translateY(-5px) rotateX(5deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0) rotateX(0deg);
+            }
+        }
+
+        @keyframes important-notice-close {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0) rotateX(0deg);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.9) translateY(10px) rotateX(-5deg);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.7) translateY(30px) rotateX(-15deg);
+            }
+        }
+
+        @keyframes important-notice-pulse {
+            0%, 100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 10px rgba(255, 107, 107, 0.5));
+            }
+            50% {
+                transform: scale(1.15);
+                filter: drop-shadow(0 0 20px rgba(255, 107, 107, 0.8));
+            }
+        }
+
+        /* Alpha Badge Styles */
+        .alpha-badge {
+            display: inline-block;
+            margin-left: 1rem;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FFEAA7);
+            background-size: 400% 400%;
+            color: white !important;
+            -webkit-text-fill-color: white !important;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            animation: alpha-gradient-flow 3s ease-in-out infinite;
+            vertical-align: middle;
+            -webkit-background-clip: initial !important;
+            background-clip: initial !important;
+        }
+
+        @keyframes alpha-gradient-flow {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            25% {
+                background-position: 100% 50%;
+            }
+            50% {
+                background-position: 100% 100%;
+            }
+            75% {
+                background-position: 0% 100%;
+            }
+        }
+
+        .alpha-badge.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body data-theme="light">
 
+    <!-- Important Account Deletion Notice Popup -->
+    <div class="important-notice-overlay" id="important-notice-overlay">
+        <div class="important-notice-popup">
+            <div class="important-notice-header">
+                <span class="important-notice-icon">⚠️</span>
+                <h2 class="important-notice-title">Important Notice</h2>
+            </div>
+            <div class="important-notice-content">
+                <p class="important-notice-text">
+                    Due to bugs in our system earlier this week, some user accounts may have been deleted due to incomplete profiles on our servers when users were creating accounts.
+                </p>
+                <p class="important-notice-text">
+                    <strong>If sign up fails, your account may have been one of them.</strong> Please recreate your account.
+                </p>
+                <p class="important-notice-apology">
+                    We sincerely apologize for the inconvenience.
+                </p>
+            </div>
+            <div class="important-notice-actions">
+                <button class="important-notice-btn" id="important-notice-understand">I Understand</button>
+            </div>
+        </div>
+    </div>
+
     <div class="topbar">
-        <span class="hubble-gradient">Hubble</span>
+        <span class="hubble-gradient">Hubble<span class="alpha-badge" id="alpha-badge">Alpha</span></span>
     </div>
     <div class="center-wrap">
       <div class="auth-container" id="auth-container">
@@ -3122,6 +3383,50 @@
             };
             
         })();
+
+        // Important Notice Popup Functionality
+        function showImportantNotice() {
+            const overlay = document.getElementById('important-notice-overlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+            }
+        }
+
+        function hideImportantNotice() {
+            const overlay = document.getElementById('important-notice-overlay');
+            const popup = overlay?.querySelector('.important-notice-popup');
+            
+            if (overlay && popup) {
+                // Add closing animation class
+                popup.classList.add('closing');
+                
+                // Hide overlay after animation completes
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    popup.classList.remove('closing');
+                    // Store that user has seen the notice
+                    localStorage.setItem('importantNoticeSeen', 'true');
+                }, 500); // Match animation duration
+            }
+        }
+
+        // Show popup on page load (unless already seen)
+        document.addEventListener('DOMContentLoaded', function() {
+            const hasSeenNotice = localStorage.getItem('importantNoticeSeen');
+            if (!hasSeenNotice) {
+                // Small delay to ensure page is fully loaded
+                setTimeout(showImportantNotice, 500);
+            }
+        });
+
+        // Handle "I Understand" button click
+        document.addEventListener('DOMContentLoaded', function() {
+            const understandBtn = document.getElementById('important-notice-understand');
+            if (understandBtn) {
+                understandBtn.addEventListener('click', hideImportantNotice);
+            }
+        });
+
         
     </script>
     <script type="module" src="./firebase.js"></script>
