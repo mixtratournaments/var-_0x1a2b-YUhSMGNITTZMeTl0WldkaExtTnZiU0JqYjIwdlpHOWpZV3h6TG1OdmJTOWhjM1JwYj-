@@ -3,7 +3,6 @@ import { ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase
 
 class VersionChecker {
     constructor() {
-        // Preset version in the code - change this when you want to force updates
         this.presetVersion = "0.0.20";
         this.currentVersion = null;
         this.init();
@@ -28,14 +27,12 @@ class VersionChecker {
                 console.log('Version from database:', this.currentVersion);
                 this.compareVersions();
             } else {
-                // If no version in database, assume it's the same as preset
                 console.log('No version in database, using preset version');
                 this.currentVersion = this.presetVersion;
                 this.compareVersions();
             }
         }, (error) => {
             console.error('Error fetching version:', error);
-            // On error, assume version matches to avoid breaking the site
             this.currentVersion = this.presetVersion;
             this.compareVersions();
         });
@@ -56,15 +53,12 @@ class VersionChecker {
     }
 
     handleVersionMismatch() {
-        // Clear the entire site
         this.clearSite();
         
-        // Show popup
         this.showRestartPopup();
     }
 
     clearSite() {
-        // Remove all content from body except the popup
         const body = document.body;
         const children = Array.from(body.children);
         
@@ -74,7 +68,6 @@ class VersionChecker {
             }
         });
 
-        // Clear the head content except essential meta tags
         const head = document.head;
         const headChildren = Array.from(head.children);
         
@@ -84,7 +77,6 @@ class VersionChecker {
             }
         });
 
-        // Clear any stored data
         try {
             localStorage.clear();
             sessionStorage.clear();
@@ -92,15 +84,12 @@ class VersionChecker {
             console.warn('Could not clear storage:', e);
         }
 
-        // Clear any intervals/timeouts
         for (let i = 1; i < 99999; i++) {
             window.clearTimeout(i);
             window.clearInterval(i);
         }
 
-        // Clear any global variables and event listeners
         try {
-            // Remove all event listeners
             const newBody = document.createElement('body');
             newBody.innerHTML = body.innerHTML;
             document.documentElement.replaceChild(newBody, body);
@@ -110,7 +99,6 @@ class VersionChecker {
     }
 
     showRestartPopup() {
-        // Create popup overlay
         const popupOverlay = document.createElement('div');
         popupOverlay.id = 'version-mismatch-popup';
         popupOverlay.style.cssText = `
@@ -127,7 +115,6 @@ class VersionChecker {
             font-family: 'Poppins', sans-serif;
         `;
 
-        // Create popup content
         const popupContent = document.createElement('div');
         popupContent.style.cssText = `
             background: white;
@@ -139,7 +126,6 @@ class VersionChecker {
             color: #333;
         `;
 
-        // Create popup HTML
         popupContent.innerHTML = `
             <div style="font-size: 48px; margin-bottom: 20px;">🔄</div>
             <h2 style="margin: 0 0 20px 0; color: #333; font-size: 24px;">Please Restart Hubble</h2>
@@ -168,18 +154,15 @@ class VersionChecker {
         popupOverlay.appendChild(popupContent);
         document.body.appendChild(popupOverlay);
 
-        // Add refresh button functionality
         const refreshButton = document.getElementById('refresh-button');
         refreshButton.addEventListener('click', () => {
             window.location.reload();
         });
 
-        // Prevent any other interactions
         popupOverlay.addEventListener('click', (e) => {
             e.stopPropagation();
         });
 
-        // Prevent keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -188,7 +171,6 @@ class VersionChecker {
 
 }
 
-// Auto-initialize version checker when DOM is ready
 let versionCheckerInstance = null;
 
 function initializeVersionChecker() {
@@ -201,8 +183,6 @@ function initializeVersionChecker() {
     }
 }
 
-// Initialize version checker
 initializeVersionChecker();
 
-// Export for manual control if needed
 export { VersionChecker };

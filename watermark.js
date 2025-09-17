@@ -14,7 +14,6 @@ class Watermark {
     }
 
     createWatermarkElement() {
-        // Create watermark container
         this.watermarkElement = document.createElement('div');
         this.watermarkElement.id = 'watermark';
         this.watermarkElement.style.cssText = `
@@ -41,10 +40,8 @@ class Watermark {
         `;
 
 
-        // Add default text initially
         this.watermarkElement.textContent = 'Hubble 2025';
         
-        // Append to body
         document.body.appendChild(this.watermarkElement);
     }
 
@@ -57,14 +54,12 @@ class Watermark {
                 this.installationLink = data;
                 this.updateWatermarkText();
             } else {
-                // Fallback if no data in database
                 this.installationLink = null;
                 this.watermarkElement.textContent = 'Hubble 2025';
                 this.watermarkElement.title = 'Hubble 2025';
             }
         }, (error) => {
             console.error('Error fetching installation link:', error);
-            // Fallback on error
             this.installationLink = null;
             this.watermarkElement.textContent = 'Hubble 2025';
             this.watermarkElement.title = 'Hubble 2025';
@@ -73,32 +68,27 @@ class Watermark {
 
     updateWatermarkText() {
         if (this.watermarkElement && this.installationLink) {
-            // Extract domain from URL for display
             try {
                 const url = new URL(this.installationLink);
                 const displayText = url.hostname;
                 this.watermarkElement.textContent = displayText;
             } catch (e) {
-                // If URL parsing fails, show the full link
                 this.watermarkElement.textContent = this.installationLink;
             }
         }
     }
 
-    // Method to update the installation link programmatically
     updateInstallationLink(newLink) {
         this.installationLink = newLink;
         this.updateWatermarkText();
     }
 
-    // Method to hide/show watermark
     setVisible(visible) {
         if (this.watermarkElement) {
             this.watermarkElement.style.display = visible ? 'block' : 'none';
         }
     }
 
-    // Method to destroy watermark
     destroy() {
         if (this.watermarkElement && this.watermarkElement.parentNode) {
             this.watermarkElement.parentNode.removeChild(this.watermarkElement);
@@ -107,7 +97,6 @@ class Watermark {
     }
 }
 
-// Auto-initialize watermark when DOM is ready
 let watermarkInstance = null;
 
 function initializeWatermark() {
@@ -120,8 +109,6 @@ function initializeWatermark() {
     }
 }
 
-// Initialize watermark
 initializeWatermark();
 
-// Export for manual control if needed
 export { Watermark, watermarkInstance };

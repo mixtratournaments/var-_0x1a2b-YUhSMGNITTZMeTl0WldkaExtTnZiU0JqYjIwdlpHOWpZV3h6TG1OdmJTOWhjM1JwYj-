@@ -881,6 +881,19 @@
             box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
         }
         
+        /* Popup Error Text Styles */
+        .popup-error-text {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        
         /* Error Notification Styles */
         .error-notification {
             position: fixed;
@@ -1457,7 +1470,7 @@
             ⚠️ Having Trouble?
         </div>
         <div class="error-notification-message">
-            Go to ❓ on the bottom left of your screen for support.
+            Go to the 'Help Desk' button on the bottom left of your screen for support.
         </div>
         <button class="error-notification-close" onclick="closeErrorNotification()">Got it</button>
     </div>
@@ -1486,6 +1499,7 @@
     <div class="ticket-popup-overlay" id="ticket-popup-overlay">
         <div class="ticket-popup">
             <h2 class="ticket-popup-title" id="ticket-popup-title">Create Support Ticket</h2>
+            <div id="ticket-error-text" class="popup-error-text" style="display: none;"></div>
             <div id="ticket-form-content">
                 <div class="ticket-form-group">
                     <label for="ticket-subject" class="ticket-form-label">Subject</label>
@@ -1665,11 +1679,15 @@
             const popup = document.getElementById('ticket-popup-overlay');
             const formContent = document.getElementById('ticket-form-content');
             const sentContent = document.getElementById('ticket-sent-content');
+            const errorText = document.getElementById('ticket-error-text');
             
             if (popup) {
-                // Reset form
+                // Reset form and hide error
                 formContent.style.display = 'block';
                 sentContent.style.display = 'none';
+                if (errorText) {
+                    errorText.style.display = 'none';
+                }
                 document.getElementById('ticket-subject').value = '';
                 document.getElementById('ticket-description').value = '';
                 document.getElementById('ticket-email').value = '';
@@ -1695,16 +1713,32 @@
             const subject = document.getElementById('ticket-subject').value.trim();
             const description = document.getElementById('ticket-description').value.trim();
             const email = document.getElementById('ticket-email').value.trim();
+            const errorText = document.getElementById('ticket-error-text');
+            
+            // Hide any previous error
+            if (errorText) {
+                errorText.style.display = 'none';
+            }
             
             // Basic validation
             if (!subject || !description || !email) {
-                alert('Please fill in all fields.');
+                if (errorText) {
+                    errorText.textContent = 'Please fill in all fields.';
+                    errorText.style.display = 'block';
+                } else {
+                    alert('Please fill in all fields.');
+                }
                 return;
             }
             
             // Email validation
             if (!email.includes('@lwsd.org')) {
-                alert('Please enter a valid LWSD email address.');
+                if (errorText) {
+                    errorText.textContent = 'Please enter a valid LWSD email address.';
+                    errorText.style.display = 'block';
+                } else {
+                    alert('Please enter a valid LWSD email address.');
+                }
                 return;
             }
             
@@ -1754,7 +1788,21 @@
                     code: error.code,
                     stack: error.stack
                 });
-                alert(`Failed to submit ticket: ${error.message}. Please try again.`);
+                
+                // Handle specific error cases
+                let errorMessage = 'Failed to submit ticket. Please try again.';
+                if (error.code === 'permission-denied' || error.code === 'unavailable') {
+                    errorMessage = 'Service temporarily unavailable. Please try again later.';
+                } else if (error.message) {
+                    errorMessage = `Failed to submit ticket: ${error.message}`;
+                }
+                
+                if (errorText) {
+                    errorText.textContent = errorMessage;
+                    errorText.style.display = 'block';
+                } else {
+                    alert(errorMessage);
+                }
             }
         }
         
