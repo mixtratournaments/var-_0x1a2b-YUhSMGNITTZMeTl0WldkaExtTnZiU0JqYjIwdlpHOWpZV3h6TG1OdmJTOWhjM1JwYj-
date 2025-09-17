@@ -90,7 +90,6 @@ export async function login(email, password) {
   
   const userDoc = await getDocs(query(collection(db, "users"), where("email", "==", email)));
   if (userDoc.empty) {
-    // User exists in Firebase Auth but not in Firestore - incomplete verification
     await signOut(auth);
     throw new Error('INCOMPLETE_VERIFICATION');
   }
