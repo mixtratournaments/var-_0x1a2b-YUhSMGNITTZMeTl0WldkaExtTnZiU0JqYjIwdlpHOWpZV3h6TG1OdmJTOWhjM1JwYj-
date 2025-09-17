@@ -144,7 +144,7 @@ class VersionChecker {
             <div style="font-size: 48px; margin-bottom: 20px;">🔄</div>
             <h2 style="margin: 0 0 20px 0; color: #333; font-size: 24px;">Please Restart Hubble</h2>
             <p style="margin: 0 0 30px 0; color: #666; line-height: 1.5;">
-                A new version of Hubble is available. Please refresh your browser to get the latest updates.
+                A new version of Hubble is available. Please refresh Hubble to get the latest updates.
             </p>
             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; color: #666;">
                 <strong>Current Version:</strong> ${this.currentVersion}<br>
