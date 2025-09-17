@@ -161,7 +161,7 @@ class VersionChecker {
                 cursor: pointer;
                 transition: background 0.3s ease;
             " onmouseover="this.style.background='#0088d4'" onmouseout="this.style.background='#009CFC'">
-                Refresh Browser
+                Refresh Hubble
             </button>
         `;
 
