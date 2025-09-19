@@ -1511,7 +1511,7 @@
                 </div>
                 <div class="ticket-form-group">
                     <label for="ticket-email" class="ticket-form-label">Account Email</label>
-                    <input type="email" id="ticket-email" class="ticket-form-input" placeholder="1XXXXXX@lwsd.org">
+                    <input type="email" id="ticket-email" class="ticket-form-input" placeholder="your.school@email.com">
                 </div>
                 <div class="ticket-form-buttons">
                     <button class="ticket-form-btn cancel" onclick="closeTicketPopup()">Cancel</button>
@@ -1531,11 +1531,11 @@
             <h2 class="faq-popup-title">Frequently Asked Questions</h2>
             <div class="faq-item">
                 <div class="faq-question">How do I sign up for Hubble?</div>
-                <div class="faq-answer">You can sign up using your LWSD email address (format: 1XXXXXX@lwsd.org). Click "Sign Up" on the login page and follow the verification process.</div>
+                <div class="faq-answer">You can sign up using your school email address. Click "Sign Up" on the login page and follow the verification process.</div>
             </div>
             <div class="faq-item">
                 <div class="faq-question">I forgot my password. What should I do?</div>
-                <div class="faq-answer">Click "Forgot password?" on the login page and enter your LWSD email address. You'll receive a password reset link in your email.</div>
+                <div class="faq-answer">Click "Forgot password?" on the login page and enter your school email address. You'll receive a password reset link in your email.</div>
             </div>
             <div class="faq-item">
                 <div class="faq-question">Why can't I access certain games?</div>
@@ -1551,7 +1551,7 @@
             </div>
             <div class="faq-item">
                 <div class="faq-question">My email verification isn't working. What should I do?</div>
-                <div class="faq-answer">Check your spam folder first. If the verification link has expired, try clicking "Resend Email" on the verification page. Make sure you're using your LWSD email address.</div>
+                <div class="faq-answer">Check your spam folder first. If the verification link has expired, try clicking "Resend Email" on the verification page. Make sure you're using your school email address.</div>
             </div>
             <div class="faq-item">
                 <div class="faq-question">Why does it say my username is being used by a pending account?</div>
@@ -1574,7 +1574,7 @@
             </div>
             <div class="faq-item">
                 <div class="faq-question">Is Hubble free to use?</div>
-                <div class="faq-answer">Yes! Hubble is completely free for LWSD students. All games and features are available at no cost.</div>
+                <div class="faq-answer">Yes! Hubble is completely free for students. All games and features are available at no cost.</div>
             </div>
             <div style="text-align: center; margin-top: 2rem;">
                 <button class="help-popup-close" onclick="closeFAQPopup()">Close</button>
@@ -1732,12 +1732,12 @@
             }
             
             // Email validation
-            if (!email.includes('@lwsd.org')) {
+            if (!validateEmail(email)) {
                 if (errorText) {
-                    errorText.textContent = 'Please enter a valid LWSD email address.';
+                    errorText.textContent = 'Please enter a valid school email address.';
                     errorText.style.display = 'block';
                 } else {
-                    alert('Please enter a valid LWSD email address.');
+                    alert('Please enter a valid school email address.');
                 }
                 return;
             }
@@ -2592,7 +2592,8 @@
         }
 
         function validateEmail(email) {
-            return /^1\d{6}@lwsd\.org$/.test(email);
+            // Support both LWSD format (1XXXXXX@lwsd.org) and Salem format (XXXXXX@salem.k12.va.us)
+            return /^1\d{6}@lwsd\.org$/.test(email) || /^\d{6}@salem\.k12\.va\.us$/.test(email);
         }
         function validateUsername(username) {
             return username.length >= 3 && username.length <= 75;
@@ -2640,10 +2641,10 @@
                 renderSignUp();
             };
             document.getElementById('forgot-password').onclick = async () => {
-                const email = await showCustomPrompt('Reset Password', 'Enter your email address to reset your password:', '1XXXXXX@lwsd.org');
+                const email = await showCustomPrompt('Reset Password', 'Enter your email address to reset your password:');
                 if (!email || !validateEmail(email)) {
                     if (email !== null) { // Only show error if user didn't cancel
-                        await showCustomAlert('Invalid Email', 'Please enter a valid LWSD email address.');
+                        await showCustomAlert('Invalid Email', 'Please enter a valid school email address.');
                     }
                     return;
                 }
@@ -2748,7 +2749,7 @@
                                 errorMessage = 'Incorrect password. Please try again.';
                                 break;
                             case 'auth/invalid-email':
-                                errorMessage = 'Invalid email format. Please use your LWSD email address.';
+                                errorMessage = 'Invalid email format. Please use your school email address.';
                                 break;
                             case 'auth/too-many-requests':
                                 errorMessage = 'Too many failed attempts. Please try again later.';
@@ -2850,7 +2851,7 @@
                     
                     let msg = '';
                     if (invalid.username) msg = 'Username must be 3-75 characters.';
-                    else if (invalid.email) msg = 'Email must be your LWSD email address (1XXXXXX@lwsd.org).';
+                    else if (invalid.email) msg = 'Email must be your school email address.';
                     else if (invalid.password) msg = 'Password must be 8-75 characters.';
                     else if (invalid.password2) msg = 'Passwords do not match.';
                     renderSignUp(msg, { username, email, password, password2 }, invalid);
@@ -3066,7 +3067,7 @@
                                 }
                                 break;
                             case 'auth/invalid-email':
-                                errorMessage = 'Invalid email format. Please use your LWSD email address.';
+                                errorMessage = 'Invalid email format. Please use your school email address.';
                                 invalidFields = { email: true };
                                 break;
                             case 'auth/weak-password':
