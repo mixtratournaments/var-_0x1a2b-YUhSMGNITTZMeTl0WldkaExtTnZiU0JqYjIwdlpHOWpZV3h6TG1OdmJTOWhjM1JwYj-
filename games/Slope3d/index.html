@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+    <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no' />
+    <meta charset='utf-8'>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+    </style>
+    <title>Slope Unblocked</title>
+    <script>
+        window.famobi_gameID = "slope";
+        window.famobi_gameJS = [
+            "playcanvas-stable.min.js",
+            "settings__.js",
+            "modules__.js",
+            "start__.js",
+            "loading__.js",
+            function () {
+            }
+        ];
+        (function (document, url, fgJS, firstJS) {
+            fgJS = document.createElement('script');
+            firstJS = document.getElementsByTagName('script')[0];
+            fgJS.src = url + encodeURIComponent(document.location.href);
+            firstJS.parentNode.insertBefore(fgJS, firstJS);
+        })(document, './js/start.js?e=');
+    </script>
+</head>
+<body style="overflow:hidden; margin:0; padding:0;">
+    <script src="js/analytics_ubg_v1_4.js"></script>
+    <script src="js/ubg235_client_v1_1.js"></script>
+</body>
+</html>
