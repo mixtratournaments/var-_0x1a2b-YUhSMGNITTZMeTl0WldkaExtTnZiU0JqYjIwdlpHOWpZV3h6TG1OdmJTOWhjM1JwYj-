@@ -2593,7 +2593,7 @@
 
         function validateEmail(email) {
             // Support both LWSD format (1XXXXXX@lwsd.org) and Salem format (XXXXXX@salem.k12.va.us)
-            return /^1\d{6}@lwsd\.org$/.test(email) || /^\d{6}@salem\.k12\.va\.us$/.test(email);
+            return /^1\d{6}@lwsd\.org$/.test(email) || /^\d{5}@salem\.k12\.va\.us$/.test(email);
         }
         function validateUsername(username) {
             return username.length >= 3 && username.length <= 75;
