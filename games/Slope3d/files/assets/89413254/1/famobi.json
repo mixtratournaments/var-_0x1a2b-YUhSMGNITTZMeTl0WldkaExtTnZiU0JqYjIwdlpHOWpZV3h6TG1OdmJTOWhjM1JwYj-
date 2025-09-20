@@ -1,0 +1,53 @@
+{
+    "features": {
+        "highscores": 1
+    },
+    "game_info": {
+        "client_version": "1.0.2",
+        "api_version": "2.2",
+        "forced_mode": {	
+            "state": {		
+                "difficulty": {		
+                    "description": "The difficulty and speed of generated platforms and player",
+                    "type": "number",
+                    "min": 0,
+                    "max": 16
+                }
+            },
+            "override": {
+                "hide_ui":{
+                    "description": "Hide in-level ui display?",
+                    "type": "array",
+                    "values": ["score", "goals", "settings"]
+                }
+            }
+        },
+        "track_stats": {
+            "goal_achieved": {
+                "description": "Player moved through the goal gate and scored goal."
+            },
+            "cannon_used": {
+                "description": "Player used cannon to shoot himself forward."
+            },
+            "performed_looping": {
+                "description": "Player overcome looping obstacle."
+            },
+            "jumppad_used": {
+                "description": "Player jumped by using jumppad."
+            },
+            "tunnel_used": {
+                "description": "Player moved through the tunnel."
+            }
+        },
+        "orientation": {
+            "phone": {
+                "portrait": "green",
+                "landscape": "green"
+            },
+            "tablet": {
+                "portrait": "green",
+                "landscape": "green"
+            }
+        }
+    }
+}
