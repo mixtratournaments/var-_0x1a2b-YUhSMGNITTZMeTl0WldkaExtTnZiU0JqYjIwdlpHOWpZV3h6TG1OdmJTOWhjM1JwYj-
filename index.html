@@ -119,41 +119,6 @@
         .launch-button:hover::before {
             left: 100%;
         }
-        .transition-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1001;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-        }
-        .transition-overlay.active {
-            opacity: 1;
-        }
-        .transition-text {
-            font-family: 'Poppins', sans-serif;
-            font-size: 2rem;
-            font-weight: 700;
-            color: white;
-            text-align: center;
-            animation: transitionGlow 2s ease-in-out infinite alternate;
-        }
-        @keyframes transitionGlow {
-            0% { 
-                text-shadow: 0 0 20px rgba(255,255,255,0.5);
-                transform: scale(1);
-            }
-            100% { 
-                text-shadow: 0 0 40px rgba(255,255,255,0.8);
-                transform: scale(1.05);
-            }
-        }
         @media (max-width: 768px) {
             .hubble-title {
                 font-size: clamp(2rem, 6vw, 4rem);
@@ -163,38 +128,23 @@
                 font-size: 1.2rem;
                 padding: 1.2rem 2.5rem;
             }
-            .transition-text {
-                font-size: 1.5rem;
-            }
         }
     </style>
 </head>
 <body>
     <div class="launch-container">
         <h1 class="hubble-title">HUBBLE</h1>
-        <button class="launch-button" id="launchButton">LAUNCH TO HUBBLE</button>
+        <button class="launch-button" id="launchButton">LAUNCH HUBBLE</button>
     </div>
 
 
-    <div class="transition-overlay" id="transitionOverlay">
-        <div class="transition-text">Welcome to Hubble</div>
-    </div>
 
     <script type="module" src="./watermark.js"></script>
     <script>
         const launchButton = document.getElementById('launchButton');
-        const transitionOverlay = document.getElementById('transitionOverlay');
 
         launchButton.addEventListener('click', () => {
-            // Hide launch button and show transition
-            launchButton.style.display = 'none';
-            transitionOverlay.style.display = 'flex';
-            transitionOverlay.classList.add('active');
-            
-            // Navigate to main after transition
-            setTimeout(() => {
-                window.location.href = 'main.html';
-            }, 2000);
+            window.location.href = 'main.html';
         });
     </script>
 </body>
