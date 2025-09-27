@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hubble | Beta</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
         :root {
@@ -207,45 +208,58 @@
             width: 100%;
             height: 100vh;
             pointer-events: none;
-            z-index: 1;
+            z-index: 1000;
             overflow: hidden;
         }
         
         .falling-leaf {
             position: absolute;
-            width: 15px;
-            height: 15px;
+            width: 25px;
+            height: 25px;
             background: #d2691e;
             border-radius: 0 100% 0 100%;
             animation: leafFall 4s linear infinite;
-            opacity: 0.7;
+            opacity: 0.9;
+            box-shadow: 0 0 8px rgba(210, 105, 30, 0.6);
+            border: 1px solid rgba(139, 69, 19, 0.3);
         }
         
         .falling-leaf:nth-child(odd) {
             background: #8b4513;
-            width: 12px;
-            height: 12px;
+            width: 20px;
+            height: 20px;
+            box-shadow: 0 0 8px rgba(139, 69, 19, 0.6);
         }
         
         .falling-leaf:nth-child(3n) {
             background: #daa520;
-            width: 18px;
-            height: 18px;
+            width: 30px;
+            height: 30px;
+            box-shadow: 0 0 10px rgba(218, 165, 32, 0.7);
         }
         
         @keyframes leafFall {
             0% {
-                transform: translateY(-50px) rotate(0deg);
+                transform: translateY(-50px) translateX(0px) rotate(0deg);
                 opacity: 0;
             }
             10% {
-                opacity: 0.7;
+                opacity: 0.8;
+            }
+            25% {
+                transform: translateY(25vh) translateX(10px) rotate(90deg);
+            }
+            50% {
+                transform: translateY(50vh) translateX(-5px) rotate(180deg);
+            }
+            75% {
+                transform: translateY(75vh) translateX(15px) rotate(270deg);
             }
             90% {
-                opacity: 0.7;
+                opacity: 0.8;
             }
             100% {
-                transform: translateY(100vh) rotate(360deg);
+                transform: translateY(100vh) translateX(0px) rotate(360deg);
                 opacity: 0;
             }
         }
@@ -2487,6 +2501,7 @@
             aspect-ratio: 1;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
         
         .game-card:hover {
@@ -2630,6 +2645,74 @@
         }
         body[data-theme="fall"] .game-name {
             color: var(--fall-text);
+        }
+        
+        /* Spooky Game Styling */
+        .spooky-glow {
+            color: #ff8c00 !important;
+            text-shadow: 
+                0 0 10px #ff8c00,
+                0 0 20px #ff8c00,
+                0 0 30px #ff8c00,
+                0 0 40px #ff8c00;
+            animation: spookyPulse 2s ease-in-out infinite alternate;
+        }
+        
+        .spooky-label {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: transparent;
+            color: #8b5cf6;
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-shadow: 
+                0 0 8px #8b5cf6,
+                0 0 16px #8b5cf6,
+                0 0 24px #8b5cf6,
+                0 0 32px #8b5cf6;
+            animation: spookyGlow 1.5s ease-in-out infinite alternate;
+            z-index: 100;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: none;
+        }
+        
+        @keyframes spookyPulse {
+            0% {
+                text-shadow: 
+                    0 0 10px #ff8c00,
+                    0 0 20px #ff8c00,
+                    0 0 30px #ff8c00;
+            }
+            100% {
+                text-shadow: 
+                    0 0 15px #ff8c00,
+                    0 0 25px #ff8c00,
+                    0 0 35px #ff8c00,
+                    0 0 45px #ff8c00;
+            }
+        }
+        
+        @keyframes spookyGlow {
+            0% {
+                text-shadow: 
+                    0 0 8px #8b5cf6,
+                    0 0 16px #8b5cf6,
+                    0 0 24px #8b5cf6,
+                    0 0 32px #8b5cf6;
+            }
+            100% {
+                text-shadow: 
+                    0 0 12px #8b5cf6,
+                    0 0 24px #8b5cf6,
+                    0 0 36px #8b5cf6,
+                    0 0 48px #8b5cf6;
+            }
         }
         /* Coming Soon Game Card */
 .game-card.coming-soon {
@@ -2897,6 +2980,594 @@
             color: var(--text-light);
             margin-bottom: 0;
         }
+        
+        /* ShipSpace Section Styling */
+        .shipspace-container {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .shipspace-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .shipspace-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--fall-primary), var(--fall-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .shipspace-subtitle {
+            font-size: 1.2rem;
+            color: var(--fall-text);
+            margin-bottom: 0;
+        }
+        
+        .shipspace-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .shipspace-nav button {
+            margin: 0 6px;
+            padding: 10px 16px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            background: var(--fall-sidebar-bg);
+            color: var(--fall-text);
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px solid var(--fall-sidebar-border);
+        }
+        
+        .shipspace-nav button:hover {
+            background: var(--fall-sidebar-active);
+        }
+        
+        #searchBar {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid var(--fall-sidebar-border);
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            background: var(--fall-background);
+            color: var(--fall-text);
+        }
+        
+        .ships-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+        }
+        
+        .ship-card {
+            background: var(--fall-background);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            border: 1px solid var(--fall-sidebar-border);
+        }
+        
+        .ship-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .ship-title {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 12px;
+            text-align: center;
+            color: var(--fall-text);
+        }
+        
+        .heart-preview-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 12px;
+        }
+        
+        .heart-preview {
+            position: relative;
+            width: 200px;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        .heart-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .ship-shortcode {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+        }
+        
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: 14px;
+        }
+        
+        .card-footer button {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--fall-text);
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            min-height: 40px;
+        }
+        
+        .card-footer button:hover {
+            background: var(--fall-sidebar-active);
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-footer span {
+            font-size: 16px;
+            margin-left: 6px;
+            font-weight: bold;
+            color: var(--fall-text);
+        }
+        
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: 12px;
+            font-size: 14px;
+            color: var(--fall-text);
+        }
+        
+        .ship-id {
+            font-family: monospace;
+            font-weight: bold;
+            background: var(--fall-sidebar-bg);
+            padding: 3px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            color: var(--fall-text);
+        }
+        
+        .ship-id:hover {
+            background: var(--fall-sidebar-active);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        #createPage input,
+        #adminPassword {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 14px;
+            font-size: 16px;
+            border: 1px solid var(--fall-sidebar-border);
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            background: var(--fall-background);
+            color: var(--fall-text);
+        }
+        
+        #publishButton {
+            margin-top: 14px;
+            padding: 12px 24px;
+            background: var(--fall-primary);
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: box-shadow 0.2s, transform 0.2s;
+            box-shadow: 0 4px 12px rgba(210, 105, 30, 0.3);
+        }
+        
+        #publishButton:hover {
+            box-shadow: 0 6px 18px rgba(210, 105, 30, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        #confirmationPage {
+            text-align: center;
+            font-size: 20px;
+            padding: 40px;
+            color: var(--fall-text);
+        }
+        
+        .card-footer button i {
+            font-size: 20px;
+            color: var(--fall-text);
+            transition: all 0.3s ease;
+        }
+        
+        .card-footer button:hover i {
+            color: var(--fall-accent);
+            transform: translateY(-2px);
+        }
+        
+        .upvoted {
+            background: var(--fall-sidebar-active) !important;
+            color: var(--fall-primary) !important;
+            box-shadow: 0 2px 8px rgba(210, 105, 30, 0.3) !important;
+        }
+        
+        .upvoted i {
+            color: var(--fall-primary) !important;
+            transform: translateY(-2px);
+        }
+        
+        /* Ensure upvote arrow is visible */
+        .card-footer button i {
+            font-size: 14px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .card-footer button:hover i {
+            transform: translateY(-2px) scale(1.1);
+        }
+        
+        /* General button styling for visibility */
+        .card-footer button {
+            background: var(--fall-sidebar-bg);
+            color: var(--fall-text);
+            border: 1px solid var(--fall-sidebar-border);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .card-footer button:hover {
+            background: var(--fall-sidebar-active);
+            border-color: var(--fall-primary);
+            transform: translateY(-1px);
+        }
+        
+        /* Admin Modal Styling */
+        .admin-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+        }
+        
+        .admin-modal.hidden {
+            display: none !important;
+        }
+        
+        .admin-modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .admin-modal-content h2 {
+            margin: 0 0 16px 0;
+            color: #333;
+            font-size: 1.5rem;
+        }
+        
+        .admin-modal-content input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+        }
+        
+        .admin-error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin: 8px 0;
+        }
+        
+        .admin-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        
+        .admin-login-btn, .admin-cancel-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-login-btn {
+            background: #3498db;
+            color: white;
+        }
+        
+        .admin-login-btn:hover {
+            background: #2980b9;
+        }
+        
+        .admin-cancel-btn {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .admin-cancel-btn:hover {
+            background: #7f8c8d;
+        }
+        
+        /* Admin Button Styling */
+        .admin-login-button, .admin-button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-login-button:hover {
+            background: #c0392b;
+        }
+        
+        .admin-button {
+            background: #27ae60;
+        }
+        
+        .admin-button:hover {
+            background: #229954;
+        }
+        
+        /* Shipspace navigation admin button styling */
+        .shipspace-nav .admin-login-button,
+        .shipspace-nav .admin-button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-left: 8px;
+        }
+        
+        .shipspace-nav .admin-login-button:hover {
+            background: #c0392b;
+        }
+        
+        .shipspace-nav .admin-button {
+            background: #27ae60;
+        }
+        
+        .shipspace-nav .admin-button:hover {
+            background: #229954;
+        }
+        
+        /* Dark theme admin modal */
+        body[data-theme="dark"] .admin-modal-content {
+            background: #2c3e50;
+            color: #ecf0f1;
+        }
+        
+        body[data-theme="dark"] .admin-modal-content h2 {
+            color: #ecf0f1;
+        }
+        
+        body[data-theme="dark"] .admin-modal-content input {
+            background: #34495e;
+            border-color: #4a5f7a;
+            color: #ecf0f1;
+        }
+        
+        /* Fall theme admin modal */
+        body[data-theme="fall"] .admin-modal-content {
+            background: var(--fall-sidebar-bg);
+            color: var(--fall-text);
+        }
+        
+        body[data-theme="fall"] .admin-modal-content h2 {
+            color: var(--fall-text);
+        }
+        
+        body[data-theme="fall"] .admin-modal-content input {
+            background: var(--fall-sidebar-active);
+            border-color: var(--fall-sidebar-border);
+            color: var(--fall-text);
+        }
+        
+        /* Notification System */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10002;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .notification {
+            background: #2c3e50;
+            color: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            min-width: 300px;
+            max-width: 400px;
+            position: relative;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            border-left: 4px solid #3498db;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .notification.success {
+            border-left-color: #27ae60;
+            background: #27ae60;
+        }
+        
+        .notification.error {
+            border-left-color: #e74c3c;
+            background: #e74c3c;
+        }
+        
+        .notification.warning {
+            border-left-color: #f39c12;
+            background: #f39c12;
+        }
+        
+        .notification.info {
+            border-left-color: #3498db;
+            background: #3498db;
+        }
+        
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .notification-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s ease;
+        }
+        
+        .notification-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .notification-message {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        /* Dark theme notifications */
+        body[data-theme="dark"] .notification {
+            background: #34495e;
+        }
+        
+        /* Fall theme notifications */
+        body[data-theme="fall"] .notification {
+            background: var(--fall-sidebar-bg);
+            color: var(--fall-text);
+            border-left-color: var(--fall-primary);
+        }
+        
+        body[data-theme="fall"] .notification.success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        body[data-theme="fall"] .notification.error {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        body[data-theme="fall"] .notification.warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        body[data-theme="fall"] .notification.info {
+            background: var(--fall-primary);
+            color: white;
+        }
+        
+        .reported i {
+            color: #ff6347 !important;
+        }
+        
+        #createButton {
+            background-color: var(--fall-primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        #createButton:hover {
+            background-color: var(--fall-secondary);
+        }
+        
+        #confirmationMessage {
+            color: var(--fall-text) !important;
+        }
+        
         
         body[data-theme="dark"] .cheats-subtitle {
             color: var(--text-dark);
@@ -3289,7 +3960,7 @@
 </head>
 <body data-theme="light">
     <div class="topbar">
-        <span class="hubble-gradient">Hubble<span class="alpha-badge" id="alpha-badge">Beta</span></span>
+        <span class="hubble-gradient">Hubble<span class="alpha-badge" id="alpha-badge">Beta 2.0</span></span>
     </div>
     <div class="layout">
         <nav class="sidebar" id="sidebar">
@@ -3297,6 +3968,7 @@
             <button class="nav-item" data-section="music">Music</button>
             <button class="nav-item" data-section="hacks">Cheats</button>
             <button class="nav-item" data-section="hall-of-fame">Hall of Fame</button>
+            <button class="nav-item" data-section="shipspace">ShipSpace</button>
         </nav>
         <main class="main-content" id="main-content">
             <div class="games-container">
@@ -3467,6 +4139,44 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- ShipSpace Section -->
+            <div class="shipspace-container" id="shipspace-container" style="display: none;">
+                <div class="shipspace-header">
+                    <h2 class="shipspace-title">ShipSpace (Add <strong>MORE</strong>)</h2>
+                    <p class="shipspace-subtitle">This might have been a mistake lol...</strong></p>
+                </div>
+                
+                <div class="shipspace-nav">
+                    <button onclick="showPage('shipsPage')">Ships</button>
+                    <button id="createButton" onclick="showPage('createPage')">Create</button>
+                    <button id="adminLoginButton" class="admin-login-button" onclick="adminLogin()">Admin Login</button>
+                    <button id="adminButton" class="admin-button hidden" onclick="showAdminPanel()">Admin Panel</button>
+                </div>
+
+                <div id="shipsPage">
+                    <input type="text" id="searchBar" placeholder="Search by name or ID..." oninput="filterShips()" />
+                    <div class="ships-container" id="shipList"></div>
+                </div>
+
+                <div id="createPage" class="hidden">
+                    <input type="text" id="name1" placeholder="Enter first name..." oninput="updatePreview()" />
+                    <input type="text" id="name2" placeholder="Enter second name..." oninput="updatePreview()" />
+                    <input type="text" id="creatorName" placeholder="Enter your name (optional)..." />
+                    <div class="heart-preview-wrapper">
+                        <div class="heart-preview">
+                            <img src="images/Heart.png" alt="Heart" />
+                            <div class="ship-shortcode" id="previewCode">N+N</div>
+                        </div>
+                        <button id="publishButton" onclick="submitShip()">Publish</button>
+                    </div>
+                </div>
+
+                <div id="confirmationPage" class="hidden">
+                    <p id="confirmationMessage"></p>
+                </div>
+
+            </div>
         </main>
     </div>
     <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
@@ -3476,6 +4186,22 @@
     
     <!-- Snowflakes container for winter theme -->
     <div class="snowflakes" id="snowflakes"></div>
+    
+    <!-- Admin Login Modal -->
+    <div id="adminModal" class="admin-modal hidden">
+        <div class="admin-modal-content">
+            <h2>Admin Login</h2>
+            <input type="password" id="adminInput" placeholder="Enter password..." />
+            <p id="adminError" class="admin-error hidden">Incorrect password. Try again.</p>
+            <div class="admin-modal-buttons">
+                <button onclick="validateAdminLogin()" class="admin-login-btn">Login</button>
+                <button onclick="closeAdminModal()" class="admin-cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="notification-container"></div>
     
     
     
@@ -4051,6 +4777,10 @@
         let currentGameData = null;
         let gameDataAutoSaveInterval = null;
         
+        // Admin functionality
+        let isAdmin = false;
+        let adminInterval = null;
+        
         
         // Function to capture game data from localStorage and cookies
         function captureGameData(gameName) {
@@ -4327,10 +5057,14 @@
         
         function createLeafBatch() {
             const fallingLeaves = document.getElementById('falling-leaves');
-            if (!fallingLeaves) return;
+            if (!fallingLeaves) {
+                console.warn('Falling leaves container not found in createLeafBatch');
+                return;
+            }
             
             // Create 3-5 leaves per batch
             const leafCount = 3 + Math.floor(Math.random() * 3);
+            console.log(`Creating ${leafCount} leaves`);
             
             for (let i = 0; i < leafCount; i++) {
                 const leaf = document.createElement('div');
@@ -4344,7 +5078,12 @@
                 const duration = 3 + Math.random() * 2; // 3-5 seconds
                 leaf.style.animationDuration = duration + 's';
                 
+                // Add some random horizontal drift
+                const driftAmount = (Math.random() - 0.5) * 20; // -10px to +10px
+                leaf.style.setProperty('--drift', driftAmount + 'px');
+                
                 fallingLeaves.appendChild(leaf);
+                console.log(`Added leaf at ${leftPosition}% with ${duration}s duration`);
                 
                 // Remove leaf after animation completes
                 setTimeout(() => {
@@ -4435,13 +5174,13 @@
             { name: "Eaglercraft", image: "images/Eaglercraft.png", url: "./games/EaglercraftX_1.8_u45_Offline_Signed (1).html", favorite: true },
             { name: "1v1.LOL", image: "images/1v1-lol.png", url: "./games/1v1.lol/index.html" },
             { name: "Ball Blast", image: "images/Ball-Blast.png", url: "./games/ball-blast.html" },
-            { name: "Multiplayer Appel", image: "images/Appel-Multiplayer.png", comingSoon: true },
+            { name: "Multiplayer Appel", image: "images/Appel-Multiplayer.png", url: "./games/appel-multiplayer.html"},
             { name: "2048", image: "images/2048.png", url: "./games/2048.html" },
             { name: "Volcanic Appel", image: "images/Volcanic-Appel.png", url: "./games/Volcanic-Appel.html" },
             { name: "Agar.io", image: "images/agario.png", url: "./games/agario.html" },
             { name: "Basketball Stars", image: "images/Basketball-Stars.png", url: "./games/basketball-stars/" },
             { name: "1", image: "images/1.png", url: "./games/1/" },
-            { name: "2048 Multitask", image: "images/2048-Multitask.png", comingSoon: true },
+            { name: "2048 Multitask", image: "images/2048-Mulitask.png", url: "./games/2048-multitask/" },
             { name: "Angry Birds", image: "images/Angry-Birds.png", url: "./games/angry-birds/" },
             { name: "Among Us", image: "images/Among-Us.png", url: "./games/among-us/" },
             { name: "The Binding Of Issac", image: "images/The-Binding-Of-Isaac.png", url: "./games/binding-of-isaac/" },
@@ -4547,8 +5286,9 @@
             { name: "New Game Coming Soon", image: "images/placeholder.png", comingSoon: true },
             { name: "Tag", image: "images/Tag.png", url: "./games/tag/index.html" },
             { name: "Sai Clicker", image: "images/Sai-Clicker.png", url: "./games/sai-clicker.html" },
-            { name: "Trick Or Treat", image: "images/Trick-Or-Treat.png.png", url: "./games/Trick-Or-Treat.html", releaseDate: "10/01/2025" },
-            { name: "Candy Clicker", image: "images/Candy-Clicker.png.png", url: "./games/Candy-Clicker.html", releaseDate: "10/01/2025" },
+            { name: "Trick Or Treat", image: "images/Trick-Or-Treat.png", url: "./games/Trick-Or-Treat.html", spooky: true },
+            { name: "Candy Clicker", image: "images/Candy-Clicker.png", url: "./games/Candy-Clicker.html", spooky: true },
+            { name: "YouTube Test", image: "images/placeholder.png", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
             
         ];
 
@@ -4681,11 +5421,20 @@
                     clickHandler = ''; // No click handler for coming soon games
                 }
                 
+                // Check if game is spooky
+                const isSpooky = game.spooky;
+                
+                // Debug logging for spooky games
+                if (isSpooky) {
+                    console.log('Spooky game found in favorites:', game.name);
+                }
+
                 return `
                 <div class="${cssClasses}" ${clickHandler}>
                     <img src="${game.image}" alt="${game.name}" class="game-image" loading="lazy" 
                          onerror="showGamePlaceholder(this, '${abbreviation}', '${colorScheme.primary}', '${colorScheme.secondary}')">
                     <h3 class="game-name">${game.name}</h3>
+                    ${isSpooky ? '<div class="spooky-label">Spooky</div>' : ''}
                 </div>
                 `;
             }).join('');
@@ -4747,11 +5496,20 @@
                     clickHandler = ''; // No click handler for coming soon games
                 }
                 
+                // Check if game is spooky
+                const isSpooky = game.spooky;
+                
+                // Debug logging for spooky games
+                if (isSpooky) {
+                    console.log('Spooky game found:', game.name);
+                }
+                
                 return `
                 <div class="${cssClasses}" ${clickHandler}>
                     <img src="${game.image}" alt="${game.name}" class="game-image" loading="lazy" 
                          onerror="showGamePlaceholder(this, '${abbreviation}', '${colorScheme.primary}', '${colorScheme.secondary}')">
                     <h3 class="game-name">${game.name}</h3>
+                    ${isSpooky ? '<div class="spooky-label">Spooky</div>' : ''}
                 </div>
                 `;
             }).join('');
@@ -4892,11 +5650,189 @@ game.name.toLowerCase().includes(searchTerm)
                 return;
             }
             
+            // Check if URL is a YouTube video
+            if (isYouTubeUrl(gameUrl)) {
+                playYouTubeAudio(gameUrl);
+            }
+            
             gameContent.src = gameUrl;
             gameFullscreen.style.display = 'flex';
             
             // Modify header for game mode
             enterGameMode(gameName);
+        }
+        
+        // Function to detect YouTube URLs
+        function isYouTubeUrl(url) {
+            const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/;
+            return youtubeRegex.test(url);
+        }
+        
+        // Function to extract YouTube video ID
+        function getYouTubeVideoId(url) {
+            const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+        
+        // Function to play YouTube audio
+        function playYouTubeAudio(url) {
+            const videoId = getYouTubeVideoId(url);
+            if (!videoId) {
+                console.error('Could not extract YouTube video ID from URL:', url);
+                return;
+            }
+            
+            // Create audio element if it doesn't exist
+            let audioPlayer = document.getElementById('youtube-audio-player');
+            if (!audioPlayer) {
+                audioPlayer = document.createElement('audio');
+                audioPlayer.id = 'youtube-audio-player';
+                audioPlayer.controls = false;
+                audioPlayer.autoplay = true;
+                audioPlayer.loop = false;
+                audioPlayer.volume = 0.5; // Set volume to 50%
+                audioPlayer.style.display = 'none';
+                document.body.appendChild(audioPlayer);
+            }
+            
+            // Try multiple methods to get YouTube audio
+            tryYouTubeAudioExtraction(videoId, audioPlayer);
+            
+            // Show notification
+            showYouTubeAudioNotification(videoId);
+        }
+        
+        // Function to try different methods for YouTube audio extraction
+        function tryYouTubeAudioExtraction(videoId, audioPlayer) {
+            // Method 1: Try using a CORS proxy with YouTube audio extraction
+            const proxyUrls = [
+                `https://cors-anywhere.herokuapp.com/https://www.youtube.com/watch?v=${videoId}`,
+                `https://api.allorigins.win/raw?url=https://www.youtube.com/watch?v=${videoId}`,
+                `https://corsproxy.io/?https://www.youtube.com/watch?v=${videoId}`
+            ];
+            
+            // Method 2: Try using a YouTube audio extraction service
+            const audioServices = [
+                `https://www.youtube.com/watch?v=${videoId}`,
+                `https://youtu.be/${videoId}`,
+                `https://www.youtube.com/embed/${videoId}`
+            ];
+            
+            // Try to load audio using iframe with autoplay
+            createYouTubeAudioIframe(videoId);
+            
+            // Also try direct audio loading (this may not work due to CORS)
+            audioPlayer.src = `https://www.youtube.com/watch?v=${videoId}`;
+            audioPlayer.load();
+            
+            audioPlayer.addEventListener('error', (e) => {
+                console.log('Direct audio loading failed, trying alternative methods...');
+                // Try alternative audio sources
+                tryAlternativeAudioSources(videoId, audioPlayer);
+            });
+        }
+        
+        // Function to create YouTube audio iframe
+        function createYouTubeAudioIframe(videoId) {
+            // Remove existing iframe if any
+            const existingIframe = document.getElementById('youtube-audio-iframe');
+            if (existingIframe) {
+                existingIframe.remove();
+            }
+            
+            // Create iframe for YouTube audio
+            const iframe = document.createElement('iframe');
+            iframe.id = 'youtube-audio-iframe';
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=0&showinfo=0&rel=0&modestbranding=1&loop=0&playlist=${videoId}`;
+            iframe.style.cssText = `
+                position: fixed;
+                top: -1000px;
+                left: -1000px;
+                width: 1px;
+                height: 1px;
+                opacity: 0;
+                pointer-events: none;
+                z-index: -1;
+            `;
+            iframe.allow = 'autoplay; encrypted-media';
+            iframe.allowFullscreen = false;
+            
+            document.body.appendChild(iframe);
+            
+            // Remove iframe after 30 seconds to prevent memory issues
+            setTimeout(() => {
+                if (iframe.parentNode) {
+                    iframe.remove();
+                }
+            }, 30000);
+        }
+        
+        // Function to try alternative audio sources
+        function tryAlternativeAudioSources(videoId, audioPlayer) {
+            // This is a placeholder for alternative audio extraction methods
+            // In a real implementation, you would use a backend service or API
+            console.log('Trying alternative audio sources for video:', videoId);
+            
+            // You could integrate with services like:
+            // - YouTube Data API
+            // - Third-party audio extraction services
+            // - Backend audio processing
+        }
+        
+        // Function to show YouTube audio notification
+        function showYouTubeAudioNotification(videoId) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.id = 'youtube-audio-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #ff0000, #cc0000);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                font-family: 'Poppins', sans-serif;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3);
+                animation: slideInRight 0.3s ease-out;
+            `;
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>🎵</span>
+                    <span>Playing YouTube Audio</span>
+                </div>
+                <div style="font-size: 0.9rem; opacity: 0.9; margin-top: 5px;">
+                    Video ID: ${videoId}
+                </div>
+            `;
+            
+            // Add CSS animation
+            if (!document.getElementById('youtube-audio-styles')) {
+                const style = document.createElement('style');
+                style.id = 'youtube-audio-styles';
+                style.textContent = `
+                    @keyframes slideInRight {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(notification);
+            
+            // Remove notification after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideInRight 0.3s ease-out reverse';
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }
+            }, 5000);
         }
         
         function enterGameMode(gameName) {
@@ -5492,6 +6428,7 @@ game.name.toLowerCase().includes(searchTerm)
             const musicContainer = document.querySelector('.music-container');
             const hallOfFameContainer = document.querySelector('.hall-of-fame-container');
             const hacksContainer = document.querySelector('.hacks-container');
+            const shipspaceContainer = document.querySelector('.shipspace-container');
             
             navItems.forEach(item => {
                 item.addEventListener('click', function() {
@@ -5508,21 +6445,31 @@ game.name.toLowerCase().includes(searchTerm)
                         musicContainer.style.display = 'none';
                         hallOfFameContainer.style.display = 'none';
                         hacksContainer.style.display = 'none';
+                        shipspaceContainer.style.display = 'none';
                     } else if (section === 'music') {
                         gamesContainer.style.display = 'none';
                         musicContainer.style.display = 'block';
                         hallOfFameContainer.style.display = 'none';
                         hacksContainer.style.display = 'none';
+                        shipspaceContainer.style.display = 'none';
                     } else if (section === 'hall-of-fame') {
                         gamesContainer.style.display = 'none';
                         musicContainer.style.display = 'none';
                         hallOfFameContainer.style.display = 'block';
                         hacksContainer.style.display = 'none';
+                        shipspaceContainer.style.display = 'none';
                     } else if (section === 'hacks') {
                         gamesContainer.style.display = 'none';
                         musicContainer.style.display = 'none';
                         hallOfFameContainer.style.display = 'none';
                         hacksContainer.style.display = 'block';
+                        shipspaceContainer.style.display = 'none';
+                    } else if (section === 'shipspace') {
+                        gamesContainer.style.display = 'none';
+                        musicContainer.style.display = 'none';
+                        hallOfFameContainer.style.display = 'none';
+                        hacksContainer.style.display = 'none';
+                        shipspaceContainer.style.display = 'block';
                     }
                 });
             });
@@ -5705,6 +6652,7 @@ game.name.toLowerCase().includes(searchTerm)
             newTab.document.write(htmlContent);
             newTab.document.close();
         }
+        
         
         
 
@@ -6072,6 +7020,440 @@ game.name.toLowerCase().includes(searchTerm)
         
     </script>
 
+    <!-- Firebase Scripts for ShipSpace -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    
+    <!-- ShipSpace JavaScript -->
+    <script>
+        // Firebase Configuration
+        const dataConfig = {
+            apiKey: "AIzaSyAuaEVKu-LJpRiD-FuSFmY2JURgxhbol3c",
+            authDomain: "shipspace-cee83.firebaseapp.com",
+            projectId: "shipspace-cee83",
+            storageBucket: "shipspace-cee83.firebasestorage.app",
+            messagingSenderId: "701760005847",
+            appId: "1:701760005847:web:ce6977a9b05b2383b2f292",
+            measurementId: "G-4RPTWZFCVZ"
+        };
+        const defaultApp = firebase.initializeApp(dataConfig);
+        const db = defaultApp.firestore();
+
+        const secretConfig = {
+            apiKey: "AIzaSyBaxpqErDqKEKQZ1fWRMViFC04YCiFdOo8",
+            authDomain: "passwordstorage-ca657.firebaseapp.com",
+            databaseURL: "https://passwordstorage-ca657-default-rtdb.firebaseio.com",
+            projectId: "passwordstorage-ca657",
+            storageBucket: "passwordstorage-ca657.firebasestorage.app",
+            messagingSenderId: "375299086403",
+            appId: "1:375299086403:web:c15c70d415bc1455e61cf6",
+            measurementId: "G-P36MVR9DYJ"
+        };
+        const secretApp = firebase.initializeApp(secretConfig, "secretApp");
+        const secretDb = secretApp.database();
+
+        let ships = [];
+
+        function showPage(pageId) {
+            document.getElementById('shipsPage').classList.add('hidden');
+            document.getElementById('createPage').classList.add('hidden');
+            document.getElementById('confirmationPage').classList.add('hidden');
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+        function updatePreview() {
+            const n1 = document.getElementById('name1').value.charAt(0).toUpperCase() || 'N';
+            const n2 = document.getElementById('name2').value.charAt(0).toUpperCase() || 'N';
+            document.getElementById('previewCode').innerText = `${n1}+${n2}`;
+        }
+
+        async function generateUniqueID() {
+            let id;
+            let exists = true;
+            while (exists) {
+                id = Math.random().toString(36).substr(2, 6);
+                const doc = await db.collection("ships").doc(id).get();
+                exists = doc.exists;
+            }
+            return id;
+        }
+
+        let blacklistWords = [];
+
+        fetch('blacklistwords.txt')
+            .then(response => response.text())
+            .then(data => {
+                blacklistWords = data.split('\n').map(word => word.trim().toLowerCase()).filter(Boolean);
+            });
+            
+        async function submitShip() {
+            const name1 = document.getElementById('name1').value.trim();
+            const name2 = document.getElementById('name2').value.trim();
+            const creator = document.getElementById('creatorName').value.trim() || 'Anonymous';
+
+            if (!name1 || !name2) {
+                alert("Please fill out both name fields.");
+                return;
+            }
+
+            const allFields = [name1, name2, creator].join(' ').toLowerCase();
+            for (const word of blacklistWords) {
+                if (allFields.includes(word)) {
+                    alert("Your submission contains inappropriate content and cannot be published.");
+                    return;
+                }
+            }
+
+            const now = firebase.firestore.Timestamp.now();
+            const sixtySecondsAgo = new Date(Date.now() - 60000);
+
+            const duplicateQuery = await db.collection("ships")
+                .where("name1", "==", name1)
+                .where("name2", "==", name2)
+                .get();
+
+            const duplicate = duplicateQuery.docs.find(doc => {
+                const data = doc.data();
+                return data.createdAt && data.createdAt.toDate() > sixtySecondsAgo;
+            });
+
+            if (duplicate) {
+                alert("This exact ship was already published within the last 60 seconds. Please restrain yourself from sending duplicate ships.");
+                return;
+            }
+
+            const id = await generateUniqueID();
+            const ship = { id, name1, name2, creator, upvotes: 0, isReported: false, upvoters: [], createdAt: firebase.firestore.Timestamp.now() };
+
+            await db.collection("ships").doc(id).set(ship);
+            document.getElementById('confirmationMessage').innerText = `Your ship has been published and your ship ID is ${id}`;
+            showPage('confirmationPage');
+            loadShips();
+        }
+
+        async function loadShips() {
+            const snapshot = await db.collection("ships").get();
+            ships = snapshot.docs.map(doc => doc.data());
+            renderShips();
+        }
+
+        function renderShips() {
+            const shipList = document.getElementById('shipList');
+            shipList.innerHTML = '';
+            ships
+                .sort((a, b) => b.upvotes - a.upvotes)
+                .forEach(ship => {
+                    const card = createShipCard(ship);
+                    shipList.appendChild(card);
+                });
+        }
+
+        firebase.auth().signInAnonymously().then(userCred => {
+            window.currentUser = userCred.user;
+            console.log("Signed in as anonymous user:", window.currentUser.uid);
+        });
+
+
+        function createShipCard(ship) {
+            const card = document.createElement('div');
+            card.className = 'ship-card';
+            const userId = window.currentUser?.uid;
+            const hasVoted = ship.upvoters?.includes(userId);
+            const upvoteClass = hasVoted ? 'upvoted' : '';
+            const reportClass = ship.isReported ? 'reported' : '';
+            card.innerHTML = `
+                <div class="ship-title">${ship.name1} + ${ship.name2}</div>
+                <div class="heart-preview">
+                    <img src="images/Heart.png" alt="Heart" />
+                    <div class="ship-shortcode">${ship.name1.charAt(0)}+${ship.name2.charAt(0)}</div>
+                </div>
+                <div class="card-footer">
+                    <div>
+                        <button onclick="upvote('${ship.id}', this)" title="Upvote" class="${upvoteClass}">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <span>${ship.upvotes}</span>
+                    </div>
+                    <div>
+                        <button onclick="reportShip('${ship.id}', this)" title="Report" class="${reportClass}">
+                            <i class="fas fa-flag"></i>
+                        </button>
+                        ${isAdmin ? `<button onclick="deleteShip('${ship.id}')" title="Delete Ship" class="admin-delete-btn" style="background: #e74c3c; color: white; margin-left: 8px;">
+                            <i class="fas fa-trash"></i>
+                        </button>` : ''}
+                    </div>
+                </div>
+                <div class="card-meta">
+                    <span class="creator-text">by ${ship.creator}</span>
+                    <span class="ship-id" onclick="copyID('${ship.id}', this)">ID: ${ship.id}</span>
+                </div>
+            `;
+            card.dataset.id = ship.id;
+            return card;
+        }
+
+        async function upvote(id, btn) {
+            const userId = window.currentUser?.uid;
+            if (!userId) {
+                showNotification('Sign In Required', 'Please sign in to upvote ships!', 'warning', 3000);
+                return;
+            }
+
+            const ref = db.collection("ships").doc(id);
+            const doc = await ref.get();
+            const data = doc.data();
+
+            // Check if user already voted (unless they're admin)
+            if (!isAdmin && data.upvoters?.includes(userId)) {
+                showNotification('Already Voted', 'You have already upvoted this ship!', 'info', 3000);
+                return;
+            }
+
+            // Update upvotes and voters (unless admin, then just upvotes)
+            if (isAdmin) {
+                await ref.update({
+                    upvotes: firebase.firestore.FieldValue.increment(1)
+                });
+                showNotification('Admin Upvote', 'Ship upvoted successfully!', 'success', 2000);
+            } else {
+                await ref.update({
+                    upvotes: firebase.firestore.FieldValue.increment(1),
+                    upvoters: firebase.firestore.FieldValue.arrayUnion(userId)
+                });
+                showNotification('Upvoted!', 'Thanks for upvoting this ship!', 'success', 2000);
+            }
+
+            btn.classList.add('upvoted');
+            loadShips();
+        }
+
+
+        async function reportShip(id) {
+            const ref = db.collection("ships").doc(id);
+            const doc = await ref.get();
+
+            if (!doc.exists) {
+                showNotification('Error', 'Ship not found.', 'error', 3000);
+                return;
+            }
+
+            const currentStatus = doc.data().isReported;
+
+            if (!currentStatus) {
+                await ref.update({ isReported: true });
+                showNotification('Reported', 'Ship has been reported successfully!', 'success', 3000);
+            } else {
+                showNotification('Already Reported', 'This ship has already been reported.', 'info', 3000);
+            }
+
+            loadShips();
+        }
+
+
+        function filterShips() {
+            const query = document.getElementById('searchBar').value.toLowerCase();
+            const cards = document.getElementById('shipList').children;
+            Array.from(cards).forEach(card => {
+                const id = card.dataset.id;
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(query) || id.includes(query) ? '' : 'none';
+            });
+        }
+
+
+        function copyID(id, element) {
+            navigator.clipboard.writeText(id).then(() => {
+                const originalText = element.innerText;
+                element.innerText = "Copied!";
+                setTimeout(() => {
+                    element.innerText = originalText;
+                }, 1000);
+            });
+        }
+            
+
+        // Admin Login Functions
+        function adminLogin() {
+            console.log('Opening admin modal...');
+            const modal = document.getElementById('adminModal');
+            const errorEl = document.getElementById('adminError');
+            const inputEl = document.getElementById('adminInput');
+            
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                console.log('Modal opened');
+                
+                // Add click outside to close
+                modal.onclick = function(e) {
+                    if (e.target === modal) {
+                        closeAdminModal();
+                    }
+                };
+                
+                // Add Enter key listener
+                if (inputEl) {
+                    inputEl.onkeypress = function(e) {
+                        if (e.key === 'Enter') {
+                            validateAdminLogin();
+                        }
+                    };
+                }
+            }
+            
+            if (errorEl) {
+                errorEl.classList.add('hidden');
+            }
+            
+            if (inputEl) {
+                inputEl.value = '';
+                inputEl.focus();
+            }
+        }
+        
+        function closeAdminModal() {
+            console.log('Closing admin modal...');
+            const modal = document.getElementById('adminModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+                console.log('Modal closed');
+            }
+        }
+        
+        function validateAdminLogin() {
+            console.log('Validating admin login...');
+            const enteredPassword = document.getElementById('adminInput').value.trim();
+            const errEl = document.getElementById('adminError');
+            const modal = document.getElementById('adminModal');
+            const loginBtn = document.getElementById('adminLoginButton');
+            const adminBtn = document.getElementById('adminButton');
+            
+            if (errEl) {
+                errEl.classList.add('hidden');
+            }
+            
+            // Simple password check (you can change this password)
+            const adminPassword = 'Ilikefrogs11'; // Change this to your desired password
+            
+            console.log('Entered password:', enteredPassword);
+            console.log('Expected password:', adminPassword);
+            console.log('Passwords match:', enteredPassword === adminPassword);
+            
+            // Show notification with debug info
+            showNotification('Debug Info', `Entered: "${enteredPassword}" | Expected: "${adminPassword}" | Match: ${enteredPassword === adminPassword}`, 'info', 5000);
+            
+            if (enteredPassword === adminPassword) {
+                isAdmin = true;
+                console.log('Admin login successful!');
+                
+                // Close modal
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.style.display = 'none';
+                }
+                
+                // Switch buttons
+                if (loginBtn) {
+                    loginBtn.classList.add('hidden');
+                }
+                if (adminBtn) {
+                    adminBtn.classList.remove('hidden');
+                }
+                
+                // Show success notification
+                showNotification('Admin Login', 'Successfully logged in as admin!', 'success', 3000);
+                
+                // Refresh ships to show admin controls
+                if (typeof loadShips === 'function') {
+                    loadShips();
+                }
+            } else {
+                console.log('Incorrect password');
+                if (errEl) {
+                    errEl.textContent = "Incorrect password. Try again.";
+                    errEl.classList.remove('hidden');
+                }
+                showNotification('Login Failed', 'Incorrect password. Please try again.', 'error', 3000);
+            }
+        }
+        
+        function showAdminPanel() {
+            // Show admin panel notification instead of alert
+            showNotification('Admin Panel', 'You have admin privileges!\n\nAdmin features:\n- Can upvote multiple times\n- Can delete ships\n- Can manage reported ships', 'info', 5000);
+        }
+        
+        // Notification System Functions
+        function showNotification(title, message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notificationContainer');
+            if (!container) return;
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            notification.innerHTML = `
+                <div class="notification-header">
+                    <div class="notification-title">${title}</div>
+                    <button class="notification-close" onclick="closeNotification(this)">×</button>
+                </div>
+                <div class="notification-message">${message}</div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Trigger animation
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            // Auto remove after duration
+            if (duration > 0) {
+                setTimeout(() => {
+                    closeNotification(notification.querySelector('.notification-close'));
+                }, duration);
+            }
+        }
+        
+        function closeNotification(closeBtn) {
+            const notification = closeBtn.closest('.notification');
+            if (notification) {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }
+        
+        async function deleteShip(id) {
+            if (!isAdmin) {
+                showNotification('Access Denied', 'Only admins can delete ships!', 'error', 3000);
+                return;
+            }
+            
+            try {
+                await db.collection("ships").doc(id).delete();
+                console.log('Ship deleted successfully');
+                showNotification('Success', 'Ship deleted successfully!', 'success', 3000);
+                loadShips(); // Refresh the list
+            } catch (error) {
+                console.error('Error deleting ship:', error);
+                showNotification('Error', 'Failed to delete ship. Please try again.', 'error', 4000);
+            }
+        }
+        
+        // Initialize ShipSpace when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Only initialize if we're on the shipspace section
+            if (document.querySelector('.shipspace-container')) {
+                loadShips();
+            }
+        });
+    </script>
+    
     <!-- Watermark Component -->
     <script type="module" src="./watermark.js"></script>
     

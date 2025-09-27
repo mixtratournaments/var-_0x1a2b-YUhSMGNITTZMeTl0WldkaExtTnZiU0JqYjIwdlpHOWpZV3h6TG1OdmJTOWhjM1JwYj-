@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Afterlife | ShipSpace</title>
+  <link rel="icon" type="image/x-icon" href="IMGS/Orion.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/d063d200ea.js" crossorigin="anonymous"></script>
+  <script>
+    function updateTime() {
+      const now = new Date();
+      document.getElementById("time").textContent = now.toLocaleString("en-US", {
+        weekday: "long",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+      });
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+  </script>
+  <style>
+    .nav-bar a {
+      position: relative;
+    }
+    .nav-bar a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -2px;
+      width: 100%;
+      height: 2px;
+      background-color: rgba(168, 85, 247, 0.6);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .nav-bar a:hover::after {
+      transform: scaleX(1);
+    }
+    .embedded-content {
+    color: rgb(0, 0, 0);
+  }
+
+  .embedded-content * {
+    color: inherit !important;
+  }
+  .embedded-content .title {
+  color: white !important;
+}
+
+.embedded-content .ship-shortcode {
+  color: white !important;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+}
+
+  </style>
+</head>
+<body class="bg-black text-white font-sans relative min-h-screen overflow-x-hidden m-0 p-0 w-screen">
+
+  <canvas id="particleCanvas" class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none"></canvas>
+
+  <audio id="background-music" autoplay loop>
+    <source src="background-music.mp3" type="audio/mpeg" />
+  </audio>
+
+  <header class="w-screen bg-gray-900 flex items-center justify-center py-6 px-0 space-x-4 m-0 relative z-10">
+    <img src="IMGS/Orion.png" alt="Logo" class="w-16 h-16" />
+    <div class="text-center">
+      <h1 class="text-4xl font-bold">Afterlife Gaming</h1>
+      <div id="time" class="text-sm text-gray-300"></div>
+    </div>
+  </header>
+
+  <div class="h-1 bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-500 z-20 relative"></div>
+
+  <nav class="nav-bar w-screen bg-gray-800 p-4 flex justify-center gap-6 text-lg m-0 z-10 relative">
+    <a href="index.html" class="hover:text-purple-400 nav-tab"><i class="fas fa-home"></i> Home</a>
+    <a href="Games.html" class="hover:text-purple-400 nav-tab"><i class="fas fa-gamepad"></i> Games</a>
+    <a href="chat.html" class="hover:text-purple-400 nav-tab"><i class="fas fa-comments"></i> Chat</a>
+    <a href="Forms.html" class="hover:text-purple-400 nav-tab"><i class="fa-solid fa-pen-to-square"></i> Forms</a>
+    <a href="Haks.html" class="hover:text-purple-400"><i class="fa-solid fa-bolt"></i> Hacks</a>
+    <a href="Leaderboard.html" class="hover:text-purple-400"><i class="fa-solid fa-medal"></i> Leaderboard</a>
+    <a href="Ships.html" class="hover:text-purple-400"><i class="fa-solid fa-heart"></i> ShipSpace</a>
+  </nav>
+
+  <canvas id="particleCanvas" class="fixed top-0 left-0 w-screen h-screen -z-10 pointer-events-none"></canvas>
+  <script>
+    const canvas = document.getElementById("particleCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    class Particle {
+      constructor() {
+        this.radius = Math.random() * 6 + 4;
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height + this.radius;
+        this.speedY = Math.random() * 4 + 2;
+        this.opacity = Math.random() * 0.5 + 0.5;
+      }
+
+      update() {
+        this.y -= this.speedY;
+        if (this.y < -this.radius) {
+          this.y = canvas.height + this.radius;
+          this.x = Math.random() * canvas.width;
+        }
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = "rgba(82, 23, 124, 1)";
+        ctx.fillStyle = `rgba(82, 23, 124, ${this.opacity})`;
+        ctx.fill();
+        ctx.closePath();
+      }
+    }
+
+    let particles = [];
+    function initParticles() {
+      particles = [];
+      for (let i = 0; i < 100; i++) {
+        particles.push(new Particle());
+      }
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+
+    resizeCanvas();
+    initParticles();
+    animateParticles();
+    window.addEventListener("resize", resizeCanvas);
+  </script>
+
+<div class="w-full px-4 py-8 flex justify-center z-10 relative">
+  <div class="w-full max-w-7xl embedded-content">
+    <!DOCTYPE html>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Afterlife | ShipSpace</title>
+  <script src="https://kit.fontawesome.com/d063d200ea.js" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <style>
+   * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  background: #f0f2f5;
+  padding: 20px;
+  color: #333;
+}
+
+.embedded-content header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #c4c4c4;
+  padding-bottom: 15px;
+  margin-bottom: 30px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 
+}
+
+.skib {
+  color: yellow !important;
+  font-size: 18px;
+  font-weight: bold;
+  text-shadow:
+    0 0 5px orange,
+    0 0 10px orange,
+    0 0 15px orange,
+    0 0 25px orange;
+}
+
+nav button {
+  margin: 0 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  background: #e4e6eb;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+nav button:hover {
+  background: #d1d3d6;
+}
+
+#searchBar {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.ships-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.ship-card {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+.ship-card:hover {
+  transform: translateY(-3px);
+}
+
+.ship-title {
+  font-weight: 600;
+  font-size: 18px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.heart-preview-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.heart-preview {
+  position: relative;
+  width: 500px;
+  max-width: 100%;
+}
+
+.heart-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.ship-shortcode {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 14px;
+}
+
+.card-footer button {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.card-footer button:hover {
+  opacity: 0.7;
+}
+
+.card-footer span {
+  font-size: 16px;
+  margin-left: 6px;
+  font-weight: bold;
+  color: #333;
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 12px;
+  font-size: 14px;
+  color: #777;
+}
+
+.ship-id {
+  font-family: monospace;
+  font-weight: bold;
+  background: #f1f1f1;
+  padding: 3px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.ship-id:hover {
+  background: #e2e2e2;
+}
+
+.hidden {
+  display: none;
+}
+
+#createPage input,
+#adminPassword {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 14px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+#publishButton {
+  margin-top: 14px;
+  padding: 12px 24px;
+  background: #007bff;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+#publishButton:hover {
+  box-shadow: 0 6px 18px rgba(0, 123, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+#confirmationPage {
+  text-align: center;
+  font-size: 20px;
+  padding: 40px;
+}
+    .card-footer button i {
+  font-size: 18px;
+  color: #444;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.card-footer button:hover i {
+  color: #ADD8E6;
+  transform: translateY(-1px);
+}
+
+    .upvoted i {
+  color: #007bff !important;
+}
+    .reported i {
+  color: red !important;
+}
+#createButton {
+  background-color: #e63946; /* a warm, loving red */
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#createButton:hover {
+  background-color: #d62828;
+}
+#confirmationMessage {
+  color: white !important;
+}
+  </style>
+<div id="adminModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm text-black">
+    <h2 class="text-xl font-bold mb-4 text-center">Admin Login</h2>
+    <input type="password" id="adminInput" class="w-full border border-gray-300 rounded px-4 py-2 mb-2" placeholder="Enter password...">
+    <p id="adminError" class="text-red-500 text-sm mb-2 hidden">Incorrect password. Try again.</p>
+    <div class="flex justify-between">
+      <button onclick="validateAdminLogin()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Login</button>
+      <button onclick="closeAdminModal()" class="text-gray-500 hover:text-black">Cancel</button>
+    </div>
+  </div>
+</div>
+<body>
+  <header>
+    <div class="title">ShipSpace (Add <strong>MORE</strong>)</div>
+    <div class="skib"><h4>If you are unpleased with a ship, click the report button<br> 
+      and email <strong><a href="mailto:afterlifegaminghelp@outlook.com?subject=Unpleased%20With%20Ship%20" class="text-purple-300 underline" target="_blank">afterlifegaminghelp@outlook.com</a></strong> for support.</h4></div>
+    <nav>
+      <button onclick="showPage('shipsPage')">Ships</button>
+      <button id="createButton" onclick="showPage('createPage')">Create</button>
+      <button id="adminLoginButton" onclick="adminLogin()">Admin Login</button>
+      <button id="adminButton" class="hidden" onclick="showPage('reportedPage')">Reported Ships</button>
+    </nav>
+  </header>
+
+  <div id="shipsPage">
+    <input type="text" id="searchBar" placeholder="Search by name or ID..." oninput="filterShips()" />
+    <div class="ships-container" id="shipList"></div>
+  </div>
+
+  <div id="createPage" class="hidden">
+    <input type="text" id="name1" placeholder="Enter first name..." oninput="updatePreview()" />
+    <input type="text" id="name2" placeholder="Enter second name..." oninput="updatePreview()" />
+    <input type="text" id="creatorName" placeholder="Enter your name (optional)..." />
+    <div class="heart-preview-wrapper">
+      <div class="heart-preview">
+        <img src="IMGS/Heart.png" alt="Heart" />
+        <div class="ship-shortcode" id="previewCode">N+N</div>
+      </div>
+      <button id="publishButton" onclick="submitShip()">Publish</button>
+    </div>
+  </div>
+
+  <div id="confirmationPage" class="hidden">
+    <p id="confirmationMessage"></p>
+  </div>
+
+  <div id="reportedPage" class="hidden">
+    <div class="ships-container" id="reportedList"></div>
+  </div>
+
+  <script>
+  const dataConfig = {
+    apiKey: "AIzaSyAuaEVKu-LJpRiD-FuSFmY2JURgxhbol3c",
+    authDomain: "shipspace-cee83.firebaseapp.com",
+    projectId: "shipspace-cee83",
+    storageBucket: "shipspace-cee83.firebasestorage.app",
+    messagingSenderId: "701760005847",
+    appId: "1:701760005847:web:ce6977a9b05b2383b2f292",
+    measurementId: "G-4RPTWZFCVZ"
+  };
+  const defaultApp = firebase.initializeApp(dataConfig);
+  const db         = defaultApp.firestore();
+
+  const secretConfig = {
+    apiKey: "AIzaSyBaxpqErDqKEKQZ1fWRMViFC04YCiFdOo8",
+    authDomain: "passwordstorage-ca657.firebaseapp.com",
+    databaseURL: "https://passwordstorage-ca657-default-rtdb.firebaseio.com",
+    projectId: "passwordstorage-ca657",
+    storageBucket: "passwordstorage-ca657.firebasestorage.app",
+    messagingSenderId: "375299086403",
+    appId: "1:375299086403:web:c15c70d415bc1455e61cf6",
+    measurementId: "G-P36MVR9DYJ"
+  };
+  const secretApp = firebase.initializeApp(secretConfig, "secretApp");
+  const secretDb  = secretApp.database();
+
+
+    let ships = [];
+    let isAdmin = false;
+
+    function showPage(pageId) {
+      document.getElementById('shipsPage').classList.add('hidden');
+      document.getElementById('createPage').classList.add('hidden');
+      document.getElementById('confirmationPage').classList.add('hidden');
+      document.getElementById('reportedPage').classList.add('hidden');
+      document.getElementById(pageId).classList.remove('hidden');
+    }
+
+    function updatePreview() {
+      const n1 = document.getElementById('name1').value.charAt(0).toUpperCase() || 'N';
+      const n2 = document.getElementById('name2').value.charAt(0).toUpperCase() || 'N';
+      document.getElementById('previewCode').innerText = `${n1}+${n2}`;
+    }
+
+    async function generateUniqueID() {
+      let id;
+      let exists = true;
+      while (exists) {
+        id = Math.random().toString(36).substr(2, 6);
+        const doc = await db.collection("ships").doc(id).get();
+        exists = doc.exists;
+      }
+      return id;
+    }
+
+      let blacklistWords = [];
+
+  fetch('blacklistwords.txt')
+    .then(response => response.text())
+    .then(data => {
+      blacklistWords = data.split('\n').map(word => word.trim().toLowerCase()).filter(Boolean);
+    });
+    
+  async function submitShip() {
+    const name1 = document.getElementById('name1').value.trim();
+    const name2 = document.getElementById('name2').value.trim();
+    const creator = document.getElementById('creatorName').value.trim() || 'Anonymous';
+
+    if (!name1 || !name2) {
+      alert("Please fill out both name fields.");
+      return;
+    }
+
+    const allFields = [name1, name2, creator].join(' ').toLowerCase();
+    for (const word of blacklistWords) {
+      if (allFields.includes(word)) {
+        alert("Your submission contains inappropriate content and cannot be published.");
+        return;
+      }
+    }
+
+    const now = firebase.firestore.Timestamp.now();
+const sixtySecondsAgo = new Date(Date.now() - 60000);
+
+const duplicateQuery = await db.collection("ships")
+  .where("name1", "==", name1)
+  .where("name2", "==", name2)
+  .get();
+
+const duplicate = duplicateQuery.docs.find(doc => {
+  const data = doc.data();
+  return data.createdAt && data.createdAt.toDate() > sixtySecondsAgo;
+});
+
+if (duplicate) {
+  alert("This exact ship was already published within the last 60 seconds. Please restrain yourself from sending duplicate ships.");
+  return;
+}
+
+    const id = await generateUniqueID();
+    const ship = { id, name1, name2, creator, upvotes: 0, isReported: false, upvoters: [], createdAt: firebase.firestore.Timestamp.now() };
+
+    await db.collection("ships").doc(id).set(ship);
+    document.getElementById('confirmationMessage').innerText = `Your ship has been published and your ship ID is ${id}`;
+    showPage('confirmationPage');
+    loadShips();
+  }
+
+    async function loadShips() {
+      const snapshot = await db.collection("ships").get();
+      ships = snapshot.docs.map(doc => doc.data());
+      renderShips();
+      renderReported();
+    }
+
+    function renderShips() {
+      const shipList = document.getElementById('shipList');
+      shipList.innerHTML = '';
+      ships
+        .sort((a, b) => b.upvotes - a.upvotes)
+        .forEach(ship => {
+          const card = createShipCard(ship);
+          shipList.appendChild(card);
+        });
+    }
+
+    firebase.auth().signInAnonymously().then(userCred => {
+  window.currentUser = userCred.user;
+  console.log("Signed in as anonymous user:", window.currentUser.uid);
+});
+
+    function renderReported() {
+      const reportedList = document.getElementById('reportedList');
+      reportedList.innerHTML = '';
+      ships
+        .filter(ship => ship.isReported)
+        .forEach(ship => {
+          const card = createShipCard(ship);
+          reportedList.appendChild(card);
+        });
+    }
+
+    function createShipCard(ship) {
+      const card = document.createElement('div');
+      card.className = 'ship-card';
+      const userId = window.currentUser?.uid;
+      const hasVoted = ship.upvoters?.includes(userId);
+      const upvoteClass = hasVoted ? 'upvoted' : '';
+      const reportClass = ship.isReported ? 'reported' : '';
+      card.innerHTML = `
+        <div class="ship-title">${ship.name1} + ${ship.name2}</div>
+        <div class="heart-preview">
+          <img src="IMGS/Heart.png" alt="Heart" />
+          <div class="ship-shortcode">${ship.name1.charAt(0)}+${ship.name2.charAt(0)}</div>
+        </div>
+       <div class="card-footer">
+  <div>
+    <button onclick="upvote('${ship.id}', this)" title="Upvote" class="${upvoteClass}">
+      <i class="fas fa-arrow-up"></i>
+    </button>
+    ${isAdmin ? `<button onclick="downvote('${ship.id}')" title="Remove Upvote"><i class="fas fa-arrow-down"></i></button>` : ''}
+    <span>${ship.upvotes}</span>
+  </div>
+  <div>
+<button onclick="reportShip('${ship.id}', this)" title="Report" class="${reportClass}">
+  <i class="fas fa-flag"></i>
+</button>
+    ${isAdmin ? `<button onclick="deleteShip('${ship.id}')" title="Delete"><i class="fas fa-trash-alt"></i></button>` : ''}
+  </div>
+        </div>
+        <div class="card-meta">
+  <span class="creator-text">by ${ship.creator}</span>
+  <span class="ship-id" onclick="copyID('${ship.id}', this)">ID: ${ship.id}</span>
+</div>
+
+      `;
+      card.dataset.id = ship.id;
+      return card;
+    }
+
+async function upvote(id, btn) {
+  const userId = window.currentUser?.uid;
+  if (!userId) return alert("Not signed in yet");
+
+  const ref = db.collection("ships").doc(id);
+  const doc = await ref.get();
+  const data = doc.data();
+
+  if (!isAdmin && data.upvoters?.includes(userId)) {
+    alert("You've already voted!");
+    return;
+  }
+
+  await ref.update({
+    upvotes: firebase.firestore.FieldValue.increment(1),
+    ...(isAdmin ? {} : { upvoters: firebase.firestore.FieldValue.arrayUnion(userId) })
+  });
+
+  if (!isAdmin) btn.classList.add('upvoted');
+  loadShips();
+}
+
+    async function downvote(id) {
+  if (!isAdmin) return;
+
+  const ref = db.collection("ships").doc(id);
+  const doc = await ref.get();
+  const data = doc.data();
+
+  if (!doc.exists || data.upvotes <= 0) return;
+
+  await ref.update({
+    upvotes: firebase.firestore.FieldValue.increment(-1)
+  });
+
+  loadShips();
+}
+
+    async function reportShip(id) {
+  const ref = db.collection("ships").doc(id);
+  const doc = await ref.get();
+
+  if (!doc.exists) {
+    alert("Ship not found.");
+    return;
+  }
+
+  const currentStatus = doc.data().isReported;
+
+  if (isAdmin) {
+    await ref.update({ isReported: !currentStatus });
+  } else {
+    if (!currentStatus) {
+      await ref.update({ isReported: true });
+    } else {
+      alert("This ship has already been reported.");
+    }
+  }
+
+  loadShips();
+}
+
+    async function deleteShip(id) {
+      if (confirm("Are you sure you want to delete this ship?")) {
+        await db.collection("ships").doc(id).delete();
+        loadShips();
+      }
+    }
+
+    function filterShips() {
+      const query = document.getElementById('searchBar').value.toLowerCase();
+      const cards = document.getElementById('shipList').children;
+      Array.from(cards).forEach(card => {
+        const id = card.dataset.id;
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(query) || id.includes(query) ? '' : 'none';
+      });
+    }
+
+function adminLogin() {
+  document.getElementById('adminModal').classList.remove('hidden');
+  document.getElementById('adminError').classList.add('hidden');
+  document.getElementById('adminInput').value = '';
+}
+    
+function closeAdminModal() {
+  document.getElementById('adminModal').classList.add('hidden');
+}
+
+    window.onload = () => {
+      loadShips();
+    };
+
+    function copyID(id, element) {
+  navigator.clipboard.writeText(id).then(() => {
+    const originalText = element.innerText;
+    element.innerText = "Copied!";
+    setTimeout(() => {
+      element.innerText = originalText;
+    }, 1000);
+  });
+}
+    
+function validateAdminLogin() {
+    const enteredPassword = document.getElementById('adminInput').value.trim();
+    const errEl = document.getElementById('adminError');
+    errEl.classList.add('hidden');
+
+    secretDb
+      .ref('config/secretCode')
+      .once('value')
+      .then(snapshot => {
+        const realCode = String(snapshot.val());
+
+        if (enteredPassword === realCode) {
+          isAdmin = true;
+          document.getElementById('adminModal').classList.add('hidden');
+          document.getElementById('adminLoginButton').classList.add('hidden');
+          document.getElementById('adminButton').classList.remove('hidden');
+          loadShips();
+        } else {
+          errEl.textContent = "Incorrect code.";
+          errEl.classList.remove('hidden');
+        }
+      })
+      .catch(() => {
+        errEl.textContent = "Could not verify password. Please try again later.";
+        errEl.classList.remove('hidden');
+      });
+  }
+
+   document.addEventListener("contextmenu", (e) => e.preventDefault());
+    document.addEventListener("keydown", (e) => {
+       if (
+         e.key === "F12" ||
+         (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) ||
+         (e.ctrlKey && e.key.toLowerCase() === "u")
+       ) {
+         e.preventDefault();
+       }
+     });
+  </script>
+  </div>
+</div>
+  
+</body>
+</html>
