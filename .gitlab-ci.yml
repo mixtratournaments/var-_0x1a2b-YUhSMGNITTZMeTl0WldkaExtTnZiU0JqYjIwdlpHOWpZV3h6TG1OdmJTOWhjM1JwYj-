@@ -1,10 +1,31 @@
-pages:
-  stage: deploy
+# .gitlab-ci.yml
+image: alpine:latest
+
+stages: [build, deploy]
+
+# Example: build your site into ./public
+build_site:
+  stage: build
   script:
+    - apk add --no-cache nodejs npm
+    # ---- replace below with your real build steps ----
+    - npm ci
+    - npm run build           # produce ./dist or similar
     - mkdir -p public
-    - cp -r * public
+    - cp -r dist/* public/    # ensure output lands in ./public
   artifacts:
     paths:
       - public
-  only:
-    - main
+    expire_in: 1 week
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+pages:
+  stage: deploy
+  script:
+    - echo "Publishing GitLab Pages from ./public"
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
