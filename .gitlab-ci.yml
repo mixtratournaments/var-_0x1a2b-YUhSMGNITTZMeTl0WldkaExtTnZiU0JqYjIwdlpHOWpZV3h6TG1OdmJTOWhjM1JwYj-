@@ -2,7 +2,7 @@ image: alpine:latest
 
 stages: [build, deploy]
 
-# Example: build your site into ./public
+# Example: build your site into ./public.
 build_site:
   stage: build
   script:
