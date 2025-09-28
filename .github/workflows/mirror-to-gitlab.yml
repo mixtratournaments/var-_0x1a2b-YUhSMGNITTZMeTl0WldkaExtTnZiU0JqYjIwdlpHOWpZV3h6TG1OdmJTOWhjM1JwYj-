@@ -1,0 +1,30 @@
+name: Mirror to GitLab
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '**'
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history for mirroring
+
+      - name: Set up git
+        run: |
+          git config user.name "mirror-bot"
+          git config user.email "mirror-bot@users.noreply.github.com"
+
+      - name: Push to GitLab
+        env:
+          GITLAB_URL: ${{ secrets.GITLAB_URL }}
+          GITLAB_PROJECT: ${{ secrets.GITLAB_PROJECT }}
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: |
+          git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@${GITLAB_URL#https://}/${GITLAB_PROJECT}.git"
+          git push --mirror gitlab
