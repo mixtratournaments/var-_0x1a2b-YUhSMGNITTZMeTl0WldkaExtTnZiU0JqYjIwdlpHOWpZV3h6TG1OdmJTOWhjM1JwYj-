@@ -1,4 +1,3 @@
-// Firebase configuration
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
@@ -13,13 +12,10 @@ const firebaseConfig = {
     measurementId: "G-TW9QCGPN5V"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Authentication and get a reference to the service
 const auth = getAuth(app);
 
-// Initialize Cloud Firestore and get a reference to the service
 const db = getFirestore(app);
 
 export { app, auth, db };

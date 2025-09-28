@@ -158,7 +158,7 @@
 <body>
     <div class="launch-container">
         <h1 class="hubble-title">HUBBLE</h1>
-        <p class="alternating-text" id="alternatingText">Iboss can lick my toes</p>
+        <p class="alternating-text" id="alternatingText"></p>
         <button class="launch-button" id="launchButton">LAUNCH HUBBLE</button>
     </div>
 
@@ -169,34 +169,43 @@
         const launchButton = document.getElementById('launchButton');
         const alternatingText = document.getElementById('alternatingText');
 
-        // Array of alternating text messages
         const textMessages = [
        "Iboss can lick my toes",
-    "Click launch if u like ice cream",
-    "Escape Road City 2 is the most popular game rn",
-    "Hubble is rlly cool guys",
-    "If u like gaming u should try this",
-    "Every single game is unblocked",
-    "WE HAVE SNOW RIDER 3D",
+        "Click launch if u like ice cream",
+        "Escape Road City 2 is the most popular game rn",
+        "Hubble is rlly cool guys",
+        "If u like gaming u should try this",
+        "Every single game is unblocked",
+        "WE HAVE SNOW RIDER 3D",
 
 
         ];
 
         let currentIndex = 0;
 
-        // Function to change the text
+        function getRandomIndex() {
+            return Math.floor(Math.random() * textMessages.length);
+        }
+
         function changeText() {
             alternatingText.style.opacity = '0';
             
             setTimeout(() => {
-                currentIndex = (currentIndex + 1) % textMessages.length;
+                let nextIndex;
+                do {
+                    nextIndex = getRandomIndex();
+                } while (nextIndex === currentIndex && textMessages.length > 1);
+                
+                currentIndex = nextIndex;
                 alternatingText.textContent = textMessages[currentIndex];
                 alternatingText.style.opacity = '0.8';
-            }, 250); // Half of the transition time for smooth fade
+            }, 250);
         }
 
-        // Change text every 2 seconds
-        setInterval(changeText, 2000);
+        currentIndex = getRandomIndex();
+        alternatingText.textContent = textMessages[currentIndex];
+
+        setInterval(changeText, 2500);
 
         launchButton.addEventListener('click', () => {
             window.location.href = 'main.html';
