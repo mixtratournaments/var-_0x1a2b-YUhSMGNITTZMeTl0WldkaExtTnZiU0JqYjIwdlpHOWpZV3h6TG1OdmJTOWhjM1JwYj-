@@ -1,0 +1,32 @@
+name: Sync to GitLab & Deploy Pages
+
+on:
+  push:
+    branches: [ "main" ]  # change if your default branch is not main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # get full history (helps with tags/branches)
+
+      - name: Push to GitLab mirror
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # If you created GITLAB_URL secret, use it directly:
+          if [ -n "${{ secrets.GITLAB_URL }}" ]; then
+            git remote add gitlab "${{ secrets.GITLAB_URL }}" || git remote set-url gitlab "${{ secrets.GITLAB_URL }}"
+            git remote set-url --push gitlab "https://oauth2:${GITLAB_TOKEN}@${{ secrets.GITLAB_URL#https:// }}"
+          else
+            # Otherwise, hardcode your GitLab path here:
+            git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@gitlab.com/<your-namespace>/<your-project>.git" || true
+          fi
+
+          # Push current branch to GitLab main (change if needed)
+          git push --force --follow-tags gitlab HEAD:main
