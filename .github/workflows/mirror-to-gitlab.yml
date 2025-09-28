@@ -20,16 +20,23 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Push --mirror to GitLab
+      - name: Push branches and tags to GitLab (no hidden refs)
         env:
           GITLAB_URL: ${{ secrets.GITLAB_URL }}
           GITLAB_PROJECT: ${{ secrets.GITLAB_PROJECT }}
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: |
-          # Embed token in HTTPS remote for auth
+          set -euo pipefail
           git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@${GITLAB_URL#https://}/${GITLAB_PROJECT}.git"
-          # Ensure default branch exists locally (helpful on first run)
-          DEFAULT_BRANCH="${{ secrets.GITLAB_DEFAULT_BRANCH || 'main' }}"
-          git symbolic-ref HEAD "refs/heads/${DEFAULT_BRANCH}" || true
-          # Mirror everything (branches + tags). --force to keep GitLab in sync
-          git push --mirror --force gitlab
+
+          # Decide the default branch (matches your GitHub default)
+          DEFAULT_BRANCH="$(git symbolic-ref --short HEAD || echo main)"
+
+          # 1) Create/force-update the default branch on GitLab first (unblocks “no default branch”)
+          git push --force gitlab "refs/heads/${DEFAULT_BRANCH}:refs/heads/${DEFAULT_BRANCH}"
+
+          # 2) Push ALL branches (no remote-tracking refs) and prune deleted ones
+          git push --force --prune gitlab 'refs/heads/*:refs/heads/*'
+
+          # 3) Push ALL tags
+          git push --force --prune --tags gitlab
