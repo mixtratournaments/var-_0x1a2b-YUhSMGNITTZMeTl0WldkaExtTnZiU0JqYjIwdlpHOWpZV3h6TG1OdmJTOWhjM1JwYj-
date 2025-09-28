@@ -22,9 +22,11 @@ jobs:
 
       - name: Push to GitLab
         env:
-          GITLAB_URL: ${{ secrets.GITLAB_URL }}
           GITLAB_PROJECT: ${{ secrets.GITLAB_PROJECT }}
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: |
-          git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@${GITLAB_URL#https://}/${GITLAB_PROJECT}.git"
-          git push --mirror gitlab
+          git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@gitlab.com/${GITLAB_PROJECT}.git"
+          # Push branches and tags (avoids hidden GitHub refs that GitLab rejects)
+          git push --prune --all gitlab
+          git push --prune --tags gitlab
+
