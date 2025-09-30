@@ -7345,9 +7345,8 @@ game.name.toLowerCase().includes(searchTerm)
         });
         
         // Chatbot Functionality
-        // Note: For security, API key should be handled on a backend server
-        // For demo purposes, we'll enable the chatbot interface without API integration
-        const groqApiKey = null; // Set to null to disable API calls but enable interface
+        // Note: API key is injected from GitHub Secrets during deployment
+        const groqApiKey = '${GROQ_API_KEY}' || null;
         let chatHistory = [];
         let currentTypingAnimation = null; // Track current typing animation
         
