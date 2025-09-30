@@ -7345,32 +7345,10 @@ game.name.toLowerCase().includes(searchTerm)
         });
         
         // Chatbot Functionality
-        // Note: For security, API key should be handled on a backend server
-        // Fetch API key from Firestore secrets collection
-        let groqApiKey = null; // Will be loaded from Firestore
+        // Note: API key is injected from GitHub Secrets during deployment
+        const groqApiKey = '${GROQ_API_KEY}' || null;
         let chatHistory = [];
         let currentTypingAnimation = null; // Track current typing animation
-        
-        // Load Groq API key from Firestore
-        async function loadGroqApiKey() {
-            try {
-                const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
-                const { db } = await import('./firebase.js');
-                
-                const secretDoc = await getDoc(doc(db, 'secrets', 'GROQ_API_KEY'));
-                if (secretDoc.exists()) {
-                    groqApiKey = secretDoc.data().value;
-                    console.log('Groq API key loaded successfully');
-                } else {
-                    console.warn('Groq API key not found in Firestore secrets collection');
-                }
-            } catch (error) {
-                console.error('Error loading Groq API key:', error);
-            }
-        }
-        
-        // Initialize API key on page load
-        loadGroqApiKey();
         
         // Message threading system
         let pendingMessages = [];
