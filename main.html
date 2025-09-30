@@ -7341,7 +7341,9 @@ game.name.toLowerCase().includes(searchTerm)
         });
         
         // Chatbot Functionality
-        const groqApiKey = process.env.GROQ_API_KEY;
+        // Note: For security, API key should be handled on a backend server
+        // For demo purposes, we'll enable the chatbot interface without API integration
+        const groqApiKey = null; // Set to null to disable API calls but enable interface
         let chatHistory = [];
         let currentTypingAnimation = null; // Track current typing animation
         
@@ -7685,7 +7687,15 @@ game.name.toLowerCase().includes(searchTerm)
             // Send message handler
         async function sendMessage() {
             const message = chatbotInput.value.trim();
-            if (!message || !groqApiKey) return;
+            if (!message) return;
+            
+            // If no API key is configured, show a helpful message
+            if (!groqApiKey) {
+                addMessage('user', message);
+                addMessage('bot', 'Welcome to Hubble! The chatbot functionality requires an API key to be configured. For now, you can use the interface but responses are disabled for security reasons.');
+                chatbotInput.value = '';
+                return;
+            }
             
             // Check rate limit
             if (!canSendMessage()) {
@@ -8533,8 +8543,20 @@ game.name.toLowerCase().includes(searchTerm)
             
             // Initialize music library
             function initializeMusicLibrary() {
+                // Clear any existing content first
+                musicLibrary.innerHTML = '';
+                
+                // Check if musicLibrary element exists
+                if (!musicLibrary) {
+                    console.error('Music library element not found!');
+                    return;
+                }
+                
                 const tracksGrid = document.createElement('div');
                 tracksGrid.className = 'music-tracks-grid';
+                
+                // Debug: Log the number of tracks being added
+                console.log(`Initializing music library with ${musicLibraryData.length} tracks`);
                 
                 musicLibraryData.forEach((track, index) => {
                     const trackElement = createTrackElement(track, index);
@@ -8542,6 +8564,7 @@ game.name.toLowerCase().includes(searchTerm)
                 });
                 
                 musicLibrary.appendChild(tracksGrid);
+                console.log('Music library initialized successfully');
             }
             
             // Create individual track element
