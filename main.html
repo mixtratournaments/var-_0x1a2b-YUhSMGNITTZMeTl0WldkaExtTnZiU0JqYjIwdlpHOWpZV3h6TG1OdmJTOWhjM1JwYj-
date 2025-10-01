@@ -1186,6 +1186,20 @@
             color: var(--primary);
         }
         
+        .rumor-author.admin-mode {
+            text-decoration: line-through;
+            color: #ff4444;
+            font-weight: bold;
+            cursor: pointer !important;
+        }
+        
+        .rumor-author.admin-mode:hover {
+            color: #ff0000;
+            background-color: rgba(255, 68, 68, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
         .rumor-timestamp {
             font-size: 0.9rem;
             color: var(--text-light);
@@ -1325,7 +1339,8 @@
             border-radius: 10px;
             padding: 1rem 1.5rem;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            max-width: 300px;
+            max-width: 350px;
+            min-width: 280px;
             transform: translateX(100%);
             opacity: 0;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -4518,7 +4533,7 @@
             <button class="nav-item" data-section="music">Music</button>
             <button class="nav-item" data-section="hacks">Cheats</button>
             <button class="nav-item" data-section="chatbot">Chatbot</button>
-            <!-- <button class="nav-item" data-section="dirty-rumors">Dirty Rumors</button> -->
+            <button class="nav-item" data-section="dirty-rumors">Dirty Rumors</button>
             <button class="nav-item" data-section="hall-of-fame">Hall of Fame</button>
         </nav>
         <main class="main-content" id="main-content">
@@ -5428,6 +5443,46 @@
         let userVotes = new Map(); // Track user votes for each rumor
         let db = null; // Firebase Firestore instance
         
+        // Admin system
+        let isAdmin = false;
+        const ADMIN_CODE = '642851'; // 6-digit admin code embedded in the application
+        
+        // Check if user has admin privileges
+        function checkAdminStatus() {
+            const storedCode = localStorage.getItem('hubbleAdminCode');
+            if (storedCode === ADMIN_CODE) {
+                isAdmin = true;
+                console.log('Admin mode activated');
+                showNotification('Admin mode activated! Click usernames to delete posts.', 'success');
+                return true;
+            }
+            isAdmin = false;
+            return false;
+        }
+        
+        // Delete post (admin only)
+        async function deletePost(rumorId) {
+            if (!isAdmin) {
+                showNotification('Access denied. Admin privileges required.', 'error');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const { doc, deleteDoc } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                await deleteDoc(doc(db, 'dirtyrumors', rumorId));
+                
+                showNotification('Post deleted successfully', 'success');
+                loadRumors(); // Reload the rumors list
+            } catch (error) {
+                console.error('Error deleting post:', error);
+                showNotification('Error deleting post. Please try again.', 'error');
+            }
+        }
+        
         // Notification system
         function showNotification(message, type = 'success', duration = 4000) {
             const container = document.getElementById('notification-container');
@@ -5445,7 +5500,7 @@
             notification.innerHTML = `
                 <div class="notification-info">
                     <span class="notification-icon">${icons[type] || 'ℹ️'}</span>
-                    <p class="notification-message">${message}</p>
+                    <p class="notification-message">${message.replace(/\n/g, '<br>')}</p>
                 </div>
                 <button class="notification-close" onclick="this.parentElement.remove()">×</button>
             `;
@@ -5477,6 +5532,12 @@
                 // Import Firebase services
                 const { db: firestoreDb } = await import('./firebase.js');
                 db = firestoreDb;
+                
+                // Check admin status
+                checkAdminStatus();
+                
+                // Load blacklist data for content filtering
+                await loadBlacklistData();
                 
                 generateAnonymousUserId();
                 loadUserVotesFromStorage();
@@ -5621,6 +5682,144 @@
             }
         }
         
+        // Content filtering system
+        let blacklistedWords = [];
+        let blacklistedNames = [];
+        
+        // Load blacklisted words and names
+        async function loadBlacklistData() {
+            try {
+                // Load blacklisted words
+                const wordsResponse = await fetch('./banned_content/blacklistedwords.txt');
+                const wordsText = await wordsResponse.text();
+                blacklistedWords = wordsText.split('\n')
+                    .map(word => word.trim().toLowerCase())
+                    .filter(word => word.length > 0);
+                
+                
+                // Load blacklisted names
+                const namesResponse = await fetch('./banned_content/blacklistednames.txt');
+                const namesText = await namesResponse.text();
+                blacklistedNames = namesText.split('\n')
+                    .map(name => name.trim().toLowerCase())
+                    .filter(name => name.length > 0);
+                
+                console.log(`Loaded ${blacklistedWords.length} blacklisted words and ${blacklistedNames.length} blacklisted names`);
+            } catch (error) {
+                console.error('Error loading blacklist data:', error);
+                // Fallback to empty arrays if files can't be loaded
+                blacklistedWords = [];
+                blacklistedNames = [];
+            }
+        }
+        
+        // Check if text contains blacklisted content
+        function checkForBlacklistedContent(text) {
+            if (!text || typeof text !== 'string') return { isClean: true, violations: [] };
+            
+            const violations = [];
+            const textLower = text.toLowerCase();
+            
+            
+            // Check for blacklisted words with word boundaries
+            for (const word of blacklistedWords) {
+                if (word.length === 0) continue;
+                
+                // Create word boundary regex to catch standalone words
+                const wordRegex = new RegExp(`\\b${escapeRegex(word)}\\b`, 'i');
+                
+                if (wordRegex.test(textLower)) {
+                    violations.push({
+                        type: 'word',
+                        content: word,
+                        reason: 'Contains inappropriate language'
+                    });
+                }
+            }
+            
+            // Check for blacklisted names (staff surnames)
+            for (const name of blacklistedNames) {
+                if (name.length === 0) continue;
+                
+                // For names, we want to catch them even as part of other words
+                // but we'll be more lenient with common words like "Mr." "Ms."
+                if (name.length > 2) { // Skip very short entries like "Mr", "Ms"
+                    const nameRegex = new RegExp(`\\b${escapeRegex(name)}\\b`, 'i');
+                    if (nameRegex.test(textLower)) {
+                        violations.push({
+                            type: 'name',
+                            content: name,
+                            reason: 'Contains staff member name'
+                        });
+                    }
+                }
+            }
+            
+            return {
+                isClean: violations.length === 0,
+                violations: violations
+            };
+        }
+        
+        // Escape special regex characters
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+        
+        // Validate rumor content before submission
+        function validateRumorContent(person1, rumorText, person2, username) {
+            const violations = [];
+            
+            // Check all text fields
+            const fieldsToCheck = [
+                { name: 'Person 1', value: person1 },
+                { name: 'Rumor text', value: rumorText },
+                { name: 'Person 2', value: person2 },
+                { name: 'Username', value: username }
+            ];
+            
+            for (const field of fieldsToCheck) {
+                if (field.value) {
+                    const result = checkForBlacklistedContent(field.value);
+                    if (!result.isClean) {
+                        result.violations.forEach(violation => {
+                            violations.push({
+                                ...violation,
+                                field: field.name
+                            });
+                        });
+                    }
+                }
+            }
+            
+            return {
+                isValid: violations.length === 0,
+                violations: violations
+            };
+        }
+        
+        // Generate user-friendly error message
+        function generateErrorMessage(violations) {
+            if (violations.length === 0) return '';
+            
+            const wordViolations = violations.filter(v => v.type === 'word');
+            const nameViolations = violations.filter(v => v.type === 'name');
+            
+            let message = 'Your rumor cannot be posted because it contains:\n\n';
+            
+            if (wordViolations.length > 0) {
+                message += 'Inappropriate language that violates our community guidelines\n';
+            }
+            
+            if (nameViolations.length > 0) {
+                message += 'Staff member names, which are not allowed in rumors\n';
+            }
+            
+            message += '\nPlease edit your rumor and try again. Keep it respectful!';
+            
+            return message;
+        }
+        
         // Submit rumor to Firebase
         async function submitRumor() {
             const person1 = document.getElementById('person1').value.trim();
@@ -5630,6 +5829,14 @@
             
             if (!person1 || !rumorText) {
                 showNotification('Person 1 and rumor text are required!', 'warning');
+                return;
+            }
+            
+            // Content filtering check
+            const validationResult = validateRumorContent(person1, rumorText, person2, username);
+            if (!validationResult.isValid) {
+                const errorMessage = generateErrorMessage(validationResult.violations);
+                showNotification(errorMessage, 'error');
                 return;
             }
             
@@ -5728,7 +5935,7 @@
                                         👎 ${data.downvotes || 0}
                                     </button>
                                 </div>
-                                <span class="rumor-author">${data.username}</span>
+                                <span class="rumor-author ${isAdmin ? 'admin-mode' : ''}" data-rumor-id="${doc.id}">${data.username}</span>
                             </div>
                         </div>
                     `;
@@ -5738,6 +5945,11 @@
                 
                 // Setup vote button listeners
                 setupVoteListeners();
+                
+                // Setup admin listeners if admin mode is active
+                if (isAdmin) {
+                    setupAdminListeners();
+                }
                 
             } catch (error) {
                 console.error('Error loading rumors:', error);
@@ -5753,6 +5965,18 @@
                     const rumorId = e.target.getAttribute('data-rumor-id');
                     const voteType = e.target.getAttribute('data-vote');
                     await handleVote(rumorId, voteType);
+                });
+            });
+        }
+        
+        // Setup admin listeners for username clicks
+        function setupAdminListeners() {
+            const adminUsernames = document.querySelectorAll('.rumor-author.admin-mode');
+            adminUsernames.forEach(username => {
+                username.style.cursor = 'pointer';
+                username.addEventListener('click', async (e) => {
+                    const rumorId = e.target.getAttribute('data-rumor-id');
+                    await deletePost(rumorId);
                 });
             });
         }
@@ -7116,114 +7340,114 @@ game.name.toLowerCase().includes(searchTerm)
         });
 
         
-        // Developer Tools Protection
-        (function() {
-            'use strict';
+        // // Developer Tools Protection
+        // (function() {
+        //     'use strict';
             
-            // Disable right-click context menu (silent - no alerts)
-            document.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                return false;
-            }, true);
+        //     // Disable right-click context menu (silent - no alerts)
+        //     document.addEventListener('contextmenu', function(e) {
+        //         e.preventDefault();
+        //         e.stopImmediatePropagation();
+        //         return false;
+        //     }, true);
             
-            // Disable inspection keyboard shortcuts (triggers alert/redirect)
-            document.addEventListener('keydown', function(e) {
-                // F12
-                if (e.keyCode === 123 || e.key === 'F12') {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-                    setTimeout(() => window.location.href = 'about:blank', 500);
-                    return false;
-                }
-                // Ctrl+Shift+I (Inspector)
-                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 73 || e.key === 'I')) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-                    setTimeout(() => window.location.href = 'about:blank', 500);
-                    return false;
-                }
-                // Ctrl+Shift+J (Console)
-                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 74 || e.key === 'J')) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-                    setTimeout(() => window.location.href = 'about:blank', 500);
-                    return false;
-                }
-                // Ctrl+Shift+C (Element Selector)
-                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 67 || e.key === 'C')) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-                    setTimeout(() => window.location.href = 'about:blank', 500);
-                    return false;
-                }
-                // Ctrl+U (View Source)
-                if ((e.ctrlKey || e.metaKey) && (e.keyCode === 85 || e.key === 'u')) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-                    setTimeout(() => window.location.href = 'about:blank', 500);
-                    return false;
-                }
-                // Ctrl+Shift+K (Console Firefox)
-                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 75 || e.key === 'K')) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-                    setTimeout(() => window.location.href = 'about:blank', 500);
-                    return false;
-                }
-            }, true);
+        //     // Disable inspection keyboard shortcuts (triggers alert/redirect)
+        //     document.addEventListener('keydown', function(e) {
+        //         // F12
+        //         if (e.keyCode === 123 || e.key === 'F12') {
+        //             e.preventDefault();
+        //             e.stopImmediatePropagation();
+        //             document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+        //             setTimeout(() => window.location.href = 'about:blank', 500);
+        //             return false;
+        //         }
+        //         // Ctrl+Shift+I (Inspector)
+        //         if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 73 || e.key === 'I')) {
+        //             e.preventDefault();
+        //             e.stopImmediatePropagation();
+        //             document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+        //             setTimeout(() => window.location.href = 'about:blank', 500);
+        //             return false;
+        //         }
+        //         // Ctrl+Shift+J (Console)
+        //         if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 74 || e.key === 'J')) {
+        //             e.preventDefault();
+        //             e.stopImmediatePropagation();
+        //             document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+        //             setTimeout(() => window.location.href = 'about:blank', 500);
+        //             return false;
+        //         }
+        //         // Ctrl+Shift+C (Element Selector)
+        //         if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 67 || e.key === 'C')) {
+        //             e.preventDefault();
+        //             e.stopImmediatePropagation();
+        //             document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+        //             setTimeout(() => window.location.href = 'about:blank', 500);
+        //             return false;
+        //         }
+        //         // Ctrl+U (View Source)
+        //         if ((e.ctrlKey || e.metaKey) && (e.keyCode === 85 || e.key === 'u')) {
+        //             e.preventDefault();
+        //             e.stopImmediatePropagation();
+        //             document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+        //             setTimeout(() => window.location.href = 'about:blank', 500);
+        //             return false;
+        //         }
+        //         // Ctrl+Shift+K (Console Firefox)
+        //         if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 75 || e.key === 'K')) {
+        //             e.preventDefault();
+        //             e.stopImmediatePropagation();
+        //             document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+        //             setTimeout(() => window.location.href = 'about:blank', 500);
+        //             return false;
+        //         }
+        //     }, true);
             
             
-            // Console detection
-            let consoleDetectionCount = 0;
-            let element = new Image();
-            Object.defineProperty(element, 'id', {
-                get: function() {
-                    consoleDetectionCount++;
-                    // Only trigger after multiple detections to avoid false positives
-                    if (consoleDetectionCount > 3) {
-                        document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-                        setTimeout(() => window.location.href = 'about:blank', 500);
-                    }
-                }
-            });
+        //     // Console detection
+        //     let consoleDetectionCount = 0;
+        //     let element = new Image();
+        //     Object.defineProperty(element, 'id', {
+        //         get: function() {
+        //             consoleDetectionCount++;
+        //             // Only trigger after multiple detections to avoid false positives
+        //             if (consoleDetectionCount > 3) {
+        //                 document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+        //                 setTimeout(() => window.location.href = 'about:blank', 500);
+        //             }
+        //         }
+        //     });
             
-            // Less frequent console checks
-            setInterval(function() {
-                console.log(element);
-                console.clear();
-            }, 5000);
+        //     // Less frequent console checks
+        //     setInterval(function() {
+        //         console.log(element);
+        //         console.clear();
+        //     }, 5000);
             
-            // Disable text selection and copying (but allow input interaction)
-            document.onselectstart = function(e) { 
-                // Allow selection in input fields
-                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
-                    return true;
-                }
-                return false; 
-            };
-            document.onmousedown = function(e) { 
-                // Allow mouse down in input fields and buttons
-                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON')) {
-                    return true;
-                }
-                return false; 
-            };
-            document.ondragstart = function(e) { 
-                // Allow dragging in input fields
-                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
-                    return true;
-                }
-                return false; 
-            };
+        //     // Disable text selection and copying (but allow input interaction)
+        //     document.onselectstart = function(e) { 
+        //         // Allow selection in input fields
+        //         if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+        //             return true;
+        //         }
+        //         return false; 
+        //     };
+        //     document.onmousedown = function(e) { 
+        //         // Allow mouse down in input fields and buttons
+        //         if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON')) {
+        //             return true;
+        //         }
+        //         return false; 
+        //     };
+        //     document.ondragstart = function(e) { 
+        //         // Allow dragging in input fields
+        //         if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+        //             return true;
+        //         }
+        //         return false; 
+        //     };
             
-        })();
+        // })();
         
         // Username Change Functions
         function showCustomizationError(message) {
