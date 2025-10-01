@@ -5452,13 +5452,76 @@
         let isAdmin = false;
         const ADMIN_CODE = '642851'; // 6-digit admin code embedded in the application
         
+        // Listen for admin messages from parent window
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'hubbleAdmin' && event.data.code === ADMIN_CODE) {
+                isAdmin = true;
+                console.log('Admin mode activated via parent window message');
+                showNotification('Admin mode activated via parent window! Click usernames to delete posts.', 'success');
+                
+                // Try to persist admin status
+                try {
+                    localStorage.setItem('hubbleAdminCode', ADMIN_CODE);
+                } catch (e) {
+                    try {
+                        sessionStorage.setItem('hubbleAdminCode', ADMIN_CODE);
+                    } catch (e2) {
+                        console.log('Cannot persist admin status - storage blocked');
+                    }
+                }
+            }
+        });
+        
         // Check if user has admin privileges
         function checkAdminStatus() {
-            const storedCode = localStorage.getItem('hubbleAdminCode');
-            if (storedCode === ADMIN_CODE) {
+            let adminCode = null;
+            
+            // Method 1: Check localStorage
+            try {
+                adminCode = localStorage.getItem('hubbleAdminCode');
+            } catch (e) {
+                console.log('localStorage blocked, trying alternative methods');
+            }
+            
+            // Method 2: Check URL parameters
+            if (!adminCode) {
+                const urlParams = new URLSearchParams(window.location.search);
+                adminCode = urlParams.get('admin');
+            }
+            
+            // Method 3: Check sessionStorage
+            if (!adminCode) {
+                try {
+                    adminCode = sessionStorage.getItem('hubbleAdminCode');
+                } catch (e) {
+                    // sessionStorage also blocked
+                }
+            }
+            
+            // Method 4: Check for admin code in hash
+            if (!adminCode && window.location.hash) {
+                const hashMatch = window.location.hash.match(/admin=(\d{6})/);
+                if (hashMatch) {
+                    adminCode = hashMatch[1];
+                }
+            }
+            
+            // Method 5: Check parent window localStorage (for iframe contexts)
+            if (!adminCode) {
+                try {
+                    if (window.parent && window.parent !== window) {
+                        adminCode = window.parent.localStorage.getItem('hubbleAdminCode');
+                    }
+                } catch (e) {
+                    // Cross-origin access blocked
+                }
+            }
+            
+            if (adminCode === ADMIN_CODE) {
                 isAdmin = true;
                 console.log('Admin mode activated');
-                showNotification('Admin mode activated! Click usernames to delete posts.', 'success');
+                const context = (window.parent && window.parent !== window) ? ' (iframe context)' : '';
+                showNotification(`Admin mode activated${context}! Click usernames to delete posts.`, 'success');
                 return true;
             }
             isAdmin = false;
@@ -5526,7 +5589,12 @@
         function generateAnonymousUserId() {
             if (!anonymousUserId) {
                 anonymousUserId = 'anon_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-                localStorage.setItem('anonymousUserId', anonymousUserId);
+                // Try to save to localStorage, but don't fail if it's blocked
+                try {
+                    localStorage.setItem('anonymousUserId', anonymousUserId);
+                } catch (e) {
+                    console.log('Cannot save user ID to localStorage, using session-only ID');
+                }
             }
             return anonymousUserId;
         }
@@ -5964,6 +6032,9 @@
             });
         }
         
+        // Rate limiting for voting
+        const voteCooldowns = new Map();
+        
         // Handle voting
         async function handleVote(rumorId, voteType) {
             if (!db) {
@@ -5971,8 +6042,19 @@
                 return;
             }
             
+            // Rate limiting - prevent rapid clicking
+            const voteKey = `${rumorId}_${voteType}`;
+            const now = Date.now();
+            const lastVote = voteCooldowns.get(voteKey);
+            
+            if (lastVote && (now - lastVote) < 1000) { // 1 second cooldown
+                showNotification('Please wait before voting again.', 'error');
+                return;
+            }
+            
+            voteCooldowns.set(voteKey, now);
+            
             const userId = generateAnonymousUserId();
-            const voteKey = `${userId}_${rumorId}`;
             
             try {
                 const { doc, updateDoc, increment, deleteField, getDoc } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
@@ -6009,32 +6091,42 @@
                     // If clicking the same vote type, remove the vote
                     if (currentVote === voteType) {
                         if (voteType === 'up') {
-                            await updateDoc(rumorRef, {
-                                upvotes: increment(-1),
-                                [`votes.${userId}`]: deleteField()
-                            });
+                            // Only remove if upvotes > 0 to prevent negative counts
+                            if ((rumorData.upvotes || 0) > 0) {
+                                await updateDoc(rumorRef, {
+                                    upvotes: increment(-1),
+                                    [`votes.${userId}`]: deleteField()
+                                });
+                            }
                         } else {
-                            await updateDoc(rumorRef, {
-                                downvotes: increment(-1),
-                                [`votes.${userId}`]: deleteField()
-                            });
+                            // Only remove if downvotes > 0 to prevent negative counts
+                            if ((rumorData.downvotes || 0) > 0) {
+                                await updateDoc(rumorRef, {
+                                    downvotes: increment(-1),
+                                    [`votes.${userId}`]: deleteField()
+                                });
+                            }
                         }
                     } else {
                         // Switching vote types - remove old vote and add new vote
                         if (currentVote === 'up') {
                             // Was upvoted, now downvoting - remove upvote, add downvote
-                            await updateDoc(rumorRef, {
-                                upvotes: increment(-1),
-                                downvotes: increment(1),
-                                [`votes.${userId}`]: 'down'
-                            });
+                            if ((rumorData.upvotes || 0) > 0) {
+                                await updateDoc(rumorRef, {
+                                    upvotes: increment(-1),
+                                    downvotes: increment(1),
+                                    [`votes.${userId}`]: 'down'
+                                });
+                            }
                         } else {
                             // Was downvoted, now upvoting - remove downvote, add upvote
-                            await updateDoc(rumorRef, {
-                                downvotes: increment(-1),
-                                upvotes: increment(1),
-                                [`votes.${userId}`]: 'up'
-                            });
+                            if ((rumorData.downvotes || 0) > 0) {
+                                await updateDoc(rumorRef, {
+                                    downvotes: increment(-1),
+                                    upvotes: increment(1),
+                                    [`votes.${userId}`]: 'up'
+                                });
+                            }
                         }
                     }
                 } else {
@@ -7608,8 +7700,9 @@ game.name.toLowerCase().includes(searchTerm)
         });
         
         // Chatbot Functionality
-        // Note: API key is injected from GitHub Secrets during deployment
-        const groqApiKey = '${GROQ_API_KEY}' || null;
+        // Note: API key is injected during GitHub Actions deployment
+        window.GROQ_API_KEY = null; // This will be replaced by GitHub Actions
+        const groqApiKey = window.GROQ_API_KEY;
         let chatHistory = [];
         let currentTypingAnimation = null; // Track current typing animation
         
