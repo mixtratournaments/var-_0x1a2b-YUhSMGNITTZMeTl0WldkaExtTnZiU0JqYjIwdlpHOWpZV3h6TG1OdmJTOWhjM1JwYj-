@@ -3404,11 +3404,12 @@
 
 /* Coming Soon Overlay for games with images */
 .game-card.coming-soon .game-image {
-    width: 100%;
-    height: 180px;
-    border-radius: 12px;
+    width: calc(100% - 4px);
+    height: calc(180px - 4px);
+    border-radius: 10px;
     object-fit: cover;
-    margin-bottom: 0.1rem;
+    margin: 2px;
+    margin-bottom: calc(0.1rem + 2px);
     border: 2px solid var(--secondary);
     background: rgba(0,0,0,0.3);
     transition: border-color 0.3s ease;
@@ -3416,19 +3417,40 @@
     display: block;
     position: relative;
     overflow: hidden;
+    /* Ensure proper centering and containment */
+    object-position: center;
+    align-self: center;
+    box-sizing: border-box;
+    /* Create stacking context for overlays */
+    z-index: 0;
 }
 
-.game-card.coming-soon .game-image::after {
+/* Purple tint overlay */
+.game-card.coming-soon::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    animation: placeholder-shine 3s ease-in-out infinite;
-    z-index: 0;
+    top: 2px;
+    left: 2px;
+    width: calc(100% - 4px);
+    height: calc(180px - 4px);
+    background: rgba(75, 0, 130, 0.25);
+    z-index: 5;
     pointer-events: none;
+    border-radius: 10px;
+}
+
+/* Add shine effect using box-shadow animation */
+.game-card.coming-soon::before {
+    box-shadow: inset 0 0 0 1000px rgba(75, 0, 130, 0.25);
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+    background-size: 200% 200%;
+    animation: shine-sweep 3s ease-in-out infinite;
+}
+
+@keyframes shine-sweep {
+    0% { background-position: -200% -200%; }
+    50% { background-position: 200% 200%; }
+    100% { background-position: -200% -200%; }
 }
 
 .game-card.coming-soon::after {
@@ -3447,6 +3469,20 @@
     z-index: 10;
     pointer-events: none;
     border: 2px solid var(--accent);
+    white-space: nowrap;
+    min-width: max-content;
+}
+
+/* Responsive version for when games grid becomes 3 per row */
+@media (max-width: 1200px) {
+    .game-card.coming-soon::after {
+        bottom: 25%;
+        top: auto;
+        transform: translateX(-50%);
+        padding: 0.5vw 1vw;
+        border-radius: 0.5vw;
+        font-size: clamp(0.7rem, 2.5vw, 1rem);
+    }
 }
 
 
@@ -6289,7 +6325,7 @@
             { name: "Basket.io", image: "images/Basketball-io.png", url: "./games/basketball-io/" },
             { name: "Baldis Basics", image: "images/Baldis-Basics.png", url: "./games/baldis-basics/"  },
             { name: "Car Simulator", image: "images/Cars-Simulator.png", url: "./games/cars-simulator/"  },
-            { name: "Racer", image: "images/racer.png", url: "./games/racer/"  },
+            { name: "Racer", image: "images/Racer.png", url: "./games/racer/"  },
             { name: "Bloxorz", image: "images/Bloxorz.png", url: "./games/bloxors/"  },
             { name: "Boxel Rebound", image: "images/Boxel-Rebound.png", url: "./games/boxel-rebound/"  },
             { name: "Gravity Soccer", image: "images/gravity-soccer.png", url: "./games/gravity-soccer/"  },
@@ -6326,7 +6362,6 @@
             { name: "Slope 3d", image: "images/Slope3d.png", url: "./games/slope3d/", },
             { name: "Create A Path", image: "images/Create-A-Path.png", url: "./games/create-a-path.html" },
             { name: "A Chefs Chaos", image: "images/Chefs-Chaos.png", url: "./games/chefs-chaos.html" },
-            { name: "New Game Coming Soon", image: "images/placeholder.png", comingSoon: true },
             { name: "Tag", image: "images/Tag.png", url: "./games/tag/index.html" },
             { name: "Sai Clicker", image: "images/Sai-Clicker.png", url: "./games/sai-clicker.html" },
             { name: "Trick Or Treat", image: "images/Trick-Or-Treat.png.png", url: "./games/Trick-Or-Treat.html", releaseDate: "10/01/2025" },
