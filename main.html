@@ -1009,15 +1009,57 @@
             margin-bottom: 2rem;
         }
         
+        .dirty-rumors-title-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
         .dirty-rumors-title {
             font-size: 2.5rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin: 0;
             background: linear-gradient(90deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             color: transparent;
+        }
+        
+        .reload-rumors-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0,156,252,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .reload-rumors-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,156,252,0.4);
+        }
+        
+        .reload-rumors-btn:active {
+            transform: translateY(0) scale(0.95);
+        }
+        
+        .reload-rumors-btn.loading {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
         
         .dirty-rumors-subtitle {
@@ -4623,7 +4665,10 @@
             <!-- Dirty Rumors Section -->
             <div class="dirty-rumors-container" id="dirty-rumors-container" style="display: none;">
                 <div class="dirty-rumors-header">
-                    <h2 class="dirty-rumors-title">Dirty Rumors</h2>
+                    <div class="dirty-rumors-title-section">
+                        <h2 class="dirty-rumors-title">Dirty Rumors</h2>
+                        <button id="reload-rumors-btn" class="reload-rumors-btn" title="Reload Rumors">🔄</button>
+                    </div>
                     <p class="dirty-rumors-subtitle">Share the tea, spill the beans</p>
                 </div>
                 
@@ -5615,6 +5660,7 @@
                 generateAnonymousUserId();
                 loadRumors();
                 setupRumorForm();
+                setupReloadButton();
             } catch (error) {
                 console.error('Error initializing Dirty Rumors:', error);
                 document.getElementById('rumors-list').innerHTML = '<div class="loading-rumors">Error initializing Firebase. Please check your configuration.</div>';
@@ -5676,6 +5722,33 @@
             }
             if (usernameInput) {
                 usernameInput.addEventListener('input', updatePreview);
+            }
+        }
+        
+        // Setup reload button functionality
+        function setupReloadButton() {
+            const reloadBtn = document.getElementById('reload-rumors-btn');
+            if (reloadBtn) {
+                reloadBtn.addEventListener('click', async () => {
+                    // Add loading animation
+                    reloadBtn.classList.add('loading');
+                    reloadBtn.disabled = true;
+                    
+                    try {
+                        // Reload rumors
+                        await loadRumors();
+                        
+                        // Show success notification
+                        showNotification('Rumors refreshed successfully!', 'success');
+                    } catch (error) {
+                        console.error('Error reloading rumors:', error);
+                        showNotification('Failed to reload rumors. Please try again.', 'error');
+                    } finally {
+                        // Remove loading animation
+                        reloadBtn.classList.remove('loading');
+                        reloadBtn.disabled = false;
+                    }
+                });
             }
         }
         
