@@ -1275,9 +1275,15 @@
         
         .loading-rumors {
             text-align: center;
-            padding: 2rem;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
             color: var(--text-light);
             opacity: 0.7;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         /* Dark theme styles for dirty rumors */
@@ -5440,7 +5446,6 @@
         
         // Dirty Rumors functionality
         let anonymousUserId = null;
-        let userVotes = new Map(); // Track user votes for each rumor
         let db = null; // Firebase Firestore instance
         
         // Admin system
@@ -5540,7 +5545,6 @@
                 await loadBlacklistData();
                 
                 generateAnonymousUserId();
-                loadUserVotesFromStorage();
                 loadRumors();
                 setupRumorForm();
             } catch (error) {
@@ -5549,29 +5553,6 @@
             }
         }
         
-        // Load user votes from localStorage
-        function loadUserVotesFromStorage() {
-            try {
-                const savedVotes = localStorage.getItem('userVotes');
-                if (savedVotes) {
-                    const votesData = JSON.parse(savedVotes);
-                    userVotes = new Map(Object.entries(votesData));
-                }
-            } catch (error) {
-                console.error('Error loading user votes from storage:', error);
-                userVotes = new Map();
-            }
-        }
-        
-        // Save user votes to localStorage
-        function saveUserVotesToStorage() {
-            try {
-                const votesObject = Object.fromEntries(userVotes);
-                localStorage.setItem('userVotes', JSON.stringify(votesObject));
-            } catch (error) {
-                console.error('Error saving user votes to storage:', error);
-            }
-        }
         
         // Setup rumor form functionality
         function setupRumorForm() {
@@ -5912,8 +5893,10 @@
                     const timestamp = data.timestamp?.toDate ? data.timestamp.toDate() : new Date(data.timestamp);
                     const timeAgo = getTimeAgo(timestamp);
                     
-                    // Check if user has voted on this rumor
+                    // Check if user has voted on this rumor from Firebase only
                     const userVote = data.votes?.[userId] || null;
+                    
+                    
                     const upvoteClass = userVote === 'up' ? 'upvote-btn voted' : 'upvote-btn';
                     const downvoteClass = userVote === 'down' ? 'downvote-btn voted' : 'downvote-btn';
                     
@@ -5992,50 +5975,67 @@
             const voteKey = `${userId}_${rumorId}`;
             
             try {
-                const { doc, updateDoc, increment, decrement } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                const { doc, updateDoc, increment, deleteField, getDoc } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
                 
                 const rumorRef = doc(db, 'dirtyrumors', rumorId);
                 
+                // Get current rumor data to check Firebase vote status
+                const rumorDoc = await getDoc(rumorRef);
+                if (!rumorDoc.exists()) {
+                    showNotification('Rumor not found.', 'error');
+                    return;
+                }
+                
+                const rumorData = rumorDoc.data();
+                
+                // Check vote status from Firebase only
+                const currentVote = rumorData.votes?.[userId] || null;
+                const hasVoted = currentVote !== null;
+                
+                // Determine the action for notification before processing
+                let notificationMessage = '';
+                if (hasVoted && currentVote === voteType) {
+                    notificationMessage = `Vote removed! 🔄`;
+                } else if (hasVoted && currentVote !== voteType) {
+                    const voteAction = voteType === 'up' ? 'upvoted' : 'downvoted';
+                    notificationMessage = `Vote changed to ${voteAction}! 🔄`;
+                } else {
+                    const voteAction = voteType === 'up' ? 'upvoted' : 'downvoted';
+                    notificationMessage = `Rumor ${voteAction}! 👍`;
+                }
+                
                 // Check if user already voted on this rumor
-                if (userVotes.has(voteKey)) {
-                    const previousVote = userVotes.get(voteKey);
-                    
+                if (hasVoted) {
                     // If clicking the same vote type, remove the vote
-                    if (previousVote === voteType) {
+                    if (currentVote === voteType) {
                         if (voteType === 'up') {
                             await updateDoc(rumorRef, {
-                                upvotes: decrement(1),
-                                [`votes.${userId}`]: null
+                                upvotes: increment(-1),
+                                [`votes.${userId}`]: deleteField()
                             });
                         } else {
                             await updateDoc(rumorRef, {
-                                downvotes: decrement(1),
-                                [`votes.${userId}`]: null
+                                downvotes: increment(-1),
+                                [`votes.${userId}`]: deleteField()
                             });
                         }
-                        // Remove from local tracking
-                        userVotes.delete(voteKey);
-                        saveUserVotesToStorage();
                     } else {
                         // Switching vote types - remove old vote and add new vote
-                        if (previousVote === 'up') {
+                        if (currentVote === 'up') {
                             // Was upvoted, now downvoting - remove upvote, add downvote
                             await updateDoc(rumorRef, {
-                                upvotes: decrement(1),
+                                upvotes: increment(-1),
                                 downvotes: increment(1),
                                 [`votes.${userId}`]: 'down'
                             });
                         } else {
                             // Was downvoted, now upvoting - remove downvote, add upvote
                             await updateDoc(rumorRef, {
-                                downvotes: decrement(1),
+                                downvotes: increment(-1),
                                 upvotes: increment(1),
                                 [`votes.${userId}`]: 'up'
                             });
                         }
-                        // Update local tracking
-                        userVotes.set(voteKey, voteType);
-                        saveUserVotesToStorage();
                     }
                 } else {
                     // First time voting on this rumor
@@ -6050,17 +6050,13 @@
                             [`votes.${userId}`]: 'down'
                         });
                     }
-                    // Update local tracking
-                    userVotes.set(voteKey, voteType);
-                    saveUserVotesToStorage();
                 }
                 
                 // Reload rumors to show updated counts
                 loadRumors();
                 
                 // Show success notification
-                const voteAction = voteType === 'up' ? 'upvoted' : 'downvoted';
-                showNotification(`Rumor ${voteAction}! 👍`, 'success', 2000);
+                showNotification(notificationMessage, 'success', 2000);
                 
             } catch (error) {
                 console.error('Error voting:', error);
@@ -7340,114 +7336,114 @@ game.name.toLowerCase().includes(searchTerm)
         });
 
         
-        // // Developer Tools Protection
-        // (function() {
-        //     'use strict';
+        // Developer Tools Protection
+        (function() {
+            'use strict';
             
-        //     // Disable right-click context menu (silent - no alerts)
-        //     document.addEventListener('contextmenu', function(e) {
-        //         e.preventDefault();
-        //         e.stopImmediatePropagation();
-        //         return false;
-        //     }, true);
+            // Disable right-click context menu (silent - no alerts)
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }, true);
             
-        //     // Disable inspection keyboard shortcuts (triggers alert/redirect)
-        //     document.addEventListener('keydown', function(e) {
-        //         // F12
-        //         if (e.keyCode === 123 || e.key === 'F12') {
-        //             e.preventDefault();
-        //             e.stopImmediatePropagation();
-        //             document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-        //             setTimeout(() => window.location.href = 'about:blank', 500);
-        //             return false;
-        //         }
-        //         // Ctrl+Shift+I (Inspector)
-        //         if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 73 || e.key === 'I')) {
-        //             e.preventDefault();
-        //             e.stopImmediatePropagation();
-        //             document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-        //             setTimeout(() => window.location.href = 'about:blank', 500);
-        //             return false;
-        //         }
-        //         // Ctrl+Shift+J (Console)
-        //         if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 74 || e.key === 'J')) {
-        //             e.preventDefault();
-        //             e.stopImmediatePropagation();
-        //             document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-        //             setTimeout(() => window.location.href = 'about:blank', 500);
-        //             return false;
-        //         }
-        //         // Ctrl+Shift+C (Element Selector)
-        //         if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 67 || e.key === 'C')) {
-        //             e.preventDefault();
-        //             e.stopImmediatePropagation();
-        //             document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-        //             setTimeout(() => window.location.href = 'about:blank', 500);
-        //             return false;
-        //         }
-        //         // Ctrl+U (View Source)
-        //         if ((e.ctrlKey || e.metaKey) && (e.keyCode === 85 || e.key === 'u')) {
-        //             e.preventDefault();
-        //             e.stopImmediatePropagation();
-        //             document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-        //             setTimeout(() => window.location.href = 'about:blank', 500);
-        //             return false;
-        //         }
-        //         // Ctrl+Shift+K (Console Firefox)
-        //         if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 75 || e.key === 'K')) {
-        //             e.preventDefault();
-        //             e.stopImmediatePropagation();
-        //             document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-        //             setTimeout(() => window.location.href = 'about:blank', 500);
-        //             return false;
-        //         }
-        //     }, true);
+            // Disable inspection keyboard shortcuts (triggers alert/redirect)
+            document.addEventListener('keydown', function(e) {
+                // F12
+                if (e.keyCode === 123 || e.key === 'F12') {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+Shift+I (Inspector)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 73 || e.key === 'I')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+Shift+J (Console)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 74 || e.key === 'J')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+Shift+C (Element Selector)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 67 || e.key === 'C')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+U (View Source)
+                if ((e.ctrlKey || e.metaKey) && (e.keyCode === 85 || e.key === 'u')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+Shift+K (Console Firefox)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 75 || e.key === 'K')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+            }, true);
             
             
-        //     // Console detection
-        //     let consoleDetectionCount = 0;
-        //     let element = new Image();
-        //     Object.defineProperty(element, 'id', {
-        //         get: function() {
-        //             consoleDetectionCount++;
-        //             // Only trigger after multiple detections to avoid false positives
-        //             if (consoleDetectionCount > 3) {
-        //                 document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
-        //                 setTimeout(() => window.location.href = 'about:blank', 500);
-        //             }
-        //         }
-        //     });
+            // Console detection
+            let consoleDetectionCount = 0;
+            let element = new Image();
+            Object.defineProperty(element, 'id', {
+                get: function() {
+                    consoleDetectionCount++;
+                    // Only trigger after multiple detections to avoid false positives
+                    if (consoleDetectionCount > 3) {
+                        document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                        setTimeout(() => window.location.href = 'about:blank', 500);
+                    }
+                }
+            });
             
-        //     // Less frequent console checks
-        //     setInterval(function() {
-        //         console.log(element);
-        //         console.clear();
-        //     }, 5000);
+            // Less frequent console checks
+            setInterval(function() {
+                console.log(element);
+                console.clear();
+            }, 5000);
             
-        //     // Disable text selection and copying (but allow input interaction)
-        //     document.onselectstart = function(e) { 
-        //         // Allow selection in input fields
-        //         if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
-        //             return true;
-        //         }
-        //         return false; 
-        //     };
-        //     document.onmousedown = function(e) { 
-        //         // Allow mouse down in input fields and buttons
-        //         if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON')) {
-        //             return true;
-        //         }
-        //         return false; 
-        //     };
-        //     document.ondragstart = function(e) { 
-        //         // Allow dragging in input fields
-        //         if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
-        //             return true;
-        //         }
-        //         return false; 
-        //     };
+            // Disable text selection and copying (but allow input interaction)
+            document.onselectstart = function(e) { 
+                // Allow selection in input fields
+                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+                    return true;
+                }
+                return false; 
+            };
+            document.onmousedown = function(e) { 
+                // Allow mouse down in input fields and buttons
+                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON')) {
+                    return true;
+                }
+                return false; 
+            };
+            document.ondragstart = function(e) { 
+                // Allow dragging in input fields
+                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+                    return true;
+                }
+                return false; 
+            };
             
-        // })();
+        })();
         
         // Username Change Functions
         function showCustomizationError(message) {
@@ -7652,6 +7648,7 @@ game.name.toLowerCase().includes(searchTerm)
             try {
                 // Dynamic imports for Firebase auth
                 const { signInAnonymously, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+                const { auth } = await import('./firebase.js');
                 
                 // Sign in anonymously
                 await signInAnonymously(auth);
