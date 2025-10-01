@@ -4678,6 +4678,14 @@
                                 <div class="person-role">Has a cool dog</div>
                             </div>
                         </div>
+                        <!-- </div>
+                         <div class="person-item">
+                            <div class="person-avatar">🗣️</div>
+                            <div class="person-info">
+                                <div class="person-name">Malcolm</div>
+                                <div class="person-role">Got suspended on the 5th week of School</div>
+                            </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -8117,8 +8125,9 @@ game.name.toLowerCase().includes(searchTerm)
                 bookmarkCode = "javascript:(function(){alert('Failed to load hack file. Please try again.');})();";
             }
             
-            // Open about:blank tab in same window with bookmark instructions
-            const newTab = window.open('about:blank', '_blank');
+            // Open about:blank tab outside of iframe context
+            // Use window.top to break out of iframe and create new tab
+            const newTab = (window.top || window.parent || window).open('about:blank', '_blank');
             
             // Create the content for the new tab
             const htmlContent = `
@@ -8284,8 +8293,9 @@ game.name.toLowerCase().includes(searchTerm)
                 bookmarkCode = "javascript:(function(){alert('Failed to load hack file. Please try again.');})();";
             }
             
-            // Open about:blank tab in same window with bookmark instructions
-            const newTab = window.open('about:blank', '_blank');
+            // Open about:blank tab outside of iframe context
+            // Use window.top to break out of iframe and create new tab
+            const newTab = (window.top || window.parent || window).open('about:blank', '_blank');
             
             // Create the content for the new tab
             const htmlContent = `
