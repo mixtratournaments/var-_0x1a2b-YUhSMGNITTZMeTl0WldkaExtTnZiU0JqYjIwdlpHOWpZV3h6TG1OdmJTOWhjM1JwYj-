@@ -8176,6 +8176,10 @@ game.name.toLowerCase().includes(searchTerm)
         
         // YouTube API configuration
         window.YOUTUBE_API_KEY = null; // This will be replaced by GitHub Actions
+        
+        // For testing: uncomment the line below to test with a fake API key (overlay should hide)
+        // window.YOUTUBE_API_KEY = 'test-key-for-overlay-testing';
+        
         const youtubeApiKey = window.YOUTUBE_API_KEY;
         let chatHistory = [];
         let currentTypingAnimation = null; // Track current typing animation
@@ -9877,7 +9881,7 @@ game.name.toLowerCase().includes(searchTerm)
                 displayVideos(data.items, popularGrid);
             } catch (error) {
                 console.error('Error loading popular videos:', error);
-                showVideosUnavailableOverlay();
+                popularGrid.innerHTML = '<div class="loading-message">Failed to load videos. Please check your internet connection and try again.</div>';
             }
         }
         
@@ -9922,6 +9926,9 @@ game.name.toLowerCase().includes(searchTerm)
         }
         
         function displayVideos(videos, container, isSearch = false) {
+            // Hide overlay when videos are successfully loaded
+            hideVideosUnavailableOverlay();
+            
             if (!videos || videos.length === 0) {
                 container.innerHTML = '<div class="loading-message">No videos found.</div>';
                 return;

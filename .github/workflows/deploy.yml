@@ -46,10 +46,10 @@ jobs:
         
         # Replace YouTube API key in main.html
         if [ -n "${{ secrets.YOUTUBE_API_KEY }}" ]; then
-          sed -i "s/const YOUTUBE_API_KEY = null;/const YOUTUBE_API_KEY = '${{ secrets.YOUTUBE_API_KEY }}';/g" main.html
+          sed -i "s/window.YOUTUBE_API_KEY = null;/window.YOUTUBE_API_KEY = '${{ secrets.YOUTUBE_API_KEY }}';/g" main.html
           echo "✅ YouTube API key injected successfully"
         else
-          echo "⚠️  No YouTube API key found - using demo tracks only"
+          echo "⚠️  No YouTube API key found - videos will show unavailable overlay"
         fi
         
         # Verify the replacements worked (for debugging)
