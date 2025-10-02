@@ -9075,8 +9075,6 @@ game.name.toLowerCase().includes(searchTerm)
             newTab.document.close();
         }
 
-
-
         // YouTube Music API Configuration
         const YOUTUBE_API_KEY = null; // Will be replaced by GitHub Actions
         
@@ -9106,7 +9104,7 @@ game.name.toLowerCase().includes(searchTerm)
                     title: item.snippet.title,
                     artist: item.snippet.channelTitle,
                     thumbnail: item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default?.url,
-                    duration: 'Unknown' // Would need additional API call for duration
+                    duration: 'Unknown'
                 }));
             } catch (error) {
                 console.error('Error searching YouTube:', error);
@@ -9169,7 +9167,6 @@ game.name.toLowerCase().includes(searchTerm)
             }
 
             searchResults.innerHTML = tracks.map(track => {
-                // Clean up title to extract song name and artist
                 const cleanTitle = cleanYouTubeTitle(track.title);
                 
                 return `
@@ -9189,7 +9186,6 @@ game.name.toLowerCase().includes(searchTerm)
         }
 
         function cleanYouTubeTitle(title) {
-            // Remove common YouTube suffixes
             let cleanTitle = title.replace(/\s*\(Official.*?\)/gi, '')
                                  .replace(/\s*\[Official.*?\]/gi, '')
                                  .replace(/\s*- Official.*$/gi, '')
@@ -9197,11 +9193,9 @@ game.name.toLowerCase().includes(searchTerm)
                                  .replace(/\s*HD$/gi, '')
                                  .replace(/\s*4K$/gi, '');
 
-            // Try to split artist and song
             let song = cleanTitle;
             let artist = 'Unknown Artist';
 
-            // Common patterns: "Artist - Song" or "Artist: Song"
             if (cleanTitle.includes(' - ')) {
                 const parts = cleanTitle.split(' - ');
                 if (parts.length >= 2) {
@@ -9220,7 +9214,7 @@ game.name.toLowerCase().includes(searchTerm)
         }
 
         // Update header music player (global function)
-        function updateHeaderMusicPlayer(track) {
+        function updateHeaderMusicPlayerGlobal(track) {
             if (!track) return;
             
             const headerMusicPlayer = document.getElementById('header-music-player');
@@ -9231,34 +9225,28 @@ game.name.toLowerCase().includes(searchTerm)
             
             if (!headerMusicPlayer) return;
             
-            // Show header music player
             headerMusicPlayer.classList.add('visible');
             
-            // Update track info
             if (headerTrackTitle) headerTrackTitle.textContent = track.title;
             if (headerTrackArtist) headerTrackArtist.textContent = track.artist;
             
-            // Update track image (use first letter of title or a music note)
             if (headerTrackImage) {
                 const firstLetter = track.title.charAt(0).toUpperCase();
                 headerTrackImage.textContent = firstLetter;
             }
             
-            // Update play/pause button
             if (headerPlayPauseBtn) headerPlayPauseBtn.textContent = '⏸️';
         }
 
         function playYouTubeTrack(videoId, songName, artistName, thumbnail) {
             console.log('Playing YouTube track:', { videoId, songName, artistName });
 
-            // Update header music player
-            updateHeaderMusicPlayer({
+            updateHeaderMusicPlayerGlobal({
                 title: songName,
                 artist: artistName,
                 image: thumbnail || '🎵'
             });
 
-            // Show track info in player
             const musicPlayer = document.getElementById('music-player');
             const trackTitle = document.getElementById('track-title');
             const trackUrl = document.getElementById('track-url');
@@ -9267,15 +9255,12 @@ game.name.toLowerCase().includes(searchTerm)
             trackUrl.textContent = `by ${artistName} (YouTube Music)`;
             musicPlayer.style.display = 'block';
 
-            // Initialize YouTube player if not already done
             if (!currentYouTubePlayer) {
                 initializeYouTubePlayer(videoId);
             } else {
-                // Load new video in existing player
                 currentYouTubePlayer.loadVideoById(videoId);
             }
 
-            // Update UI to show playing state
             const playPauseBtn = document.getElementById('play-pause-btn');
             const headerPlayPauseBtn = document.getElementById('header-play-pause-btn');
             
@@ -9284,7 +9269,6 @@ game.name.toLowerCase().includes(searchTerm)
         }
 
         function initializeYouTubePlayer(videoId) {
-            // Create hidden YouTube player container
             let playerContainer = document.getElementById('youtube-player-container');
             if (!playerContainer) {
                 playerContainer = document.createElement('div');
@@ -9293,7 +9277,6 @@ game.name.toLowerCase().includes(searchTerm)
                 document.body.appendChild(playerContainer);
             }
 
-            // Load YouTube IFrame API
             if (!window.YT) {
                 const tag = document.createElement('script');
                 tag.src = 'https://www.youtube.com/iframe_api';
@@ -9348,6 +9331,8 @@ game.name.toLowerCase().includes(searchTerm)
             const searchBtn = document.getElementById('youtube-search-btn');
             const searchResults = document.getElementById('youtube-search-results');
 
+            if (!searchInput || !searchBtn || !searchResults) return;
+
             let searchTimeout;
 
             // Search on button click
@@ -9370,10 +9355,8 @@ game.name.toLowerCase().includes(searchTerm)
                         performSearch();
                     }, 500);
                 } else if (query.length === 0) {
-                    // Show empty state when search is cleared
                     showEmptyState();
                 } else {
-                    // Show nothing for 1-2 characters
                     searchResults.innerHTML = '';
                 }
             });
@@ -9388,9 +9371,7 @@ game.name.toLowerCase().includes(searchTerm)
                 displayYouTubeSearchResults(tracks);
             }
 
-            // Show initial message
             function showEmptyState() {
-                // Check if we have a real API key (not null and not empty)
                 const hasRealApiKey = YOUTUBE_API_KEY && YOUTUBE_API_KEY !== 'null' && YOUTUBE_API_KEY.length > 10;
                 
                 if (!hasRealApiKey) {
@@ -9412,7 +9393,6 @@ game.name.toLowerCase().includes(searchTerm)
                 }
             }
             
-            // Show initial empty state
             showEmptyState();
         }
 
@@ -9627,6 +9607,25 @@ game.name.toLowerCase().includes(searchTerm)
                 }
             }
             
+            // Update header music player
+            function updateHeaderMusicPlayer(track) {
+                if (!track) return;
+                
+                // Show header music player
+                headerMusicPlayer.classList.add('visible');
+                
+                // Update track info
+                headerTrackTitle.textContent = track.title;
+                headerTrackArtist.textContent = track.artist;
+                
+                // Update track image (use first letter of title or a music note)
+                const firstLetter = track.title.charAt(0).toUpperCase();
+                headerTrackImage.textContent = firstLetter;
+                
+                // Update play/pause button
+                headerPlayPauseBtn.textContent = isPlaying ? '⏸️' : '▶️';
+            }
+            
             // Hide header music player
             function hideHeaderMusicPlayer() {
                 headerMusicPlayer.classList.remove('visible');
@@ -9697,6 +9696,18 @@ game.name.toLowerCase().includes(searchTerm)
             
             // Play/Pause functionality
             playPauseBtn.addEventListener('click', function() {
+                // Check if YouTube player is active
+                if (currentYouTubePlayer && isYouTubePlayerReady) {
+                    const playerState = currentYouTubePlayer.getPlayerState();
+                    if (playerState === YT.PlayerState.PLAYING) {
+                        currentYouTubePlayer.pauseVideo();
+                    } else {
+                        currentYouTubePlayer.playVideo();
+                    }
+                    return;
+                }
+                
+                // Handle local audio player
                 if (!audioPlayer.src) {
                     return;
                 }
