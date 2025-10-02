@@ -9364,6 +9364,11 @@ game.name.toLowerCase().includes(searchTerm)
                 const artists = track.artists.map(artist => artist.name).join(', ');
                 const imageUrl = track.album.images[2]?.url || track.album.images[1]?.url || track.album.images[0]?.url;
                 
+                // Check if preview is available (for real Spotify results)
+                const hasPreview = track.preview_url !== null && track.preview_url !== undefined;
+                const previewIndicator = hasPreview ? '🎵' : '🔒';
+                const previewText = hasPreview ? 'Preview available' : 'No preview';
+                
                 return `
                     <div class="spotify-track" data-track-uri="${track.uri}" data-track-id="${track.id}">
                         <div class="spotify-track-image">
@@ -9373,6 +9378,11 @@ game.name.toLowerCase().includes(searchTerm)
                             <div class="spotify-track-name">${track.name}</div>
                             <div class="spotify-track-artist">${artists}</div>
                             <div class="spotify-track-album">${track.album.name}</div>
+                            ${SPOTIFY_CONFIG.clientId !== 'demo_mode' && SPOTIFY_CONFIG.clientId !== 'PLACEHOLDER_CLIENT_ID' ? 
+                                `<div class="spotify-track-preview" style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.25rem;">
+                                    ${previewIndicator} ${previewText}
+                                </div>` : ''
+                            }
                         </div>
                         <button class="spotify-play-btn" onclick="playSpotifyTrack('${track.uri}', '${track.name}', '${artists}', '${imageUrl || ''}')">▶️</button>
                     </div>
@@ -9416,7 +9426,7 @@ game.name.toLowerCase().includes(searchTerm)
                 }, 500);
                 
             } else {
-                trackUrl.textContent = `by ${artist} (Spotify Preview - Full playback requires authentication)`;
+                trackUrl.textContent = `by ${artist} (Loading preview...)`;
                 musicPlayer.style.display = 'block';
 
                 // Try to get preview URL and play it
@@ -9432,14 +9442,46 @@ game.name.toLowerCase().includes(searchTerm)
                         const trackData = await response.json();
                         if (trackData.preview_url) {
                             const audioPlayer = document.getElementById('audio-player');
+                            const playPauseBtn = document.getElementById('play-pause-btn');
+                            const headerPlayPauseBtn = document.getElementById('header-play-pause-btn');
+                            
                             audioPlayer.src = trackData.preview_url;
-                            audioPlayer.play();
+                            
+                            // Update UI to show playing state
+                            playPauseBtn.textContent = '⏸️';
+                            headerPlayPauseBtn.textContent = '⏸️';
+                            
+                            // Update track info
+                            trackUrl.textContent = `by ${artist} (30s Preview)`;
+                            
+                            // Play the preview
+                            await audioPlayer.play();
+                            
+                            console.log('✅ Playing Spotify preview for:', name);
                         } else {
-                            alert('No preview available for this track. Full Spotify integration requires user authentication.');
+                            // No preview available
+                            trackUrl.textContent = `by ${artist} (No preview available)`;
+                            
+                            // Show helpful message
+                            const message = `🎵 "${name}" by ${artist}\n\n⚠️ No preview available for this track.\n\nTo play full songs:\n• Open Spotify app\n• Search for "${name}"\n• Play there while using Hubble\n\nOr upgrade to Spotify Premium + full authentication.`;
+                            
+                            setTimeout(() => {
+                                alert(message);
+                            }, 500);
                         }
+                    } else {
+                        throw new Error(`API request failed: ${response.status}`);
                     }
                 } catch (error) {
-                    console.error('Error playing preview:', error);
+                    console.error('Error playing Spotify track:', error);
+                    trackUrl.textContent = `by ${artist} (Error loading)`;
+                    
+                    // Show error message with helpful info
+                    const errorMessage = `❌ Could not load "${name}"\n\nPossible solutions:\n• Check your internet connection\n• Try a different song\n• Open Spotify app and play there\n\nError: ${error.message}`;
+                    
+                    setTimeout(() => {
+                        alert(errorMessage);
+                    }, 500);
                 }
             }
         }
