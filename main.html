@@ -9255,11 +9255,18 @@ game.name.toLowerCase().includes(searchTerm)
             trackUrl.textContent = `by ${artistName} (YouTube Music)`;
             musicPlayer.style.display = 'block';
 
-            if (!currentYouTubePlayer) {
-                initializeYouTubePlayer(videoId);
-            } else {
-                currentYouTubePlayer.loadVideoById(videoId);
+            // Always reinitialize the player for new videos to avoid state issues
+            if (currentYouTubePlayer && typeof currentYouTubePlayer.destroy === 'function') {
+                try {
+                    currentYouTubePlayer.destroy();
+                } catch (e) {
+                    console.log('Error destroying previous player:', e);
+                }
             }
+            
+            currentYouTubePlayer = null;
+            isYouTubePlayerReady = false;
+            initializeYouTubePlayer(videoId);
 
             const playPauseBtn = document.getElementById('play-pause-btn');
             const headerPlayPauseBtn = document.getElementById('header-play-pause-btn');
@@ -9292,37 +9299,60 @@ game.name.toLowerCase().includes(searchTerm)
         }
 
         function createYouTubePlayer(videoId) {
-            currentYouTubePlayer = new YT.Player('youtube-player-container', {
-                height: '1',
-                width: '1',
-                videoId: videoId,
-                playerVars: {
-                    autoplay: 1,
-                    controls: 0,
-                    disablekb: 1,
-                    fs: 0,
-                    modestbranding: 1,
-                    rel: 0
-                },
-                events: {
-                    onReady: (event) => {
-                        isYouTubePlayerReady = true;
-                        event.target.playVideo();
+            try {
+                currentYouTubePlayer = new YT.Player('youtube-player-container', {
+                    height: '1',
+                    width: '1',
+                    videoId: videoId,
+                    playerVars: {
+                        autoplay: 0, // Start with autoplay off to avoid policy violations
+                        controls: 0,
+                        disablekb: 1,
+                        fs: 0,
+                        modestbranding: 1,
+                        rel: 0,
+                        origin: window.location.origin // Add origin to avoid postMessage errors
                     },
-                    onStateChange: (event) => {
-                        const playPauseBtn = document.getElementById('play-pause-btn');
-                        const headerPlayPauseBtn = document.getElementById('header-play-pause-btn');
-                        
-                        if (event.data === YT.PlayerState.PLAYING) {
-                            if (playPauseBtn) playPauseBtn.textContent = '⏸️';
-                            if (headerPlayPauseBtn) headerPlayPauseBtn.textContent = '⏸️';
-                        } else if (event.data === YT.PlayerState.PAUSED) {
-                            if (playPauseBtn) playPauseBtn.textContent = '▶️';
-                            if (headerPlayPauseBtn) headerPlayPauseBtn.textContent = '▶️';
+                    events: {
+                        onReady: (event) => {
+                            console.log('YouTube player ready');
+                            isYouTubePlayerReady = true;
+                            // Try to play after a short delay to ensure everything is loaded
+                            setTimeout(() => {
+                                try {
+                                    event.target.playVideo();
+                                } catch (e) {
+                                    console.log('Autoplay blocked, user interaction required:', e);
+                                }
+                            }, 100);
+                        },
+                        onStateChange: (event) => {
+                            const playPauseBtn = document.getElementById('play-pause-btn');
+                            const headerPlayPauseBtn = document.getElementById('header-play-pause-btn');
+                            
+                            console.log('YouTube player state changed:', event.data);
+                            
+                            if (event.data === YT.PlayerState.PLAYING) {
+                                if (playPauseBtn) playPauseBtn.textContent = '⏸️';
+                                if (headerPlayPauseBtn) headerPlayPauseBtn.textContent = '⏸️';
+                            } else if (event.data === YT.PlayerState.PAUSED) {
+                                if (playPauseBtn) playPauseBtn.textContent = '▶️';
+                                if (headerPlayPauseBtn) headerPlayPauseBtn.textContent = '▶️';
+                            } else if (event.data === YT.PlayerState.ENDED) {
+                                if (playPauseBtn) playPauseBtn.textContent = '▶️';
+                                if (headerPlayPauseBtn) headerPlayPauseBtn.textContent = '▶️';
+                            }
+                        },
+                        onError: (event) => {
+                            console.error('YouTube player error:', event.data);
+                            alert('Error playing video. The video may not be available or there may be playback restrictions.');
                         }
                     }
-                }
-            });
+                });
+            } catch (error) {
+                console.error('Error creating YouTube player:', error);
+                alert('Error initializing YouTube player. Please try again.');
+            }
         }
 
         // Initialize YouTube Music search functionality
@@ -9698,13 +9728,18 @@ game.name.toLowerCase().includes(searchTerm)
             playPauseBtn.addEventListener('click', function() {
                 // Check if YouTube player is active
                 if (currentYouTubePlayer && isYouTubePlayerReady) {
-                    const playerState = currentYouTubePlayer.getPlayerState();
-                    if (playerState === YT.PlayerState.PLAYING) {
-                        currentYouTubePlayer.pauseVideo();
-                    } else {
-                        currentYouTubePlayer.playVideo();
+                    try {
+                        const playerState = currentYouTubePlayer.getPlayerState();
+                        if (playerState === YT.PlayerState.PLAYING) {
+                            currentYouTubePlayer.pauseVideo();
+                        } else {
+                            currentYouTubePlayer.playVideo();
+                        }
+                        return;
+                    } catch (error) {
+                        console.error('Error controlling YouTube player:', error);
+                        // Fall through to local audio player
                     }
-                    return;
                 }
                 
                 // Handle local audio player
