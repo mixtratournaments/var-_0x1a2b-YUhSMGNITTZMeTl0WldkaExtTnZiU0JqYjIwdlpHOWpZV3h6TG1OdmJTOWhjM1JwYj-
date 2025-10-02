@@ -40,7 +40,11 @@ jobs:
         echo "🔍 Checking for Groq API key secret..."
         if [ -n "${{ secrets.GROQ_API_KEY }}" ]; then
           echo "✅ Groq API key secret found, injecting into main.html..."
-          sed -i "s/window.GROQ_API_KEY = null;/window.GROQ_API_KEY = '${{ secrets.GROQ_API_KEY }}';/g" main.html
+          echo "🔍 Before replacement:"
+          grep "window.GROQ_API_KEY" main.html | head -1
+          sed -i "s|window.GROQ_API_KEY = null;|window.GROQ_API_KEY = '${{ secrets.GROQ_API_KEY }}';|g" main.html
+          echo "🔍 After replacement:"
+          grep "window.GROQ_API_KEY" main.html | head -1
           echo "✅ Groq API key injected successfully"
         else
           echo "❌ No Groq API key found in GitHub secrets - chatbot features may not work"
@@ -51,7 +55,11 @@ jobs:
         echo "🔍 Checking for YouTube API key secret..."
         if [ -n "${{ secrets.YOUTUBE_API_KEY }}" ]; then
           echo "✅ YouTube API key secret found, injecting into main.html..."
-          sed -i "s/window.YOUTUBE_API_KEY = null;/window.YOUTUBE_API_KEY = '${{ secrets.YOUTUBE_API_KEY }}';/g" main.html
+          echo "🔍 Before replacement:"
+          grep "window.YOUTUBE_API_KEY" main.html | head -1
+          sed -i "s|window.YOUTUBE_API_KEY = null;|window.YOUTUBE_API_KEY = '${{ secrets.YOUTUBE_API_KEY }}';|g" main.html
+          echo "🔍 After replacement:"
+          grep "window.YOUTUBE_API_KEY" main.html | head -1
           echo "✅ YouTube API key injected successfully"
         else
           echo "❌ No YouTube API key found in GitHub secrets - videos will show unavailable overlay"
