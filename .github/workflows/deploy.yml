@@ -36,15 +36,6 @@ jobs:
         
     - name: Replace API credentials
       run: |
-        # Replace Spotify credentials in spotify-config.js
-        if [ -n "${{ secrets.SPOTIFY_CLIENT_ID }}" ]; then
-          sed -i "s/PLACEHOLDER_CLIENT_ID/${{ secrets.SPOTIFY_CLIENT_ID }}/g" spotify-config.js
-          sed -i "s/PLACEHOLDER_CLIENT_SECRET/${{ secrets.SPOTIFY_CLIENT_SECRET }}/g" spotify-config.js
-          echo "✅ Spotify credentials injected successfully"
-        else
-          echo "⚠️  No Spotify credentials found - running in demo mode"
-        fi
-        
         # Replace Groq API key in main.html
         if [ -n "${{ secrets.GROQ_API_KEY }}" ]; then
           sed -i "s/window.GROQ_API_KEY = null;/window.GROQ_API_KEY = '${{ secrets.GROQ_API_KEY }}';/g" main.html
@@ -53,9 +44,7 @@ jobs:
           echo "⚠️  No Groq API key found - chatbot features may not work"
         fi
         
-        # Verify the replacements worked (for debugging)
-        echo "Spotify config after replacement:"
-        head -10 spotify-config.js
+        # Verify the replacement worked (for debugging)
         echo "Groq API key status in main.html:"
         grep "GROQ_API_KEY" main.html | head -1
         
