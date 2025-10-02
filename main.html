@@ -9085,8 +9085,11 @@ game.name.toLowerCase().includes(searchTerm)
 
         // YouTube Music Search Functions
         async function searchYouTubeMusic(query) {
+            // Check if we have a real API key (not null and not empty)
+            const hasRealApiKey = YOUTUBE_API_KEY && YOUTUBE_API_KEY !== 'null' && YOUTUBE_API_KEY.length > 10;
+            
             // Demo mode with sample tracks
-            if (!YOUTUBE_API_KEY) {
+            if (!hasRealApiKey) {
                 return getDemoYouTubeTracks(query);
             }
 
@@ -9387,7 +9390,10 @@ game.name.toLowerCase().includes(searchTerm)
 
             // Show initial message
             function showEmptyState() {
-                if (!YOUTUBE_API_KEY) {
+                // Check if we have a real API key (not null and not empty)
+                const hasRealApiKey = YOUTUBE_API_KEY && YOUTUBE_API_KEY !== 'null' && YOUTUBE_API_KEY.length > 10;
+                
+                if (!hasRealApiKey) {
                     searchResults.innerHTML = `
                         <div style="padding: 2rem; text-align: center; color: var(--text-light);">
                             <h3>🎵 YouTube Music Search</h3>
