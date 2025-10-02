@@ -8181,6 +8181,15 @@ game.name.toLowerCase().includes(searchTerm)
         // window.YOUTUBE_API_KEY = 'test-key-for-overlay-testing';
         
         const youtubeApiKey = window.YOUTUBE_API_KEY;
+        
+        // Debug: Log API key status on page load
+        console.log('🔍 YouTube API Key Debug Info:', {
+            hasApiKey: !!youtubeApiKey,
+            apiKeyType: youtubeApiKey === null ? 'null' : typeof youtubeApiKey,
+            apiKeyLength: youtubeApiKey ? youtubeApiKey.length : 0,
+            apiKeyPreview: youtubeApiKey ? youtubeApiKey.substring(0, 15) + '...' : 'null',
+            isTestKey: youtubeApiKey === 'test-key-for-overlay-testing'
+        });
         let chatHistory = [];
         let currentTypingAnimation = null; // Track current typing animation
         
