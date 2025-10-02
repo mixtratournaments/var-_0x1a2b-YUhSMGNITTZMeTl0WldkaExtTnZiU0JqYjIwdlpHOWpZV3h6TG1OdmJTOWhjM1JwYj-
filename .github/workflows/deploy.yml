@@ -37,11 +37,14 @@ jobs:
     - name: Replace API credentials
       run: |
         # Replace Groq API key in main.html
+        echo "🔍 Checking for Groq API key secret..."
         if [ -n "${{ secrets.GROQ_API_KEY }}" ]; then
+          echo "✅ Groq API key secret found, injecting into main.html..."
           sed -i "s/window.GROQ_API_KEY = null;/window.GROQ_API_KEY = '${{ secrets.GROQ_API_KEY }}';/g" main.html
           echo "✅ Groq API key injected successfully"
         else
-          echo "⚠️  No Groq API key found - chatbot features may not work"
+          echo "❌ No Groq API key found in GitHub secrets - chatbot features may not work"
+          echo "💡 To fix this: Go to Settings > Secrets and variables > Actions > Add 'GROQ_API_KEY'"
         fi
         
         # Replace YouTube API key in main.html
@@ -62,8 +65,24 @@ jobs:
         grep "YOUTUBE_API_KEY" main.html | head -1
         
         # Count how many API key replacements were made
+        echo "🔍 Groq API key replacement count:"
+        grep -c "window.GROQ_API_KEY" main.html || echo "0"
         echo "🔍 YouTube API key replacement count:"
         grep -c "window.YOUTUBE_API_KEY" main.html || echo "0"
+        
+        # Check if API keys are properly set (not null)
+        echo "🔍 Final API key verification:"
+        if grep -q "window.GROQ_API_KEY = '[^']*';" main.html; then
+          echo "✅ Groq API key is properly set"
+        else
+          echo "❌ Groq API key is still null or not found"
+        fi
+        
+        if grep -q "window.YOUTUBE_API_KEY = '[^']*';" main.html; then
+          echo "✅ YouTube API key is properly set"
+        else
+          echo "❌ YouTube API key is still null or not found"
+        fi
         
     - name: Setup Pages
       uses: actions/configure-pages@v4
