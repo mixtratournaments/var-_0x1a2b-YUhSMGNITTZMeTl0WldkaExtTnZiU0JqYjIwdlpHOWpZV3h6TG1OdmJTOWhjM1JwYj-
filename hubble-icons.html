@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hubble Icons</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .icons-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .hubble-title {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 300;
+            margin-bottom: 3rem;
+        }
+        
+        .icons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .icon-variant {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .icon-variant h3 {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        
+        .favicon-container {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .favicon-logo {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .ios-logo-container {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
+            border-radius: 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .ios-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .hubble-title {
+                font-size: 2.5rem;
+            }
+            
+            .icons-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="icons-container">
+        <h1 class="hubble-title">Hubble</h1>
+        <p class="tagline">Your all-in-one entertainment hub</p>
+        
+        <div class="icons-grid">
+            <div class="icon-variant">
+                <h3>Favicon</h3>
+                <div class="favicon-container">
+                    <div class="favicon-logo">H</div>
+                </div>
+            </div>
+            
+            <div class="icon-variant">
+                <h3>iOS App Logo</h3>
+                <div class="ios-logo-container">
+                    <div class="ios-logo">Hubble</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

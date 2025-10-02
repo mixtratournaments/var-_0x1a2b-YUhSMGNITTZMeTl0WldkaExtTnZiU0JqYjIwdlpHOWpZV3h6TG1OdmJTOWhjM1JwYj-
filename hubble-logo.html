@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hubble Logo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .logo-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .hubble-logo {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        
+        .hubble-logo::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: blur(1px);
+            opacity: 0.3;
+            z-index: -1;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 300;
+            margin-top: 1rem;
+        }
+        
+        .logo-variants {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .logo-variant {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo-variant h3 {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        
+        .logo-small {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .logo-large {
+            font-size: 6rem;
+            font-weight: 900;
+        }
+        
+        .logo-outline {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-stroke: 2px;
+            -webkit-text-stroke-color: transparent;
+        }
+        
+        .logo-glow {
+            font-size: 3rem;
+            font-weight: 800;
+            text-shadow: 0 0 20px rgba(0, 156, 252, 0.5), 0 0 40px rgba(160, 170, 255, 0.3);
+        }
+        
+        .logo-solid {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #009CFC 0%, #A0AAFF 50%, #C97FFD 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .logo-clickable {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 2px solid transparent;
+        }
+        
+        .logo-clickable:hover {
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo-clickable:active {
+            transform: scale(0.95);
+        }
+        
+        
+        @media (max-width: 768px) {
+            .hubble-logo {
+                font-size: 3rem;
+            }
+            
+            .logo-large {
+                font-size: 4rem;
+            }
+            
+            .logo-variants {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <h1 class="hubble-logo">Hubble</h1>
+        <p class="tagline">Your all-in-one entertainment hub</p>
+        
+        <div class="logo-variants">
+            <div class="logo-variant">
+                <h3>Small Version</h3>
+                <div class="hubble-logo logo-small logo-clickable" onclick="downloadLogo('small')">Hubble</div>
+            </div>
+            
+            <div class="logo-variant">
+                <h3>Large Version</h3>
+                <div class="hubble-logo logo-large logo-clickable" onclick="downloadLogo('large')">Hubble</div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        async function downloadLogo(type) {
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                if (type === 'small' || type === 'large') {
+                    const tempDiv = document.createElement('div');
+                    tempDiv.style.position = 'absolute';
+                    tempDiv.style.visibility = 'hidden';
+                    tempDiv.style.fontFamily = "'Poppins', sans-serif";
+                    tempDiv.style.fontWeight = type === 'small' ? '700' : '900';
+                    tempDiv.style.fontSize = type === 'small' ? '64px' : '192px';
+                    tempDiv.textContent = 'Hubble';
+                    document.body.appendChild(tempDiv);
+                    
+                    const textWidth = tempDiv.offsetWidth;
+                    const textHeight = tempDiv.offsetHeight;
+                    document.body.removeChild(tempDiv);
+                    
+                    const padding = 20;
+                    canvas.width = textWidth + padding * 2;
+                    canvas.height = textHeight + padding * 2;
+                    
+                    const fontSize = type === 'small' ? 64 : 192;
+                    const fontWeight = type === 'small' ? '700' : '900';
+                    ctx.font = `${fontWeight} ${fontSize}px 'Poppins', sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+                    gradient.addColorStop(0, '#009CFC');
+                    gradient.addColorStop(0.5, '#A0AAFF');
+                    gradient.addColorStop(1, '#C97FFD');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillText('Hubble', canvas.width / 2, canvas.height / 2);
+                }
+                
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `hubble-${type}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 'image/png');
+                
+            } catch (error) {
+                console.error('Error generating logo:', error);
+                alert('Error generating logo. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>
