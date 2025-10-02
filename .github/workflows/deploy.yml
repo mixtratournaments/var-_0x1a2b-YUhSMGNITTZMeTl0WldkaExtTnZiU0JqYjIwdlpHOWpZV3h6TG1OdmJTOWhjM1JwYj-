@@ -44,9 +44,19 @@ jobs:
           echo "⚠️  No Groq API key found - chatbot features may not work"
         fi
         
-        # Verify the replacement worked (for debugging)
+        # Replace YouTube API key in main.html
+        if [ -n "${{ secrets.YOUTUBE_API_KEY }}" ]; then
+          sed -i "s/const YOUTUBE_API_KEY = null;/const YOUTUBE_API_KEY = '${{ secrets.YOUTUBE_API_KEY }}';/g" main.html
+          echo "✅ YouTube API key injected successfully"
+        else
+          echo "⚠️  No YouTube API key found - using demo tracks only"
+        fi
+        
+        # Verify the replacements worked (for debugging)
         echo "Groq API key status in main.html:"
         grep "GROQ_API_KEY" main.html | head -1
+        echo "YouTube API key status in main.html:"
+        grep "YOUTUBE_API_KEY" main.html | head -1
         
     - name: Setup Pages
       uses: actions/configure-pages@v4
