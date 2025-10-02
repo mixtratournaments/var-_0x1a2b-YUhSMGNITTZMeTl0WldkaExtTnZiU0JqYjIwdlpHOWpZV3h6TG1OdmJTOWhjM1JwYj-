@@ -8115,6 +8115,9 @@ game.name.toLowerCase().includes(searchTerm)
                         hallOfFameContainer.style.display = 'none';
                         hacksContainer.style.display = 'none';
                         chatbotContainer.style.display = 'none';
+                        
+                        // Load popular videos when tab is opened
+                        loadPopularVideos();
                     } else if (section === 'dirty-rumors') {
                         gamesContainer.style.display = 'none';
                         musicContainer.style.display = 'none';
