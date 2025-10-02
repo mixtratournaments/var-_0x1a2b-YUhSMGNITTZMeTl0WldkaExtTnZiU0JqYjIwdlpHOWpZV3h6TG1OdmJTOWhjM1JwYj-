@@ -9436,6 +9436,16 @@ game.name.toLowerCase().includes(searchTerm)
                 }
 
                 const data = await response.json();
+                
+                // Debug: Log the first track to see if preview_url is included
+                if (data.tracks.items.length > 0) {
+                    console.log('Sample track data:', {
+                        name: data.tracks.items[0].name,
+                        preview_url: data.tracks.items[0].preview_url,
+                        hasPreview: !!data.tracks.items[0].preview_url
+                    });
+                }
+                
                 return data.tracks.items;
             } catch (error) {
                 console.error('Error searching Spotify:', error);
@@ -9554,14 +9564,14 @@ game.name.toLowerCase().includes(searchTerm)
                                 </div>` : ''
                             }
                         </div>
-                        <button class="spotify-play-btn" onclick="playSpotifyTrack('${track.uri}', '${track.name}', '${artists}', '${imageUrl || ''}')">▶️</button>
+                        <button class="spotify-play-btn" onclick="playSpotifyTrack('${track.uri}', '${track.name}', '${artists}', '${imageUrl || ''}', '${track.preview_url || ''}')">▶️</button>
                     </div>
                 `;
             }).join('');
         }
 
-        async function playSpotifyTrack(uri, name, artist, imageUrl) {
-            console.log('Playing Spotify track:', { uri, name, artist, imageUrl });
+        async function playSpotifyTrack(uri, name, artist, imageUrl, previewUrl) {
+            console.log('Playing Spotify track:', { uri, name, artist, imageUrl, previewUrl });
             
             // Update the header music player with Spotify track info
             updateHeaderMusicPlayer({
@@ -9631,14 +9641,14 @@ game.name.toLowerCase().includes(searchTerm)
                     alert(errorMessage);
                     
                     // Fallback to preview
-                    playSpotifyPreview(uri, name, artist, imageUrl);
+                    playSpotifyPreview(uri, name, artist, imageUrl, previewUrl);
                 }
             } else if (!isSpotifyAuthenticated) {
                 // Show login prompt
                 const message = `🎵 "${name}" by ${artist}\n\n🔐 Login with Spotify for full song playback!\n\nClick "Login with Spotify" above, or continue with 30s preview?`;
                 
                 if (confirm(message)) {
-                    playSpotifyPreview(uri, name, artist, imageUrl);
+                    playSpotifyPreview(uri, name, artist, imageUrl, previewUrl);
                 }
             } else {
                 trackUrl.textContent = `by ${artist} (Loading preview...)`;
@@ -9702,14 +9712,49 @@ game.name.toLowerCase().includes(searchTerm)
         }
 
         // Separate function for preview playback
-        async function playSpotifyPreview(uri, name, artist, imageUrl) {
+        async function playSpotifyPreview(uri, name, artist, imageUrl, previewUrl) {
             const musicPlayer = document.getElementById('music-player');
             const trackTitle = document.getElementById('track-title');
             const trackUrl = document.getElementById('track-url');
             
             trackTitle.textContent = name;
-            trackUrl.textContent = `by ${artist} (Loading preview...)`;
             musicPlayer.style.display = 'block';
+
+            // If we already have the preview URL from search results, use it directly
+            if (previewUrl && previewUrl !== 'null' && previewUrl !== '') {
+                console.log('✅ Using preview URL from search results:', previewUrl);
+                
+                try {
+                    const audioPlayer = document.getElementById('audio-player');
+                    const playPauseBtn = document.getElementById('play-pause-btn');
+                    const headerPlayPauseBtn = document.getElementById('header-play-pause-btn');
+                    
+                    trackUrl.textContent = `by ${artist} (Loading 30s preview...)`;
+                    
+                    audioPlayer.src = previewUrl;
+                    
+                    // Update UI to show playing state
+                    playPauseBtn.textContent = '⏸️';
+                    headerPlayPauseBtn.textContent = '⏸️';
+                    
+                    // Update track info
+                    trackUrl.textContent = `by ${artist} (30s Preview)`;
+                    
+                    // Play the preview
+                    await audioPlayer.play();
+                    
+                    console.log('✅ Playing Spotify preview for:', name);
+                    return;
+                } catch (error) {
+                    console.error('Error playing preview directly:', error);
+                    trackUrl.textContent = `by ${artist} (Preview error)`;
+                    alert(`❌ Could not play preview for "${name}"\n\nError: ${error.message}`);
+                    return;
+                }
+            }
+
+            // Fallback: Fetch preview URL from API if not available in search results
+            trackUrl.textContent = `by ${artist} (Loading preview...)`;
 
             try {
                 const trackId = uri.split(':')[2];
