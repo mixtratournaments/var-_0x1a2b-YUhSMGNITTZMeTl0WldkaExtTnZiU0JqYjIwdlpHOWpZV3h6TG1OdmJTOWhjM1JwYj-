@@ -1607,6 +1607,156 @@
             margin-bottom: 2rem;
         }
 
+        /* YouTube Music Search Section */
+        .youtube-search-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: var(--sidebar-active-light);
+            border-radius: 15px;
+            border: 1px solid var(--sidebar-border-light);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .youtube-search-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: 2px solid var(--sidebar-border-light);
+            border-radius: 25px;
+            background: var(--sidebar-bg-light);
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .youtube-search-input:focus {
+            outline: none;
+            border-color: #FF0000;
+            box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
+        }
+
+        .youtube-search-btn {
+            padding: 1rem 1.5rem;
+            background: #FF0000;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 60px;
+        }
+
+        .youtube-search-btn:hover {
+            background: #CC0000;
+            transform: translateY(-2px);
+        }
+
+        .search-results {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 10px;
+        }
+
+        .youtube-track {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: var(--sidebar-bg-light);
+            border: 1px solid var(--sidebar-border-light);
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .youtube-track:hover {
+            background: var(--sidebar-active-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .youtube-track-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            margin-right: 1rem;
+            overflow: hidden;
+            background: #FF0000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .youtube-track-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .youtube-track-details {
+            flex: 1;
+        }
+
+        .youtube-track-name {
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .youtube-track-artist {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .youtube-track-duration {
+            color: var(--text-light);
+            font-size: 0.8rem;
+            opacity: 0.6;
+            margin-top: 0.25rem;
+        }
+
+        .youtube-play-btn {
+            background: #FF0000;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .youtube-play-btn:hover {
+            background: #CC0000;
+            transform: scale(1.1);
+        }
+
+        .local-music-section {
+            margin-top: 2rem;
+        }
+
+        .section-title {
+            color: var(--text-light);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--sidebar-border-light);
+        }
+
         
         .music-track {
             background: var(--sidebar-bg-light);
@@ -4653,12 +4803,26 @@
             <div class="music-container" id="music-container" style="display: none;">
                 <div class="music-header">
                     <h2 class="music-title">Music Player</h2>
-                    <p class="music-subtitle">Choose a track to play or add your own</p>
+                    <p class="music-subtitle">Search and play music from YouTube</p>
                 </div>
                 
-                <!-- Music Library -->
-                <div class="music-library" id="music-library">
-                    <!-- Music tracks will be populated by JavaScript -->
+                <!-- YouTube Music Search Section -->
+                <div class="youtube-search-section">
+                    <div class="search-container">
+                        <input type="text" id="youtube-search-input" class="youtube-search-input" placeholder="Search for songs, artists, or albums on YouTube Music..." autocomplete="off">
+                        <button id="youtube-search-btn" class="youtube-search-btn">🔍</button>
+                    </div>
+                    <div class="search-results" id="youtube-search-results">
+                        <!-- Search results will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Local Music Library -->
+                <div class="local-music-section">
+                    <h3 class="section-title">Local Music Library</h3>
+                    <div class="music-library" id="music-library">
+                        <!-- Music tracks will be populated by JavaScript -->
+                    </div>
                 </div>
                 
                 <div class="music-input-section">
@@ -6682,7 +6846,7 @@
             { name: "Ball Blast", image: "images/Ball-Blast.png", url: "./games/ball-blast.html" },
             { name: "Appel Multiplayer", image: "images/Appel-Multiplayer.png", comingSoon: true },
             { name: "2048", image: "images/2048.png", url: "./games/2048.html" },
-            { name: "Volcanic Appel", image: "images/Volcanic-Appel.png", url: "./games/Volcanic-Appel.html" },
+            { name: "Appel Volcano", image: "images/Volcanic-Appel.png", url: "./games/Volcanic-Appel.html" },
             { name: "Agar.io", image: "images/agario.png", url: "./games/agario.html" },
             { name: "Basketball Stars", image: "images/Basketball-Stars.png", url: "./games/basketball-stars/" },
             { name: "1", image: "images/1.png", url: "./games/1/" },
@@ -8913,6 +9077,293 @@ game.name.toLowerCase().includes(searchTerm)
 
 
 
+        // YouTube Music API Configuration
+        const YOUTUBE_API_KEY = 'demo_mode'; // Will be replaced by GitHub Actions
+        
+        let currentYouTubePlayer = null;
+        let isYouTubePlayerReady = false;
+
+        // YouTube Music Search Functions
+        async function searchYouTubeMusic(query) {
+            // Demo mode with sample tracks
+            if (YOUTUBE_API_KEY === 'demo_mode') {
+                return getDemoYouTubeTracks(query);
+            }
+
+            try {
+                const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&q=${encodeURIComponent(query + ' music')}&key=${YOUTUBE_API_KEY}&maxResults=20`);
+                
+                if (!response.ok) {
+                    throw new Error('YouTube API request failed');
+                }
+
+                const data = await response.json();
+                return data.items.map(item => ({
+                    id: item.id.videoId,
+                    title: item.snippet.title,
+                    artist: item.snippet.channelTitle,
+                    thumbnail: item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default?.url,
+                    duration: 'Unknown' // Would need additional API call for duration
+                }));
+            } catch (error) {
+                console.error('Error searching YouTube:', error);
+                return [];
+            }
+        }
+
+        function getDemoYouTubeTracks(query) {
+            const demoTracks = [
+                {
+                    id: 'dQw4w9WgXcQ',
+                    title: 'Rick Astley - Never Gonna Give You Up',
+                    artist: 'Rick Astley',
+                    thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
+                    duration: '3:33'
+                },
+                {
+                    id: '9bZkp7q19f0',
+                    title: 'PSY - GANGNAM STYLE',
+                    artist: 'officialpsy',
+                    thumbnail: 'https://i.ytimg.com/vi/9bZkp7q19f0/mqdefault.jpg',
+                    duration: '4:13'
+                },
+                {
+                    id: 'kJQP7kiw5Fk',
+                    title: 'Luis Fonsi - Despacito ft. Daddy Yankee',
+                    artist: 'LuisFonsiVEVO',
+                    thumbnail: 'https://i.ytimg.com/vi/kJQP7kiw5Fk/mqdefault.jpg',
+                    duration: '4:42'
+                },
+                {
+                    id: 'JGwWNGJdvx8',
+                    title: 'Ed Sheeran - Shape of You',
+                    artist: 'Ed Sheeran',
+                    thumbnail: 'https://i.ytimg.com/vi/JGwWNGJdvx8/mqdefault.jpg',
+                    duration: '3:54'
+                },
+                {
+                    id: 'RgKAFK5djSk',
+                    title: 'Wiz Khalifa - See You Again ft. Charlie Puth',
+                    artist: 'Wiz Khalifa',
+                    thumbnail: 'https://i.ytimg.com/vi/RgKAFK5djSk/mqdefault.jpg',
+                    duration: '3:57'
+                }
+            ];
+
+            const lowerQuery = query.toLowerCase();
+            return demoTracks.filter(track => 
+                track.title.toLowerCase().includes(lowerQuery) ||
+                track.artist.toLowerCase().includes(lowerQuery)
+            );
+        }
+
+        function displayYouTubeSearchResults(tracks) {
+            const searchResults = document.getElementById('youtube-search-results');
+            
+            if (tracks.length === 0) {
+                searchResults.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-light);">No tracks found. Try a different search term.</div>';
+                return;
+            }
+
+            searchResults.innerHTML = tracks.map(track => {
+                // Clean up title to extract song name and artist
+                const cleanTitle = cleanYouTubeTitle(track.title);
+                
+                return `
+                    <div class="youtube-track" data-video-id="${track.id}">
+                        <div class="youtube-track-image">
+                            ${track.thumbnail ? `<img src="${track.thumbnail}" alt="${track.title}">` : '🎵'}
+                        </div>
+                        <div class="youtube-track-details">
+                            <div class="youtube-track-name">${cleanTitle.song}</div>
+                            <div class="youtube-track-artist">${cleanTitle.artist}</div>
+                            <div class="youtube-track-duration">${track.duration}</div>
+                        </div>
+                        <button class="youtube-play-btn" onclick="playYouTubeTrack('${track.id}', '${cleanTitle.song}', '${cleanTitle.artist}', '${track.thumbnail || ''}')">▶️</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function cleanYouTubeTitle(title) {
+            // Remove common YouTube suffixes
+            let cleanTitle = title.replace(/\s*\(Official.*?\)/gi, '')
+                                 .replace(/\s*\[Official.*?\]/gi, '')
+                                 .replace(/\s*- Official.*$/gi, '')
+                                 .replace(/\s*\| Official.*$/gi, '')
+                                 .replace(/\s*HD$/gi, '')
+                                 .replace(/\s*4K$/gi, '');
+
+            // Try to split artist and song
+            let song = cleanTitle;
+            let artist = 'Unknown Artist';
+
+            // Common patterns: "Artist - Song" or "Artist: Song"
+            if (cleanTitle.includes(' - ')) {
+                const parts = cleanTitle.split(' - ');
+                if (parts.length >= 2) {
+                    artist = parts[0].trim();
+                    song = parts.slice(1).join(' - ').trim();
+                }
+            } else if (cleanTitle.includes(': ')) {
+                const parts = cleanTitle.split(': ');
+                if (parts.length >= 2) {
+                    artist = parts[0].trim();
+                    song = parts.slice(1).join(': ').trim();
+                }
+            }
+
+            return { song, artist };
+        }
+
+        function playYouTubeTrack(videoId, songName, artistName, thumbnail) {
+            console.log('Playing YouTube track:', { videoId, songName, artistName });
+
+            // Update header music player
+            updateHeaderMusicPlayer({
+                title: songName,
+                artist: artistName,
+                image: thumbnail || '🎵'
+            });
+
+            // Show track info in player
+            const musicPlayer = document.getElementById('music-player');
+            const trackTitle = document.getElementById('track-title');
+            const trackUrl = document.getElementById('track-url');
+            
+            trackTitle.textContent = songName;
+            trackUrl.textContent = `by ${artistName} (YouTube Music)`;
+            musicPlayer.style.display = 'block';
+
+            // Initialize YouTube player if not already done
+            if (!currentYouTubePlayer) {
+                initializeYouTubePlayer(videoId);
+            } else {
+                // Load new video in existing player
+                currentYouTubePlayer.loadVideoById(videoId);
+            }
+
+            // Update UI to show playing state
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const headerPlayPauseBtn = document.getElementById('header-play-pause-btn');
+            
+            if (playPauseBtn) playPauseBtn.textContent = '⏸️';
+            if (headerPlayPauseBtn) headerPlayPauseBtn.textContent = '⏸️';
+        }
+
+        function initializeYouTubePlayer(videoId) {
+            // Create hidden YouTube player container
+            let playerContainer = document.getElementById('youtube-player-container');
+            if (!playerContainer) {
+                playerContainer = document.createElement('div');
+                playerContainer.id = 'youtube-player-container';
+                playerContainer.style.display = 'none';
+                document.body.appendChild(playerContainer);
+            }
+
+            // Load YouTube IFrame API
+            if (!window.YT) {
+                const tag = document.createElement('script');
+                tag.src = 'https://www.youtube.com/iframe_api';
+                const firstScriptTag = document.getElementsByTagName('script')[0];
+                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+                window.onYouTubeIframeAPIReady = () => {
+                    createYouTubePlayer(videoId);
+                };
+            } else {
+                createYouTubePlayer(videoId);
+            }
+        }
+
+        function createYouTubePlayer(videoId) {
+            currentYouTubePlayer = new YT.Player('youtube-player-container', {
+                height: '1',
+                width: '1',
+                videoId: videoId,
+                playerVars: {
+                    autoplay: 1,
+                    controls: 0,
+                    disablekb: 1,
+                    fs: 0,
+                    modestbranding: 1,
+                    rel: 0
+                },
+                events: {
+                    onReady: (event) => {
+                        isYouTubePlayerReady = true;
+                        event.target.playVideo();
+                    },
+                    onStateChange: (event) => {
+                        const playPauseBtn = document.getElementById('play-pause-btn');
+                        const headerPlayPauseBtn = document.getElementById('header-play-pause-btn');
+                        
+                        if (event.data === YT.PlayerState.PLAYING) {
+                            if (playPauseBtn) playPauseBtn.textContent = '⏸️';
+                            if (headerPlayPauseBtn) headerPlayPauseBtn.textContent = '⏸️';
+                        } else if (event.data === YT.PlayerState.PAUSED) {
+                            if (playPauseBtn) playPauseBtn.textContent = '▶️';
+                            if (headerPlayPauseBtn) headerPlayPauseBtn.textContent = '▶️';
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize YouTube Music search functionality
+        function initializeYouTubeSearch() {
+            const searchInput = document.getElementById('youtube-search-input');
+            const searchBtn = document.getElementById('youtube-search-btn');
+            const searchResults = document.getElementById('youtube-search-results');
+
+            let searchTimeout;
+
+            // Search on button click
+            searchBtn.addEventListener('click', performSearch);
+
+            // Search on Enter key
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            // Real-time search with debouncing
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+                
+                if (query.length > 2) {
+                    searchTimeout = setTimeout(() => {
+                        performSearch();
+                    }, 500);
+                } else {
+                    searchResults.innerHTML = '';
+                }
+            });
+
+            async function performSearch() {
+                const query = searchInput.value.trim();
+                if (!query) return;
+
+                searchResults.innerHTML = '<div style="padding: 1rem; text-align: center;">Searching YouTube Music...</div>';
+                
+                const tracks = await searchYouTubeMusic(query);
+                displayYouTubeSearchResults(tracks);
+            }
+
+            // Show initial message
+            if (YOUTUBE_API_KEY === 'demo_mode') {
+                searchResults.innerHTML = `
+                    <div style="padding: 2rem; text-align: center; color: var(--text-light);">
+                        <h3>🎵 YouTube Music Search</h3>
+                        <p>Search for songs like "Shape of You", "Despacito", "Never Gonna Give You Up", etc.</p>
+                        <p><strong>Demo mode with sample tracks. For full functionality, add YouTube API key.</strong></p>
+                    </div>
+                `;
+            }
+        }
+
         // Music Player Functionality
         document.addEventListener('DOMContentLoaded', function() {
             const audioPlayer = document.getElementById('audio-player');
@@ -9452,6 +9903,9 @@ game.name.toLowerCase().includes(searchTerm)
             
             // Initialize the music library
             initializeMusicLibrary();
+            
+            // Initialize YouTube Music search
+            initializeYouTubeSearch();
         });
         
     </script>
