@@ -4908,7 +4908,7 @@
                 <!-- Spotify Search Section -->
                 <div class="spotify-search-section">
                     <div class="search-container">
-                        <input type="text" id="spotify-search-input" class="spotify-search-input" placeholder="Search for songs, artists, or albums on Spotify..." autocomplete="off">
+                        <input type="text" id="spotify-search-input" class="spotify-search-input" placeholder="Search for songs by all your favorite artists from Spotify..." autocomplete="off">
                         <button id="spotify-search-btn" class="spotify-search-btn">🔍</button>
                     </div>
                     <div class="search-results" id="spotify-search-results">
@@ -9193,11 +9193,53 @@ game.name.toLowerCase().includes(searchTerm)
         let spotifyPlayer = null;
         let deviceId = null;
         let isSpotifyReady = false;
+        let isSpotifyAuthenticated = false;
 
-        // Spotify API Functions
+        // Spotify Authentication Functions
+        function loginToSpotify() {
+            const scopes = SPOTIFY_CONFIG.scopes.join(' ');
+            const authUrl = `https://accounts.spotify.com/authorize?` +
+                `client_id=${SPOTIFY_CONFIG.clientId}&` +
+                `response_type=token&` +
+                `redirect_uri=${encodeURIComponent(SPOTIFY_CONFIG.redirectUri)}&` +
+                `scope=${encodeURIComponent(scopes)}&` +
+                `show_dialog=true`;
+            
+            window.location.href = authUrl;
+        }
+
+        function getTokenFromUrl() {
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            return params.get('access_token');
+        }
+
+        function initializeSpotifyAuth() {
+            // Check if we're returning from Spotify auth
+            const token = getTokenFromUrl();
+            if (token) {
+                spotifyAccessToken = token;
+                isSpotifyAuthenticated = true;
+                
+                // Clean up URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // Initialize Spotify Web Playback SDK
+                initializeSpotifyPlayer();
+                
+                console.log('✅ Spotify authentication successful');
+                return true;
+            }
+            return false;
+        }
+
         async function getSpotifyAccessToken() {
-            // For demo purposes, we'll use the Client Credentials flow
-            // In production, you should use Authorization Code flow for user authentication
+            // For search functionality, we can use Client Credentials flow
+            // For playback, we need user authentication
+            if (isSpotifyAuthenticated && spotifyAccessToken) {
+                return spotifyAccessToken;
+            }
+
             try {
                 const response = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST',
@@ -9213,14 +9255,142 @@ game.name.toLowerCase().includes(searchTerm)
                 }
 
                 const data = await response.json();
-                spotifyAccessToken = data.access_token;
-                return data.access_token;
+                if (!isSpotifyAuthenticated) {
+                    spotifyAccessToken = data.access_token;
+                }
+                return spotifyAccessToken || data.access_token;
             } catch (error) {
                 console.error('Error getting Spotify access token:', error);
-                // Fallback: Show message to user about Spotify configuration
                 showSpotifyConfigMessage();
                 return null;
             }
+        }
+
+        // Spotify Web Playback SDK Functions
+        function initializeSpotifyPlayer() {
+            if (!isSpotifyAuthenticated || !spotifyAccessToken) {
+                console.log('❌ Cannot initialize Spotify player - not authenticated');
+                return;
+            }
+
+            window.onSpotifyWebPlaybackSDKReady = () => {
+                spotifyPlayer = new Spotify.Player({
+                    name: 'Hubble Music Player',
+                    getOAuthToken: cb => { cb(spotifyAccessToken); },
+                    volume: 0.5
+                });
+
+                // Error handling
+                spotifyPlayer.addListener('initialization_error', ({ message }) => {
+                    console.error('Spotify initialization error:', message);
+                });
+
+                spotifyPlayer.addListener('authentication_error', ({ message }) => {
+                    console.error('Spotify authentication error:', message);
+                    isSpotifyAuthenticated = false;
+                });
+
+                spotifyPlayer.addListener('account_error', ({ message }) => {
+                    console.error('Spotify account error:', message);
+                    alert('❌ Spotify Premium required for playback. Please upgrade your account.');
+                });
+
+                spotifyPlayer.addListener('playback_error', ({ message }) => {
+                    console.error('Spotify playback error:', message);
+                });
+
+                // Playback status updates
+                spotifyPlayer.addListener('player_state_changed', state => {
+                    if (!state) return;
+                    
+                    const track = state.track_window.current_track;
+                    const isPlaying = !state.paused;
+                    
+                    // Update UI
+                    updateHeaderMusicPlayer({
+                        title: track.name,
+                        artist: track.artists.map(a => a.name).join(', '),
+                        image: track.album.images[0]?.url || '🎵'
+                    });
+                    
+                    const playPauseBtn = document.getElementById('play-pause-btn');
+                    const headerPlayPauseBtn = document.getElementById('header-play-pause-btn');
+                    
+                    if (playPauseBtn) playPauseBtn.textContent = isPlaying ? '⏸️' : '▶️';
+                    if (headerPlayPauseBtn) headerPlayPauseBtn.textContent = isPlaying ? '⏸️' : '▶️';
+                });
+
+                // Ready
+                spotifyPlayer.addListener('ready', ({ device_id }) => {
+                    console.log('✅ Spotify Web Playback SDK ready with Device ID:', device_id);
+                    deviceId = device_id;
+                    isSpotifyReady = true;
+                    
+                    // Update UI to show we're ready for full playback
+                    updateSpotifyLoginStatus();
+                });
+
+                // Connect to the player
+                spotifyPlayer.connect();
+            };
+
+            // Trigger the SDK ready callback if it's already loaded
+            if (window.Spotify) {
+                window.onSpotifyWebPlaybackSDKReady();
+            }
+        }
+
+        function updateSpotifyLoginStatus() {
+            const searchResults = document.getElementById('spotify-search-results');
+            if (isSpotifyAuthenticated && isSpotifyReady) {
+                searchResults.innerHTML = `
+                    <div style="padding: 2rem; text-align: center; color: var(--text-light);">
+                        <h3>🎵 Spotify Connected!</h3>
+                        <p>✅ Logged in and ready for full song playback</p>
+                        <p><strong>Search for any song and click play to enjoy full tracks!</strong></p>
+                        <button onclick="logoutFromSpotify()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;">Logout</button>
+                    </div>
+                `;
+            } else if (isSpotifyAuthenticated && !isSpotifyReady) {
+                searchResults.innerHTML = `
+                    <div style="padding: 2rem; text-align: center; color: var(--text-light);">
+                        <h3>🔄 Connecting to Spotify...</h3>
+                        <p>Setting up your music player...</p>
+                    </div>
+                `;
+            }
+        }
+
+        function logoutFromSpotify() {
+            isSpotifyAuthenticated = false;
+            spotifyAccessToken = null;
+            if (spotifyPlayer) {
+                spotifyPlayer.disconnect();
+                spotifyPlayer = null;
+            }
+            deviceId = null;
+            isSpotifyReady = false;
+            
+            // Reset UI
+            const searchResults = document.getElementById('spotify-search-results');
+            showSpotifyLoginPrompt();
+        }
+
+        function showSpotifyLoginPrompt() {
+            const searchResults = document.getElementById('spotify-search-results');
+            searchResults.innerHTML = `
+                <div style="padding: 2rem; text-align: center; color: var(--text-light);">
+                    <h3>🎵 Full Spotify Playback Available!</h3>
+                    <p>Login with your Spotify account to play complete songs</p>
+                    <p><strong>Requirements:</strong> Spotify Premium account</p>
+                    <button onclick="loginToSpotify()" style="margin-top: 1rem; padding: 1rem 2rem; background: #1DB954; color: white; border: none; border-radius: 25px; cursor: pointer; font-size: 1rem; font-weight: bold;">
+                        🎵 Login with Spotify
+                    </button>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+                        Without login, you can still search and play 30-second previews
+                    </p>
+                </div>
+            `;
         }
 
         function showSpotifyConfigMessage() {
@@ -9425,6 +9595,51 @@ game.name.toLowerCase().includes(searchTerm)
                     alert(`🎵 Demo Mode: Now "playing" ${name} by ${artist}\n\nIn production, this would play the actual Spotify track with proper authentication.`);
                 }, 500);
                 
+            } else if (isSpotifyAuthenticated && isSpotifyReady && deviceId) {
+                // Full Spotify playback with Web Playback SDK
+                trackUrl.textContent = `by ${artist} (Playing full song...)`;
+                musicPlayer.style.display = 'block';
+
+                try {
+                    // Start playback on our device
+                    const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': 'Bearer ' + spotifyAccessToken,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            uris: [uri]
+                        })
+                    });
+
+                    if (response.ok) {
+                        trackUrl.textContent = `by ${artist} (Full Song)`;
+                        console.log('✅ Playing full Spotify track:', name);
+                    } else if (response.status === 404) {
+                        throw new Error('Spotify device not found. Please refresh and try again.');
+                    } else if (response.status === 403) {
+                        throw new Error('Spotify Premium required for full playback.');
+                    } else {
+                        throw new Error(`Playback failed: ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error('Error playing full Spotify track:', error);
+                    trackUrl.textContent = `by ${artist} (Error)`;
+                    
+                    const errorMessage = `❌ Could not play "${name}"\n\n${error.message}\n\nTrying preview instead...`;
+                    alert(errorMessage);
+                    
+                    // Fallback to preview
+                    playSpotifyPreview(uri, name, artist, imageUrl);
+                }
+            } else if (!isSpotifyAuthenticated) {
+                // Show login prompt
+                const message = `🎵 "${name}" by ${artist}\n\n🔐 Login with Spotify for full song playback!\n\nClick "Login with Spotify" above, or continue with 30s preview?`;
+                
+                if (confirm(message)) {
+                    playSpotifyPreview(uri, name, artist, imageUrl);
+                }
             } else {
                 trackUrl.textContent = `by ${artist} (Loading preview...)`;
                 musicPlayer.style.display = 'block';
@@ -9486,6 +9701,71 @@ game.name.toLowerCase().includes(searchTerm)
             }
         }
 
+        // Separate function for preview playback
+        async function playSpotifyPreview(uri, name, artist, imageUrl) {
+            const musicPlayer = document.getElementById('music-player');
+            const trackTitle = document.getElementById('track-title');
+            const trackUrl = document.getElementById('track-url');
+            
+            trackTitle.textContent = name;
+            trackUrl.textContent = `by ${artist} (Loading preview...)`;
+            musicPlayer.style.display = 'block';
+
+            try {
+                const trackId = uri.split(':')[2];
+                const response = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + spotifyAccessToken
+                    }
+                });
+                
+                if (response.ok) {
+                    const trackData = await response.json();
+                    if (trackData.preview_url) {
+                        const audioPlayer = document.getElementById('audio-player');
+                        const playPauseBtn = document.getElementById('play-pause-btn');
+                        const headerPlayPauseBtn = document.getElementById('header-play-pause-btn');
+                        
+                        audioPlayer.src = trackData.preview_url;
+                        
+                        // Update UI to show playing state
+                        playPauseBtn.textContent = '⏸️';
+                        headerPlayPauseBtn.textContent = '⏸️';
+                        
+                        // Update track info
+                        trackUrl.textContent = `by ${artist} (30s Preview)`;
+                        
+                        // Play the preview
+                        await audioPlayer.play();
+                        
+                        console.log('✅ Playing Spotify preview for:', name);
+                    } else {
+                        // No preview available
+                        trackUrl.textContent = `by ${artist} (No preview available)`;
+                        
+                        // Show helpful message
+                        const message = `🎵 "${name}" by ${artist}\n\n⚠️ No preview available for this track.\n\nTo play full songs:\n• Login with Spotify above\n• Or open Spotify app and play there\n\nRequires Spotify Premium for full playback.`;
+                        
+                        setTimeout(() => {
+                            alert(message);
+                        }, 500);
+                    }
+                } else {
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Error playing Spotify preview:', error);
+                trackUrl.textContent = `by ${artist} (Error loading)`;
+                
+                // Show error message with helpful info
+                const errorMessage = `❌ Could not load "${name}"\n\nPossible solutions:\n• Check your internet connection\n• Try a different song\n• Login with Spotify for full playback\n\nError: ${error.message}`;
+                
+                setTimeout(() => {
+                    alert(errorMessage);
+                }, 500);
+            }
+        }
+
         // Initialize Spotify search functionality
         function initializeSpotifySearch() {
             const searchInput = document.getElementById('spotify-search-input');
@@ -9528,7 +9808,7 @@ game.name.toLowerCase().includes(searchTerm)
                 displaySpotifySearchResults(tracks);
             }
 
-            // Initialize with a demo message or setup message
+            // Initialize authentication and UI
             if (SPOTIFY_CONFIG.clientId === 'demo_mode' || SPOTIFY_CONFIG.clientId === 'PLACEHOLDER_CLIENT_ID') {
                 searchResults.innerHTML = `
                     <div style="padding: 2rem; text-align: center; color: var(--text-light);">
@@ -9539,6 +9819,15 @@ game.name.toLowerCase().includes(searchTerm)
                 `;
             } else if (!SPOTIFY_CONFIG.clientId || SPOTIFY_CONFIG.clientId === 'your_spotify_client_id') {
                 showSpotifyConfigMessage();
+            } else {
+                // Check if we're returning from Spotify auth
+                if (initializeSpotifyAuth()) {
+                    // Authentication successful, player will be initialized
+                    return;
+                } else {
+                    // Show login prompt
+                    showSpotifyLoginPrompt();
+                }
             }
         }
 
