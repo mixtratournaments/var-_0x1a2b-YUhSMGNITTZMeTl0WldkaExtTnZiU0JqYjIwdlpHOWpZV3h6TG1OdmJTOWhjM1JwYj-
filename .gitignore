@@ -1,7 +1,6 @@
 # Spotify configuration with real credentials
 # This file contains placeholders in the repo, but gets populated with real credentials during deployment
 # If you ever manually add real credentials to this file, make sure it's in .gitignore
-spotify-config-production.js
 
 # Node modules (if any)
 node_modules/
