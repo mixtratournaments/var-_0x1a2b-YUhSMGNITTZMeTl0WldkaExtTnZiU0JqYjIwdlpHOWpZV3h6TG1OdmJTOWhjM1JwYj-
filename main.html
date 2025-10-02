@@ -9078,7 +9078,7 @@ game.name.toLowerCase().includes(searchTerm)
 
 
         // YouTube Music API Configuration
-        const YOUTUBE_API_KEY = 'demo_mode'; // Will be replaced by GitHub Actions
+        const YOUTUBE_API_KEY = null; // Will be replaced by GitHub Actions
         
         let currentYouTubePlayer = null;
         let isYouTubePlayerReady = false;
@@ -9086,7 +9086,7 @@ game.name.toLowerCase().includes(searchTerm)
         // YouTube Music Search Functions
         async function searchYouTubeMusic(query) {
             // Demo mode with sample tracks
-            if (YOUTUBE_API_KEY === 'demo_mode') {
+            if (!YOUTUBE_API_KEY) {
                 return getDemoYouTubeTracks(query);
             }
 
@@ -9353,7 +9353,7 @@ game.name.toLowerCase().includes(searchTerm)
             }
 
             // Show initial message
-            if (YOUTUBE_API_KEY === 'demo_mode') {
+            if (!YOUTUBE_API_KEY) {
                 searchResults.innerHTML = `
                     <div style="padding: 2rem; text-align: center; color: var(--text-light);">
                         <h3>🎵 YouTube Music Search</h3>
