@@ -1372,6 +1372,36 @@
             animation: spin 1s linear infinite;
         }
         
+        .cleanup-rumors-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 50%, #ffa8a8 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+        }
+        
+        .cleanup-rumors-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .cleanup-rumors-btn:active {
+            transform: translateY(0) scale(0.95);
+        }
+        
+        .cleanup-rumors-btn.loading {
+            animation: spin 1s linear infinite;
+        }
+        
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
@@ -5048,6 +5078,7 @@
                     <div class="dirty-rumors-title-section">
                         <h2 class="dirty-rumors-title">Dirty Rumors</h2>
                         <button id="reload-rumors-btn" class="reload-rumors-btn" title="Reload Rumors">🔄</button>
+                        <button id="cleanup-rumors-btn" class="cleanup-rumors-btn" title="Clean up duplicate rumors (Admin only)" style="display: none;">🧹</button>
                     </div>
                     <p class="dirty-rumors-subtitle">Share the tea, spill the beans</p>
                 </div>
@@ -5884,6 +5915,12 @@
                 console.log('Admin mode activated via parent window message');
                 showNotification('Admin mode activated via parent window! Click usernames to delete posts.', 'success');
                 
+                // Show cleanup button
+                const cleanupBtn = document.getElementById('cleanup-rumors-btn');
+                if (cleanupBtn) {
+                    cleanupBtn.style.display = 'flex';
+                }
+                
                 // Try to persist admin status
                 try {
                     localStorage.setItem('hubbleAdminCode', ADMIN_CODE);
@@ -5947,6 +5984,13 @@
                 console.log('Admin mode activated');
                 const context = (window.parent && window.parent !== window) ? ' (iframe context)' : '';
                 showNotification(`Admin mode activated${context}! Click usernames to delete posts.`, 'success');
+                
+                // Show cleanup button
+                const cleanupBtn = document.getElementById('cleanup-rumors-btn');
+                if (cleanupBtn) {
+                    cleanupBtn.style.display = 'flex';
+                }
+                
                 return true;
             }
             isAdmin = false;
@@ -6041,6 +6085,7 @@
                 loadRumors();
                 setupRumorForm();
                 setupReloadButton();
+                setupCleanupButton();
             } catch (error) {
                 console.error('Error initializing Dirty Rumors:', error);
                 document.getElementById('rumors-list').innerHTML = '<div class="loading-rumors">Error initializing Firebase. Please check your configuration.</div>';
@@ -6129,6 +6174,108 @@
                         reloadBtn.disabled = false;
                     }
                 });
+            }
+        }
+        
+        // Setup cleanup button functionality
+        function setupCleanupButton() {
+            const cleanupBtn = document.getElementById('cleanup-rumors-btn');
+            if (cleanupBtn) {
+                cleanupBtn.addEventListener('click', async () => {
+                    if (!isAdmin) {
+                        showNotification('Access denied. Admin privileges required.', 'error');
+                        return;
+                    }
+                    
+                    if (!confirm('Are you sure you want to clean up duplicate rumors? This will remove all duplicates and keep only the one with the most likes. This action cannot be undone.')) {
+                        return;
+                    }
+                    
+                    // Add loading animation
+                    cleanupBtn.classList.add('loading');
+                    cleanupBtn.disabled = true;
+                    
+                    try {
+                        await cleanupDuplicateRumors();
+                        showNotification('Duplicate rumors cleaned up successfully!', 'success');
+                    } catch (error) {
+                        console.error('Error cleaning up rumors:', error);
+                        showNotification('Failed to clean up rumors. Please try again.', 'error');
+                    } finally {
+                        // Remove loading animation
+                        cleanupBtn.classList.remove('loading');
+                        cleanupBtn.disabled = false;
+                    }
+                });
+            }
+        }
+        
+        // Clean up duplicate rumors (admin only)
+        async function cleanupDuplicateRumors() {
+            if (!isAdmin) {
+                throw new Error('Admin privileges required');
+            }
+            
+            if (!db) {
+                throw new Error('Firebase not initialized');
+            }
+            
+            try {
+                const { collection, getDocs, deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+                
+                // Get all rumors
+                const rumorsSnapshot = await getDocs(collection(db, 'dirtyrumors'));
+                const rumors = [];
+                
+                rumorsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    rumors.push({
+                        id: doc.id,
+                        ...data
+                    });
+                });
+                
+                // Group rumors by content (excluding likes/dislikes)
+                const rumorGroups = {};
+                rumors.forEach(rumor => {
+                    const key = `${rumor.person1 || ''}-${rumor.person2 || ''}-${rumor.rumor || ''}-${rumor.username || ''}`.toLowerCase().trim();
+                    if (!rumorGroups[key]) {
+                        rumorGroups[key] = [];
+                    }
+                    rumorGroups[key].push(rumor);
+                });
+                
+                // Find duplicates and delete all but the one with most likes
+                let deletedCount = 0;
+                for (const [key, group] of Object.entries(rumorGroups)) {
+                    if (group.length > 1) {
+                        // Sort by likes (descending), then by timestamp (newest first)
+                        group.sort((a, b) => {
+                            const likesA = (a.upvotes || 0) - (a.downvotes || 0);
+                            const likesB = (b.upvotes || 0) - (b.downvotes || 0);
+                            if (likesA !== likesB) {
+                                return likesB - likesA;
+                            }
+                            return (b.timestamp?.toDate?.() || new Date(b.timestamp)) - (a.timestamp?.toDate?.() || new Date(a.timestamp));
+                        });
+                        
+                        // Keep the first one (best), delete the rest
+                        const toDelete = group.slice(1);
+                        for (const rumor of toDelete) {
+                            await deleteDoc(doc(db, 'dirtyrumors', rumor.id));
+                            deletedCount++;
+                        }
+                    }
+                }
+                
+                // Reload rumors to show updated list
+                await loadRumors();
+                
+                console.log(`Cleaned up ${deletedCount} duplicate rumors`);
+                
+            } catch (error) {
+                console.error('Error cleaning up duplicate rumors:', error);
+                throw error;
             }
         }
         
