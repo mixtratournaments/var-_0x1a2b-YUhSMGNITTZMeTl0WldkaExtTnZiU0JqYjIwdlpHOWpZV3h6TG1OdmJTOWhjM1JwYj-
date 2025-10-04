@@ -51,20 +51,6 @@ jobs:
           echo "💡 To fix this: Go to Settings > Secrets and variables > Actions > Add 'GROQ_API_KEY'"
         fi
         
-        # Replace YouTube API key in main.html
-        echo "🔍 Checking for YouTube API key secret..."
-        if [ -n "${{ secrets.YOUTUBE_API_KEY }}" ]; then
-          echo "✅ YouTube API key secret found, injecting into main.html..."
-          echo "🔍 Before replacement:"
-          grep "window.YOUTUBE_API_KEY" main.html | head -1
-          sed -i "s|window.YOUTUBE_API_KEY = null;|window.YOUTUBE_API_KEY = '${{ secrets.YOUTUBE_API_KEY }}';|g" main.html
-          echo "🔍 After replacement:"
-          grep "window.YOUTUBE_API_KEY" main.html | head -1
-          echo "✅ YouTube API key injected successfully"
-        else
-          echo "❌ No YouTube API key found in GitHub secrets - videos will show unavailable overlay"
-          echo "💡 To fix this: Go to Settings > Secrets and variables > Actions > Add 'YOUTUBE_API_KEY'"
-        fi
         
         # Replace EmailJS credentials in main.html and newsletter-admin.html
         echo "🔍 Checking for EmailJS credentials..."
@@ -131,16 +117,12 @@ jobs:
         # Verify the replacements worked (for debugging)
         echo "🔍 Groq API key status in main.html:"
         grep "GROQ_API_KEY" main.html | head -1
-        echo "🔍 YouTube API key status in main.html:"
-        grep "YOUTUBE_API_KEY" main.html | head -1
         echo "🔍 EmailJS credentials status in main.html:"
         grep "emailjs.init" main.html | head -1
         
         # Count how many API key replacements were made
         echo "🔍 Groq API key replacement count:"
         grep -c "window.GROQ_API_KEY" main.html || echo "0"
-        echo "🔍 YouTube API key replacement count:"
-        grep -c "window.YOUTUBE_API_KEY" main.html || echo "0"
         echo "🔍 EmailJS replacement count:"
         grep -c "emailjs.init" main.html || echo "0"
         
@@ -152,13 +134,8 @@ jobs:
           echo "❌ Groq API key is still null or not found"
         fi
         
-        if grep -q "window.YOUTUBE_API_KEY = '[^']*';" main.html; then
-          echo "✅ YouTube API key is properly set"
-        else
-          echo "❌ YouTube API key is still null or not found"
-        fi
-        
-        if grep -q "emailjs.init('[^']*');" main.html; then
+        # Check EmailJS credentials
+        if grep -q "emailjs.init('[^']*');" main.html && ! grep -q "emailjs.init('YOUR_EMAILJS_PUBLIC_KEY');" main.html; then
           echo "✅ EmailJS credentials are properly set"
         else
           echo "❌ EmailJS credentials are still using placeholder values"
