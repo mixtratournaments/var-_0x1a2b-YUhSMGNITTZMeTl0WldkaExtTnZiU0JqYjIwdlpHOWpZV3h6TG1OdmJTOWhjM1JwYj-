@@ -8396,6 +8396,11 @@ game.name.toLowerCase().includes(searchTerm)
         window.GROQ_API_KEY = null; // This will be replaced by GitHub Actions
         const groqApiKey = window.GROQ_API_KEY;
         
+        // Check if API key is properly set
+        if (!groqApiKey || groqApiKey === 'null' || groqApiKey === null) {
+            console.warn('GROQ API key not configured - chatbot features disabled');
+        }
+        
         let chatHistory = [];
         let currentTypingAnimation = null; // Track current typing animation
         
@@ -10252,6 +10257,8 @@ game.name.toLowerCase().includes(searchTerm)
                 // Disable submit button
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Subscribing...';
+                submitBtn.style.whiteSpace = 'nowrap';
+                submitBtn.style.minWidth = '120px';
                 
                 try {
                     // Check if email already exists
@@ -10279,11 +10286,21 @@ game.name.toLowerCase().includes(searchTerm)
                     };
                     
                     try {
-                        await emailjs.send('YOUR_EMAILJS_SERVICE_ID', 'YOUR_EMAILJS_WELCOME_TEMPLATE_ID', templateParams);
-                        showMessage('Successfully subscribed! Check your email for confirmation.', 'success');
+                        // Check if EmailJS is properly configured
+                        if (emailjs && typeof emailjs.send === 'function') {
+                            console.log('Sending welcome email with params:', templateParams);
+                            const result = await emailjs.send('YOUR_EMAILJS_SERVICE_ID', 'YOUR_EMAILJS_WELCOME_TEMPLATE_ID', templateParams);
+                            console.log('EmailJS send result:', result);
+                            showMessage('Successfully subscribed! Check your email for confirmation.', 'success');
+                        } else {
+                            console.warn('EmailJS not properly configured, skipping email send');
+                            showMessage('Successfully subscribed! (Email service not configured)', 'success');
+                        }
                         newsletterEmail.value = '';
                     } catch (emailError) {
-                        console.error('EmailJS error:', emailError);
+                        console.error('EmailJS error details:', emailError);
+                        console.error('Error status:', emailError.status);
+                        console.error('Error text:', emailError.text);
                         showMessage('Successfully subscribed! (Confirmation email may be delayed)', 'success');
                         newsletterEmail.value = '';
                     }

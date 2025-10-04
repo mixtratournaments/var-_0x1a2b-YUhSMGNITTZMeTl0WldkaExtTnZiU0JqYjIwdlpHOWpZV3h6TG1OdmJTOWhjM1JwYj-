@@ -166,6 +166,86 @@
 
     <script type="module" src="./watermark.js"></script>
     <script>
+        // Developer Tools Protection
+        (function() {
+            'use strict';
+            
+            // Disable right-click context menu (silent - no alerts)
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }, true);
+            
+            // Disable inspection keyboard shortcuts (triggers alert/redirect)
+            document.addEventListener('keydown', function(e) {
+                // F12
+                if (e.keyCode === 123 || e.key === 'F12') {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+Shift+I (Inspector)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 73 || e.key === 'I')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+Shift+J (Console)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 74 || e.key === 'J')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+Shift+C (Element Selector)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 67 || e.key === 'C')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+U (View Source)
+                if ((e.ctrlKey || e.metaKey) && (e.keyCode === 85 || e.key === 'u')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+                // Ctrl+Shift+K (Console Firefox)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 75 || e.key === 'K')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                    setTimeout(() => window.location.href = 'about:blank', 500);
+                    return false;
+                }
+            }, true);
+            
+            
+            // Console detection
+            let consoleDetectionCount = 0;
+            let element = new Image();
+            Object.defineProperty(element, 'id', {
+                get: function() {
+                    consoleDetectionCount++;
+                    // Only trigger after multiple detections to avoid false positives
+                    if (consoleDetectionCount > 3) {
+                        document.documentElement.innerHTML = '<body style="background:#000;color:#ff0000;text-align:center;padding-top:40vh;font-size:24px;">ACCESS DENIED</body>';
+                        setTimeout(() => window.location.href = 'about:blank', 500);
+                    }
+                }
+            });
+        })();
+    </script>
+    <script>
         const launchButton = document.getElementById('launchButton');
         const alternatingText = document.getElementById('alternatingText');
 
