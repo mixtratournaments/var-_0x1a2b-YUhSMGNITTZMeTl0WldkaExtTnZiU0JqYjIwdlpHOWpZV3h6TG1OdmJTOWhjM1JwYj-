@@ -1036,279 +1036,13 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
-        /* YouTube Videos Styles */
-        .videos-container {
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            position: relative;
-        }
 
-        .videos-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
 
-        .videos-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
 
-        .videos-subtitle {
-            font-size: 1.1rem;
-            opacity: 0.8;
-            margin-bottom: 0;
-        }
 
-        .youtube-search-section {
-            margin-bottom: 2rem;
-        }
-
-        .search-container {
-            display: flex;
-            gap: 0.5rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .youtube-search-bar {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            border: 2px solid var(--sidebar-border-light);
-            border-radius: 25px;
-            font-size: 1rem;
-            background: var(--sidebar-bg-light);
-            color: var(--text-light);
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .youtube-search-bar:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 156, 252, 0.1);
-        }
-
-        .youtube-search-button {
-            padding: 0.75rem 1.5rem;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .youtube-search-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 156, 252, 0.3);
-        }
-
-        .videos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1rem;
-        }
-
-        .video-card {
-            background: var(--sidebar-bg-light);
-            border: 1px solid var(--sidebar-border-light);
-            border-radius: 12px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .video-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .video-thumbnail {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            background: #f0f0f0;
-        }
-
-        .video-info {
-            padding: 1rem;
-        }
-
-        .video-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .video-channel {
-            font-size: 0.9rem;
-            opacity: 0.7;
-            margin-bottom: 0.25rem;
-        }
-
-        .video-stats {
-            font-size: 0.8rem;
-            opacity: 0.6;
-            display: flex;
-            gap: 1rem;
-        }
-
-        .loading-message {
-            text-align: center;
-            padding: 2rem;
-            font-size: 1.1rem;
-            opacity: 0.7;
-        }
-
-        /* Videos Unavailable Overlay */
-        .videos-unavailable-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-        }
-
-        .overlay-content {
-            background: var(--sidebar-bg-light);
-            padding: 4rem;
-            border-radius: 20px;
-            text-align: center;
-            max-width: 500px;
-            border: 2px solid var(--sidebar-border-light);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .overlay-content h3 {
-            font-size: 2rem;
-            margin: 0;
-            color: var(--text-light);
-            font-weight: 600;
-        }
-
-        /* Dark theme for overlay */
-        body[data-theme="dark"] .overlay-content {
-            background: var(--sidebar-bg-dark);
-            border-color: var(--sidebar-border-dark);
-        }
-
-        body[data-theme="dark"] .overlay-content h3 {
-            color: var(--text-dark);
-        }
-
-        /* Video Modal Styles */
-        .video-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .video-modal-content {
-            background: var(--sidebar-bg-light);
-            border-radius: 12px;
-            max-width: 90%;
-            max-height: 90%;
-            overflow: auto;
-            position: relative;
-        }
-
-        .video-modal-close {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 2rem;
-            cursor: pointer;
-            z-index: 1001;
-            color: var(--text-light);
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .video-player-container {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-        }
-
-        .video-modal .video-info {
-            padding: 1.5rem;
-        }
-
-        .video-modal .video-info h3 {
-            margin-bottom: 1rem;
-            font-size: 1.3rem;
-        }
-
-        /* Dark Theme Styles for Videos */
-        body[data-theme="dark"] .videos-container {
-            background: transparent;
-        }
-
-        body[data-theme="dark"] .youtube-search-bar {
-            background: var(--sidebar-bg-dark);
-            border-color: var(--sidebar-border-dark);
-            color: var(--text-dark);
-        }
-
-        body[data-theme="dark"] .video-card {
-            background: var(--sidebar-bg-dark);
-            border-color: var(--sidebar-border-dark);
-        }
-
-        body[data-theme="dark"] .video-modal-content {
-            background: var(--sidebar-bg-dark);
-        }
-
-        body[data-theme="dark"] .video-modal-close {
-            color: var(--text-dark);
-        }
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            .videos-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 1rem;
-            }
-            
-            .search-container {
-                flex-direction: column;
-            }
-            
-            .video-modal-content {
-                max-width: 95%;
-                margin: 1rem;
-            }
         }
 
         
@@ -4939,7 +4673,6 @@
         <nav class="sidebar" id="sidebar">
             <button class="nav-item active" data-section="games">Games</button>
             <button class="nav-item" data-section="music">Music</button>
-            <!-- <button class="nav-item" data-section="videos">Videos</button> -->
             <button class="nav-item" data-section="hacks">Cheats</button>
             <button class="nav-item" data-section="chatbot">Chatbot</button>
             <button class="nav-item" data-section="dirty-rumors">Dirty Rumors</button>
@@ -5027,50 +4760,6 @@
                 <audio id="audio-player" preload="none"></audio>
             </div>
             
-            <!-- YouTube Videos Section -->
-            <div class="videos-container" id="videos-container" style="display: none;">
-                <div class="videos-header">
-                    <h2 class="videos-title">YouTube Videos</h2>
-                    <p class="videos-subtitle">Watch popular videos and search for content</p>
-                </div>
-                
-                <!-- YouTube Search Section -->
-                <div class="youtube-search-section">
-                    <div class="search-container">
-                        <input type="text" id="youtube-search" class="youtube-search-bar" placeholder="Search YouTube videos..." autocomplete="off">
-                        <button id="youtube-search-btn" class="youtube-search-button">Search</button>
-                    </div>
-                </div>
-                
-                <!-- Popular Videos Section -->
-                <div class="popular-videos-section">
-                    <h3 class="section-title">Popular Videos</h3>
-                    <div class="videos-grid" id="popular-videos-grid">
-                        <div class="loading-message">Loading...</div>
-                    </div>
-                </div>
-                
-                <!-- Search Results Section -->
-                <div class="search-results-section" id="search-results-section" style="display: none;">
-                    <h3 class="section-title">Search Results</h3>
-                    <div class="videos-grid" id="search-results-grid">
-                    </div>
-                </div>
-                
-                <!-- Video Player Modal -->
-                <div class="video-modal" id="video-modal" style="display: none;">
-                    <div class="video-modal-content">
-                        <span class="video-modal-close" id="video-modal-close">&times;</span>
-                        <div class="video-player-container">
-                            <iframe id="youtube-player" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
-                        </div>
-                        <div class="video-info">
-                            <h3 id="video-title"></h3>
-                            <p id="video-description"></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
             
             <!-- Dirty Rumors Section -->
             <div class="dirty-rumors-container" id="dirty-rumors-container" style="display: none;">
@@ -7287,8 +6976,6 @@
             { name: "Lemonoids", image: "images/Lemoniods.png", url: "./games/Lemonoids.html" },
             { name: "Parkoor", image: "images/Parkoor.png", url: "./games/Parkoor.html" },
             { name: "Super Cold", image: "images/Super-Cold.png", url: "./games/super-cold/" },
-
-            
         ];
 
         
@@ -8230,7 +7917,6 @@ game.name.toLowerCase().includes(searchTerm)
             const navItems = document.querySelectorAll('.nav-item');
             const gamesContainer = document.querySelector('.games-container');
             const musicContainer = document.querySelector('.music-container');
-            const videosContainer = document.querySelector('.videos-container');
             const dirtyRumorsContainer = document.querySelector('.dirty-rumors-container');
             const hallOfFameContainer = document.querySelector('.hall-of-fame-container');
             const hacksContainer = document.querySelector('.hacks-container');
@@ -8249,7 +7935,6 @@ game.name.toLowerCase().includes(searchTerm)
                     if (section === 'games') {
                         gamesContainer.style.display = 'block';
                         musicContainer.style.display = 'none';
-                        videosContainer.style.display = 'none';
                         dirtyRumorsContainer.style.display = 'none';
                         hallOfFameContainer.style.display = 'none';
                         hacksContainer.style.display = 'none';
@@ -8257,26 +7942,13 @@ game.name.toLowerCase().includes(searchTerm)
                     } else if (section === 'music') {
                         gamesContainer.style.display = 'none';
                         musicContainer.style.display = 'block';
-                        videosContainer.style.display = 'none';
                         dirtyRumorsContainer.style.display = 'none';
                         hallOfFameContainer.style.display = 'none';
                         hacksContainer.style.display = 'none';
                         chatbotContainer.style.display = 'none';
-                    } else if (section === 'videos') {
-                        gamesContainer.style.display = 'none';
-                        musicContainer.style.display = 'none';
-                        videosContainer.style.display = 'block';
-                        dirtyRumorsContainer.style.display = 'none';
-                        hallOfFameContainer.style.display = 'none';
-                        hacksContainer.style.display = 'none';
-                        chatbotContainer.style.display = 'none';
-git                         
-                        // Load popular videos when tab is opened
-                        loadPopularVideos();
                     } else if (section === 'dirty-rumors') {
                         gamesContainer.style.display = 'none';
                         musicContainer.style.display = 'none';
-                        videosContainer.style.display = 'none';
                         dirtyRumorsContainer.style.display = 'block';
                         hallOfFameContainer.style.display = 'none';
                         hacksContainer.style.display = 'none';
@@ -8284,7 +7956,6 @@ git
                     } else if (section === 'hall-of-fame') {
                         gamesContainer.style.display = 'none';
                         musicContainer.style.display = 'none';
-                        videosContainer.style.display = 'none';
                         dirtyRumorsContainer.style.display = 'none';
                         hallOfFameContainer.style.display = 'block';
                         hacksContainer.style.display = 'none';
@@ -8292,7 +7963,6 @@ git
                     } else if (section === 'hacks') {
                         gamesContainer.style.display = 'none';
                         musicContainer.style.display = 'none';
-                        videosContainer.style.display = 'none';
                         dirtyRumorsContainer.style.display = 'none';
                         hallOfFameContainer.style.display = 'none';
                         hacksContainer.style.display = 'block';
@@ -8300,7 +7970,6 @@ git
                     } else if (section === 'chatbot') {
                         gamesContainer.style.display = 'none';
                         musicContainer.style.display = 'none';
-                        videosContainer.style.display = 'none';
                         dirtyRumorsContainer.style.display = 'none';
                         hallOfFameContainer.style.display = 'none';
                         hacksContainer.style.display = 'none';
@@ -8315,12 +7984,21 @@ git
                             processQueuedMessages();
                         }
                         
-                        // Add welcome message to bot's memory if not already added
+                        // Load chat history from sessionStorage
+                        const historyLoaded = loadChatHistory();
+                        
+                        // Add welcome message to bot's memory if not already added or no history
                         if (chatHistory.length === 0) {
                             chatHistory.push({ 
                                 role: 'model', 
                                 parts: [{ text: "Hello! I'm Hubble Assistant, your intelligent AI companion. I'm here to help you with questions, have conversations, or assist with anything you need. How can I help you today?" }] 
                             });
+                            saveChatHistory();
+                        }
+                        
+                        // If history was loaded, restore the chat interface
+                        if (historyLoaded && chatHistory.length > 0) {
+                            restoreChatInterface();
                         }
                     }
                 });
@@ -8332,24 +8010,77 @@ git
         window.GROQ_API_KEY = null; // This will be replaced by GitHub Actions
         const groqApiKey = window.GROQ_API_KEY;
         
-        // YouTube API configuration
-        window.YOUTUBE_API_KEY = null; // This will be replaced by GitHub Actions
-        
-        // For testing: uncomment the line below to test with a fake API key (overlay should hide)
-        // window.YOUTUBE_API_KEY = 'test-key-for-overlay-testing';
-        
-        const youtubeApiKey = window.YOUTUBE_API_KEY;
-        
-        // Debug: Log API key status on page load
-        console.log('🔍 YouTube API Key Debug Info:', {
-            hasApiKey: !!youtubeApiKey,
-            apiKeyType: youtubeApiKey === null ? 'null' : typeof youtubeApiKey,
-            apiKeyLength: youtubeApiKey ? youtubeApiKey.length : 0,
-            apiKeyPreview: youtubeApiKey ? youtubeApiKey.substring(0, 15) + '...' : 'null',
-            isTestKey: youtubeApiKey === 'test-key-for-overlay-testing'
-        });
         let chatHistory = [];
         let currentTypingAnimation = null; // Track current typing animation
+        
+        // Chat history persistence functions
+        function saveChatHistory() {
+            try {
+                sessionStorage.setItem('hubble_chat_history', JSON.stringify(chatHistory));
+            } catch (error) {
+                console.warn('Failed to save chat history to sessionStorage:', error);
+            }
+        }
+        
+        function loadChatHistory() {
+            try {
+                const saved = sessionStorage.getItem('hubble_chat_history');
+                if (saved) {
+                    chatHistory = JSON.parse(saved);
+                    return true;
+                }
+            } catch (error) {
+                console.warn('Failed to load chat history from sessionStorage:', error);
+            }
+            return false;
+        }
+        
+        // Restore chat interface from loaded history
+        function restoreChatInterface() {
+            const messagesContainer = document.getElementById('chatbot-messages');
+            if (!messagesContainer) return;
+            
+            // Clear existing messages in the UI (except welcome message)
+            const welcomeMessage = document.getElementById('welcome-message');
+            messagesContainer.innerHTML = '';
+            if (welcomeMessage) {
+                messagesContainer.appendChild(welcomeMessage);
+            }
+            
+            // Restore messages from history (skip welcome message)
+            chatHistory.forEach(msg => {
+                if (msg.parts && msg.parts[0] && msg.parts[0].text && 
+                    !msg.parts[0].text.includes("Hello! I'm Hubble Assistant, your intelligent AI companion")) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = msg.role === 'user' ? 'message user' : 'message bot';
+                    
+                    if (msg.role === 'user') {
+                        messageDiv.innerHTML = `
+                            <div class="message-header">
+                                <strong>You</strong>
+                            </div>
+                            <div class="message-content">
+                                ${msg.parts[0].text}
+                            </div>
+                        `;
+                    } else {
+                        messageDiv.innerHTML = `
+                            <div class="message-header">
+                                <strong>Hubble Assistant</strong>
+                            </div>
+                            <div class="message-content">
+                                ${msg.parts[0].text}
+                            </div>
+                        `;
+                    }
+                    
+                    messagesContainer.appendChild(messageDiv);
+                }
+            });
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
         
         // Message threading system
         let pendingMessages = [];
@@ -8816,6 +8547,9 @@ git
                 // Add to chat history
                 chatHistory.push({ role: sender === 'user' ? 'user' : 'model', parts: [{ text: content }] });
                 
+                // Save to sessionStorage
+                saveChatHistory();
+                
                 return messageId;
             }
             
@@ -8986,6 +8720,9 @@ git
                 
                 // Add to chat history
                 chatHistory.push({ role: sender === 'user' ? 'user' : 'model', parts: [{ text: content }] });
+                
+                // Save to sessionStorage
+                saveChatHistory();
             }
             
             // Show typing indicator
@@ -9009,6 +8746,33 @@ git
                     console.log('Sending message to Groq API:', message);
                     console.log('Using API key:', groqApiKey ? 'Present' : 'Missing');
                     
+                    // Build messages array with chat history
+                    const messages = [
+                        {
+                            role: 'system',
+                            content: 'You are Hubble Assistant, a helpful AI assistant for the Hubble gaming platform. You help users with questions, provide information, and have conversations. CRITICAL: You MUST use proper grammar, punctuation, and capitalization in ALL responses. Keep responses SHORT and CONCISE - aim for 1-3 sentences maximum. Start sentences with capital letters, use periods at the end of sentences, use commas appropriately, and capitalize proper nouns like "Hubble". Write in complete, well-structured sentences. Always respond in plain text only - no markdown formatting, no sections, no subtitles, no bullet points, no headers, no special formatting. Example of good formatting: "Hello! How can I help you today? Would you like to chat about something in particular, maybe a game you\'re playing on the Hubble platform?"'
+                        }
+                    ];
+                    
+                    // Add chat history to messages (excluding the welcome message)
+                    chatHistory.forEach(msg => {
+                        if (msg.parts && msg.parts[0] && msg.parts[0].text && 
+                            !msg.parts[0].text.includes("Hello! I'm Hubble Assistant, your intelligent AI companion")) {
+                            messages.push({
+                                role: msg.role === 'model' ? 'assistant' : msg.role,
+                                content: msg.parts[0].text
+                            });
+                        }
+                    });
+                    
+                    // Add current message
+                    messages.push({
+                        role: 'user',
+                        content: message
+                    });
+                    
+                    console.log('Chat history length:', messages.length - 2); // Subtract system message and current message
+                    
                     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                         method: 'POST',
                         headers: {
@@ -9017,16 +8781,7 @@ git
                         },
                         body: JSON.stringify({
                             model: 'llama-3.3-70b-versatile',
-                            messages: [
-                                {
-                                    role: 'system',
-                                    content: 'You are Hubble Assistant, a helpful AI assistant for the Hubble gaming platform. You help users with questions, provide information, and have conversations. CRITICAL: You MUST use proper grammar, punctuation, and capitalization in ALL responses. Keep responses SHORT and CONCISE - aim for 1-3 sentences maximum. Start sentences with capital letters, use periods at the end of sentences, use commas appropriately, and capitalize proper nouns like "Hubble". Write in complete, well-structured sentences. Always respond in plain text only - no markdown formatting, no sections, no subtitles, no bullet points, no headers, no special formatting. Example of good formatting: "Hello! How can I help you today? Would you like to chat about something in particular, maybe a game you\'re playing on the Hubble platform?"'
-                                },
-                                {
-                                    role: 'user',
-                                    content: message
-                                }
-                            ],
+                            messages: messages,
                             temperature: 0.7,
                             max_tokens: 1000
                         })
@@ -9979,214 +9734,8 @@ git
             // Initialize the music library
             initializeMusicLibrary();
             
-            // Initialize YouTube functionality
-            initializeYouTube();
         });
         
-        // YouTube Functionality
-        function initializeYouTube() {
-            const youtubeSearchBtn = document.getElementById('youtube-search-btn');
-            const youtubeSearchInput = document.getElementById('youtube-search');
-            const videoModal = document.getElementById('video-modal');
-            const videoModalClose = document.getElementById('video-modal-close');
-            
-            // Load popular videos on initialization
-            loadPopularVideos();
-            
-            // Search functionality
-            if (youtubeSearchBtn) {
-                youtubeSearchBtn.addEventListener('click', performYouTubeSearch);
-            }
-            
-            if (youtubeSearchInput) {
-                youtubeSearchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        performYouTubeSearch();
-                    }
-                });
-            }
-            
-            // Modal functionality
-            if (videoModalClose) {
-                videoModalClose.addEventListener('click', closeVideoModal);
-            }
-            
-            if (videoModal) {
-                videoModal.addEventListener('click', function(e) {
-                    if (e.target === videoModal) {
-                        closeVideoModal();
-                    }
-                });
-            }
-        }
-        
-        async function loadPopularVideos() {
-            const popularGrid = document.getElementById('popular-videos-grid');
-            
-            console.log('YouTube API Key available:');
-            
-            if (!youtubeApiKey) {
-                console.log('No YouTube API key found, showing unavailable overlay');
-                showVideosUnavailableOverlay();
-                return;
-            }
-            
-            try {
-                const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=US&maxResults=12&key=${youtubeApiKey}`;
-                console.log('Fetching popular videos from YouTube API...');
-                
-                const response = await fetch(apiUrl);
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('YouTube API Error:', response.status, response.statusText, errorText);
-                    throw new Error(`YouTube API Error: ${response.status} ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                console.log('Successfully loaded popular videos:', data.items?.length || 0, 'videos');
-                displayVideos(data.items, popularGrid);
-            } catch (error) {
-                console.error('Error loading popular videos:', error);
-                popularGrid.innerHTML = '<div class="loading-message">Failed to load videos. Please check your internet connection and try again.</div>';
-            }
-        }
-        
-        async function performYouTubeSearch() {
-            const searchInput = document.getElementById('youtube-search');
-            const searchResultsSection = document.getElementById('search-results-section');
-            const searchResultsGrid = document.getElementById('search-results-grid');
-            const query = searchInput.value.trim();
-            
-            if (!query) return;
-            
-            console.log('Searching for:', query);
-            
-            if (!youtubeApiKey) {
-                console.log('No YouTube API key found for search');
-                showVideosUnavailableOverlay();
-                return;
-            }
-            
-            searchResultsSection.style.display = 'block';
-            searchResultsGrid.innerHTML = '<div class="loading-message">Searching...</div>';
-            
-            try {
-                const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=12&key=${youtubeApiKey}`;
-                console.log('Searching YouTube API...');
-                
-                const response = await fetch(apiUrl);
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('YouTube Search API Error:', response.status, response.statusText, errorText);
-                    throw new Error(`YouTube Search API Error: ${response.status} ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                console.log('Search results:', data.items?.length || 0, 'videos found');
-                displayVideos(data.items, searchResultsGrid, true);
-            } catch (error) {
-                console.error('Error searching videos:', error);
-                searchResultsGrid.innerHTML = '<div class="loading-message">Search failed. Please try again.</div>';
-            }
-        }
-        
-        function displayVideos(videos, container, isSearch = false) {
-            // Hide overlay when videos are successfully loaded
-            hideVideosUnavailableOverlay();
-            
-            if (!videos || videos.length === 0) {
-                container.innerHTML = '<div class="loading-message">No videos found.</div>';
-                return;
-            }
-            
-            const videosHTML = videos.map(video => {
-                const videoId = isSearch ? video.id.videoId : video.id;
-                const title = video.snippet.title;
-                const channelTitle = video.snippet.channelTitle;
-                const thumbnail = video.snippet.thumbnails.medium.url;
-                const publishedAt = new Date(video.snippet.publishedAt).toLocaleDateString();
-                
-                let viewCount = '';
-                if (video.statistics && video.statistics.viewCount) {
-                    const views = parseInt(video.statistics.viewCount);
-                    viewCount = views.toLocaleString() + ' views';
-                }
-                
-                return `
-                    <div class="video-card" onclick="playVideo('${videoId}', '${title.replace(/'/g, "\\'")}', '${video.snippet.description.replace(/'/g, "\\'")}')">
-                        <img src="${thumbnail}" alt="${title}" class="video-thumbnail">
-                        <div class="video-info">
-                            <h3 class="video-title">${title}</h3>
-                            <p class="video-channel">${channelTitle}</p>
-                            <div class="video-stats">
-                                ${viewCount ? `<span>${viewCount}</span>` : ''}
-                                <span>${publishedAt}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            container.innerHTML = videosHTML;
-        }
-        
-        function showVideosUnavailableOverlay() {
-            const videosContainer = document.querySelector('.videos-container');
-            
-            // Create overlay if it doesn't exist
-            let overlay = document.getElementById('videos-unavailable-overlay');
-            if (!overlay) {
-                overlay = document.createElement('div');
-                overlay.id = 'videos-unavailable-overlay';
-                overlay.className = 'videos-unavailable-overlay';
-                overlay.innerHTML = `
-                    <div class="overlay-content">
-                        <h3>Videos Currently Not Available</h3>
-                    </div>
-                `;
-                videosContainer.appendChild(overlay);
-            }
-            
-            // Show overlay
-            overlay.style.display = 'flex';
-        }
-        
-        function hideVideosUnavailableOverlay() {
-            const overlay = document.getElementById('videos-unavailable-overlay');
-            if (overlay) {
-                overlay.style.display = 'none';
-            }
-        }
-        
-        function playVideo(videoId, title, description) {
-            const modal = document.getElementById('video-modal');
-            const player = document.getElementById('youtube-player');
-            const videoTitle = document.getElementById('video-title');
-            const videoDescription = document.getElementById('video-description');
-            
-            // Set video details
-            videoTitle.textContent = title;
-            videoDescription.textContent = description.substring(0, 200) + (description.length > 200 ? '...' : '');
-            
-            // Set iframe source
-            player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-            
-            // Show modal
-            modal.style.display = 'flex';
-        }
-        
-        function closeVideoModal() {
-            const modal = document.getElementById('video-modal');
-            const player = document.getElementById('youtube-player');
-            
-            // Stop video by clearing src
-            player.src = '';
-            
-            // Hide modal
-            modal.style.display = 'none';
-        }
         
     </script>
 
