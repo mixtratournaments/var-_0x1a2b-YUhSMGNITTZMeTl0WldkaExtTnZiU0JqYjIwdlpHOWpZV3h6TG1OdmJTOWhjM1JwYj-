@@ -66,17 +66,54 @@ jobs:
           echo "💡 To fix this: Go to Settings > Secrets and variables > Actions > Add 'YOUTUBE_API_KEY'"
         fi
         
+        # Replace EmailJS credentials in main.html and newsletter-admin.html
+        echo "🔍 Checking for EmailJS credentials..."
+        if [ -n "${{ secrets.EMAILJS_PUBLIC_KEY }}" ] && [ -n "${{ secrets.EMAILJS_SERVICE_ID }}" ] && [ -n "${{ secrets.EMAILJS_WELCOME_TEMPLATE_ID }}" ] && [ -n "${{ secrets.EMAILJS_NEWSLETTER_TEMPLATE_ID }}" ]; then
+          echo "✅ EmailJS credentials found, injecting into files..."
+          
+          # Replace in main.html
+          echo "🔍 Before EmailJS replacement in main.html:"
+          grep "YOUR_EMAILJS_PUBLIC_KEY" main.html | head -1
+          sed -i "s|YOUR_EMAILJS_PUBLIC_KEY|${{ secrets.EMAILJS_PUBLIC_KEY }}|g" main.html
+          sed -i "s|YOUR_EMAILJS_SERVICE_ID|${{ secrets.EMAILJS_SERVICE_ID }}|g" main.html
+          sed -i "s|YOUR_EMAILJS_WELCOME_TEMPLATE_ID|${{ secrets.EMAILJS_WELCOME_TEMPLATE_ID }}|g" main.html
+          echo "🔍 After EmailJS replacement in main.html:"
+          grep "emailjs.init" main.html | head -1
+          echo "✅ EmailJS credentials injected into main.html"
+          
+          # Replace in newsletter-admin.html
+          if [ -f "newsletter-admin.html" ]; then
+            echo "🔍 Before EmailJS replacement in newsletter-admin.html:"
+            grep "YOUR_EMAILJS_PUBLIC_KEY" newsletter-admin.html | head -1
+            sed -i "s|YOUR_EMAILJS_PUBLIC_KEY|${{ secrets.EMAILJS_PUBLIC_KEY }}|g" newsletter-admin.html
+            sed -i "s|YOUR_EMAILJS_SERVICE_ID|${{ secrets.EMAILJS_SERVICE_ID }}|g" newsletter-admin.html
+            sed -i "s|YOUR_EMAILJS_NEWSLETTER_TEMPLATE_ID|${{ secrets.EMAILJS_NEWSLETTER_TEMPLATE_ID }}|g" newsletter-admin.html
+            echo "🔍 After EmailJS replacement in newsletter-admin.html:"
+            grep "emailjs.init" newsletter-admin.html | head -1
+            echo "✅ EmailJS credentials injected into newsletter-admin.html"
+          fi
+          
+          echo "✅ EmailJS credentials injected successfully"
+        else
+          echo "❌ No EmailJS credentials found in GitHub secrets - newsletter features may not work"
+          echo "💡 To fix this: Go to Settings > Secrets and variables > Actions > Add 'EMAILJS_PUBLIC_KEY', 'EMAILJS_SERVICE_ID', 'EMAILJS_WELCOME_TEMPLATE_ID', and 'EMAILJS_NEWSLETTER_TEMPLATE_ID'"
+        fi
+        
         # Verify the replacements worked (for debugging)
         echo "🔍 Groq API key status in main.html:"
         grep "GROQ_API_KEY" main.html | head -1
         echo "🔍 YouTube API key status in main.html:"
         grep "YOUTUBE_API_KEY" main.html | head -1
+        echo "🔍 EmailJS credentials status in main.html:"
+        grep "emailjs.init" main.html | head -1
         
         # Count how many API key replacements were made
         echo "🔍 Groq API key replacement count:"
         grep -c "window.GROQ_API_KEY" main.html || echo "0"
         echo "🔍 YouTube API key replacement count:"
         grep -c "window.YOUTUBE_API_KEY" main.html || echo "0"
+        echo "🔍 EmailJS replacement count:"
+        grep -c "emailjs.init" main.html || echo "0"
         
         # Check if API keys are properly set (not null)
         echo "🔍 Final API key verification:"
@@ -90,6 +127,12 @@ jobs:
           echo "✅ YouTube API key is properly set"
         else
           echo "❌ YouTube API key is still null or not found"
+        fi
+        
+        if grep -q "emailjs.init('[^']*');" main.html; then
+          echo "✅ EmailJS credentials are properly set"
+        else
+          echo "❌ EmailJS credentials are still using placeholder values"
         fi
         
     - name: Setup Pages

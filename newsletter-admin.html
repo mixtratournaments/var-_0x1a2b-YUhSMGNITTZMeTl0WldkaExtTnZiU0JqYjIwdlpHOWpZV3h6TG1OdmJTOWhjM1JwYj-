@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbit Updates - Admin Panel</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+        :root {
+            --primary: #009CFC;
+            --secondary: #A0AAFF;
+            --accent: #C97FFD;
+            --background-light: #f7f8fa;
+            --text-light: #222;
+            --background-dark: #181e2a;
+            --text-dark: #f7f8fa;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--background-light);
+            color: var(--text-light);
+            transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        body[data-theme="dark"] {
+            background: var(--background-dark);
+            color: var(--text-dark);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        body[data-theme="dark"] .container {
+            background: var(--background-dark);
+            border: 1px solid var(--secondary);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            font-size: 2.5rem;
+            margin: 0;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        body[data-theme="dark"] label {
+            color: var(--text-dark);
+        }
+        input, textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e6f7;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s ease;
+            background: var(--background-light);
+            color: var(--text-light);
+            box-sizing: border-box;
+        }
+        body[data-theme="dark"] input,
+        body[data-theme="dark"] textarea {
+            background: var(--background-dark);
+            color: var(--text-dark);
+            border-color: var(--secondary);
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .send-button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 156, 252, 0.3);
+        }
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-weight: 500;
+            display: none;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        body[data-theme="dark"] .message.success {
+            background-color: #1e4d2b;
+            color: #d4edda;
+            border-color: #2d5a3d;
+        }
+        body[data-theme="dark"] .message.error {
+            background-color: #4d1e1e;
+            color: #f8d7da;
+            border-color: #5a2d2d;
+        }
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+        .back-button {
+            display: inline-block;
+            background: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .back-button:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+    
+    <div class="container">
+        <a href="main.html" class="back-button">← Back to Hubble</a>
+        
+        <div class="header">
+            <h1>🚀 Orbit Updates Admin</h1>
+            <p>Send newsletters to all subscribers</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="subscriber-count">-</div>
+                <div>Total Subscribers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="sent-count">0</div>
+                <div>Emails Sent</div>
+            </div>
+        </div>
+        
+        <form id="newsletter-form">
+            <div class="form-group">
+                <label for="week_date">Week Date:</label>
+                <input type="text" id="week_date" value="" placeholder="December 15, 2024">
+            </div>
+            
+            <div class="form-group">
+                <label for="new_games">New Games Added:</label>
+                <textarea id="new_games" rows="3" placeholder="Escape Road 3, New Puzzle Game, Space Adventure"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="bug_fixes">Bug Fixes:</label>
+                <textarea id="bug_fixes" rows="3" placeholder="Fixed loading issues, Updated graphics, Improved performance"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="featured_game">Featured Game of the Week:</label>
+                <textarea id="featured_game" rows="2" placeholder="This week's featured game is Escape Road 3 - the most popular game right now!"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="site_updates">Site Updates:</label>
+                <textarea id="site_updates" rows="3" placeholder="Added new search feature, Improved performance, New newsletter system"></textarea>
+            </div>
+            
+            <button type="submit" class="send-button" id="send-button">Send to All Subscribers</button>
+        </form>
+        
+        <div class="message" id="message"></div>
+    </div>
+
+    <!-- EmailJS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <!-- Firebase -->
+    <script type="module" src="./firebase.js"></script>
+    
+    <script type="module">
+        import { db } from './firebase.js';
+        import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+        
+        // Initialize EmailJS with environment variables
+        const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY || 'YOUR_EMAILJS_PUBLIC_KEY';
+        const EMAILJS_SERVICE_ID = process.env.EMAILJS_SERVICE_ID || 'YOUR_EMAILJS_SERVICE_ID';
+        const EMAILJS_NEWSLETTER_TEMPLATE_ID = process.env.EMAILJS_NEWSLETTER_TEMPLATE_ID || 'YOUR_EMAILJS_NEWSLETTER_TEMPLATE_ID';
+        
+        emailjs.init(EMAILJS_PUBLIC_KEY);
+        
+        // Theme toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', newTheme);
+            themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
+            localStorage.setItem('theme', newTheme);
+        });
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.setAttribute('data-theme', savedTheme);
+        themeToggle.textContent = savedTheme === 'light' ? '🌙' : '☀️';
+        
+        // Set default week date
+        document.getElementById('week_date').value = new Date().toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        
+        // Load subscriber count
+        async function loadSubscriberCount() {
+            try {
+                const subscribersRef = collection(db, 'newsletter_subscribers');
+                const snapshot = await getDocs(subscribersRef);
+                document.getElementById('subscriber-count').textContent = snapshot.size;
+            } catch (error) {
+                console.error('Error loading subscriber count:', error);
+                document.getElementById('subscriber-count').textContent = 'Error';
+            }
+        }
+        
+        // Handle form submission
+        document.getElementById('newsletter-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const week_date = document.getElementById('week_date').value;
+            const new_games = document.getElementById('new_games').value;
+            const bug_fixes = document.getElementById('bug_fixes').value;
+            const featured_game = document.getElementById('featured_game').value;
+            const site_updates = document.getElementById('site_updates').value;
+            const sendButton = document.getElementById('send-button');
+            const message = document.getElementById('message');
+            
+            if (!week_date || !new_games || !bug_fixes || !featured_game || !site_updates) {
+                showMessage('Please fill in all fields.', 'error');
+                return;
+            }
+            
+            // Disable button
+            sendButton.disabled = true;
+            sendButton.textContent = 'Sending...';
+            
+            try {
+                // Get all subscribers
+                const subscribersRef = collection(db, 'newsletter_subscribers');
+                const snapshot = await getDocs(subscribersRef);
+                
+                if (snapshot.empty) {
+                    showMessage('No subscribers found.', 'error');
+                    return;
+                }
+                
+                let sentCount = 0;
+                let errorCount = 0;
+                
+                // Send to each subscriber
+                for (const doc of snapshot.docs) {
+                    const subscriber = doc.data();
+                    try {
+                        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_NEWSLETTER_TEMPLATE_ID, {
+                            to_email: subscriber.email,
+                            week_date: week_date,
+                            new_games: new_games,
+                            bug_fixes: bug_fixes,
+                            featured_game: featured_game,
+                            site_updates: site_updates,
+                            unsubscribe_link: `https://yoursite.com/unsubscribe?email=${subscriber.email}`
+                        });
+                        sentCount++;
+                    } catch (error) {
+                        console.error('Error sending to', subscriber.email, error);
+                        errorCount++;
+                    }
+                }
+                
+                // Update sent count
+                document.getElementById('sent-count').textContent = sentCount;
+                
+                if (errorCount > 0) {
+                    showMessage(`Newsletter sent to ${sentCount} subscribers. ${errorCount} failed.`, 'error');
+                } else {
+                    showMessage(`Successfully sent newsletter to ${sentCount} subscribers!`, 'success');
+                }
+                
+            } catch (error) {
+                console.error('Newsletter error:', error);
+                showMessage('Sorry, there was an error sending the newsletter. Please try again.', 'error');
+            } finally {
+                // Re-enable button
+                sendButton.disabled = false;
+                sendButton.textContent = 'Send to All Subscribers';
+            }
+        });
+        
+        function showMessage(text, type) {
+            const message = document.getElementById('message');
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
+            
+            // Hide message after 5 seconds
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Load initial data
+        loadSubscriberCount();
+    </script>
+</body>
+</html>

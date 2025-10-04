@@ -3725,6 +3725,58 @@
             box-shadow: 0 2px 12px rgba(135,206,235,0.15);
         }
         
+        /* Header Newsletter Button */
+        .header-newsletter {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            margin-right: 20px;
+        }
+        
+        .header-newsletter-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .header-newsletter-btn:hover {
+            background: linear-gradient(135deg, #ff5252 0%, #ff7979 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+        
+        .header-newsletter-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Hide newsletter button in game mode */
+        .topbar.game-mode .header-newsletter {
+            display: none;
+        }
+        
+        /* Responsive design for header newsletter */
+        @media (max-width: 768px) {
+            .header-newsletter-btn {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header-newsletter-btn {
+                font-size: 0.75rem;
+                padding: 5px 10px;
+            }
+        }
+        
         
         .game-controls {
             position: absolute;
@@ -4685,6 +4737,251 @@
             background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
             border-color: rgba(255, 255, 255, 0.1);
         }
+
+        /* Newsletter Modal Styles */
+        .newsletter-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .newsletter-modal-content {
+            background: var(--background-light);
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: newsletterSlideIn 0.3s ease-out;
+            overflow: hidden;
+        }
+
+        body[data-theme="dark"] .newsletter-modal-content {
+            background: var(--background-dark);
+        }
+
+        @keyframes newsletterSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .newsletter-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .newsletter-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .newsletter-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .newsletter-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .newsletter-body {
+            padding: 30px;
+        }
+
+        .newsletter-description {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        body[data-theme="dark"] .newsletter-description {
+            color: var(--text-dark);
+        }
+
+        .newsletter-form {
+            margin-bottom: 25px;
+        }
+
+        .newsletter-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .newsletter-input-group input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e6f7;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s ease;
+            background: var(--background-light);
+            color: var(--text-light);
+        }
+
+        body[data-theme="dark"] .newsletter-input-group input {
+            background: var(--background-dark);
+            color: var(--text-dark);
+            border-color: var(--sidebar-border-dark);
+        }
+
+        .newsletter-input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .newsletter-submit {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .newsletter-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 156, 252, 0.3);
+        }
+
+        .newsletter-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .newsletter-message {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .newsletter-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .newsletter-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        body[data-theme="dark"] .newsletter-message.success {
+            background-color: #1e4d2b;
+            color: #d4edda;
+            border-color: #2d5a3d;
+        }
+
+        body[data-theme="dark"] .newsletter-message.error {
+            background-color: #4d1e1e;
+            color: #f8d7da;
+            border-color: #5a2d2d;
+        }
+
+        .newsletter-features {
+            background: var(--sidebar-bg-light);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--sidebar-border-light);
+        }
+
+        body[data-theme="dark"] .newsletter-features {
+            background: var(--sidebar-bg-dark);
+            border-color: var(--sidebar-border-dark);
+        }
+
+        .newsletter-features h3 {
+            margin: 0 0 15px 0;
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        body[data-theme="dark"] .newsletter-features h3 {
+            color: var(--text-dark);
+        }
+
+        .newsletter-features ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .newsletter-features li {
+            margin-bottom: 8px;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        body[data-theme="dark"] .newsletter-features li {
+            color: var(--text-dark);
+        }
+
+        .newsletter-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+            color: white;
+            border: none;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        .newsletter-btn:hover {
+            background: linear-gradient(135deg, #ff5252 0%, #ff7979 100%);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .newsletter-modal-content {
+                margin: 10% auto;
+                width: 95%;
+            }
+            
+            .newsletter-input-group {
+                flex-direction: column;
+            }
+            
+            .newsletter-submit {
+                width: 100%;
+            }
+        }
     </style>
     
 </head>
@@ -4710,6 +5007,11 @@
             <div class="header-progress-container" id="header-progress-container">
                 <div class="header-progress-bar" id="header-progress-bar"></div>
             </div>
+        </div>
+        
+        <!-- Header Newsletter Button -->
+        <div class="header-newsletter">
+            <button class="header-newsletter-btn" id="newsletter-btn" title="Subscribe to Orbit Updates">🚀 Orbit Updates</button>
         </div>
     </div>
     <div class="layout">
@@ -5058,6 +5360,35 @@
                 </div>
             </div>
         </main>
+
+        <!-- Orbit Updates Newsletter Modal -->
+        <div class="newsletter-modal" id="newsletter-modal">
+            <div class="newsletter-modal-content">
+                <div class="newsletter-header">
+                    <h2>🚀 Orbit Updates</h2>
+                    <button class="newsletter-close" id="newsletter-close">&times;</button>
+                </div>
+                <div class="newsletter-body">
+                    <p class="newsletter-description">Get the latest news on Hubble's updates and bug fixes every week in one simple email!</p>
+                    <form class="newsletter-form" id="newsletter-form">
+                        <div class="newsletter-input-group">
+                            <input type="email" id="newsletter-email" placeholder="Enter your email address" required>
+                            <button type="submit" class="newsletter-submit">Subscribe</button>
+                        </div>
+                        <div class="newsletter-message" id="newsletter-message"></div>
+                    </form>
+                    <div class="newsletter-features">
+                        <h3>What you'll get:</h3>
+                        <ul>
+                            <li>✨ New game announcements</li>
+                            <li>🐛 Bug fix updates</li>
+                            <li>🎮 Featured games of the week</li>
+                            <li>🚀 Site improvements and new features</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
     
@@ -9860,6 +10191,125 @@ game.name.toLowerCase().includes(searchTerm)
 
     <!-- Watermark Component -->
     <script type="module" src="./watermark.js"></script>
+    
+    <!-- EmailJS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <!-- Firebase -->
+    <script type="module" src="./firebase.js"></script>
+    
+    <!-- Newsletter JavaScript -->
+    <script type="module">
+        import { db } from './firebase.js';
+        import { collection, addDoc, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+        
+        // Initialize EmailJS
+        (function() {
+            emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // Replace with your EmailJS public key
+        })();
+        
+        // Newsletter functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const newsletterBtn = document.getElementById('newsletter-btn');
+            const newsletterModal = document.getElementById('newsletter-modal');
+            const newsletterClose = document.getElementById('newsletter-close');
+            const newsletterForm = document.getElementById('newsletter-form');
+            const newsletterEmail = document.getElementById('newsletter-email');
+            const newsletterMessage = document.getElementById('newsletter-message');
+            
+            // Open modal
+            newsletterBtn.addEventListener('click', function() {
+                newsletterModal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            });
+            
+            // Close modal
+            newsletterClose.addEventListener('click', function() {
+                newsletterModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+            
+            // Close modal when clicking outside
+            newsletterModal.addEventListener('click', function(e) {
+                if (e.target === newsletterModal) {
+                    newsletterModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+            
+            // Handle form submission
+            newsletterForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = newsletterEmail.value.trim();
+                const submitBtn = newsletterForm.querySelector('.newsletter-submit');
+                
+                if (!email) {
+                    showMessage('Please enter a valid email address.', 'error');
+                    return;
+                }
+                
+                // Disable submit button
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Subscribing...';
+                
+                try {
+                    // Check if email already exists
+                    const subscribersRef = collection(db, 'newsletter_subscribers');
+                    const q = query(subscribersRef, where('email', '==', email));
+                    const querySnapshot = await getDocs(q);
+                    
+                    if (!querySnapshot.empty) {
+                        showMessage('This email is already subscribed to Orbit Updates!', 'error');
+                        return;
+                    }
+                    
+                    // Add email to Firebase
+                    await addDoc(subscribersRef, {
+                        email: email,
+                        subscribedAt: new Date(),
+                        source: 'website'
+                    });
+                    
+                    // Send confirmation email using EmailJS
+                    const templateParams = {
+                        to_email: email,
+                        from_name: 'Hubble Team',
+                        message: `Welcome to Orbit Updates! You're now subscribed to receive weekly updates about Hubble's latest games, bug fixes, and new features.`
+                    };
+                    
+                    try {
+                        await emailjs.send('YOUR_EMAILJS_SERVICE_ID', 'YOUR_EMAILJS_WELCOME_TEMPLATE_ID', templateParams);
+                        showMessage('Successfully subscribed! Check your email for confirmation.', 'success');
+                        newsletterEmail.value = '';
+                    } catch (emailError) {
+                        console.error('EmailJS error:', emailError);
+                        showMessage('Successfully subscribed! (Confirmation email may be delayed)', 'success');
+                        newsletterEmail.value = '';
+                    }
+                    
+                } catch (error) {
+                    console.error('Subscription error:', error);
+                    showMessage('Sorry, there was an error subscribing. Please try again.', 'error');
+                } finally {
+                    // Re-enable submit button
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Subscribe';
+                }
+            });
+            
+            function showMessage(text, type) {
+                newsletterMessage.textContent = text;
+                newsletterMessage.className = `newsletter-message ${type}`;
+                newsletterMessage.style.display = 'block';
+                
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    newsletterMessage.style.display = 'none';
+                }, 5000);
+            }
+        });
+    </script>
     
     
 </body>
