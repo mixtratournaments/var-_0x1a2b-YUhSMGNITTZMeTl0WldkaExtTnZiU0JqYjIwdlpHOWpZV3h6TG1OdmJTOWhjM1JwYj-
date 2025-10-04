@@ -99,6 +99,35 @@ jobs:
           echo "💡 To fix this: Go to Settings > Secrets and variables > Actions > Add 'EMAILJS_PUBLIC_KEY', 'EMAILJS_SERVICE_ID', 'EMAILJS_WELCOME_TEMPLATE_ID', and 'EMAILJS_NEWSLETTER_TEMPLATE_ID'"
         fi
         
+        # Replace EmailJS credentials individually (fallback for partial setup)
+        echo "🔍 Checking for individual EmailJS credentials..."
+        
+        # Replace EmailJS Public Key if available
+        if [ -n "${{ secrets.EMAILJS_PUBLIC_KEY }}" ]; then
+          echo "✅ EmailJS Public Key found, injecting..."
+          sed -i "s|YOUR_EMAILJS_PUBLIC_KEY|${{ secrets.EMAILJS_PUBLIC_KEY }}|g" main.html
+          sed -i "s|YOUR_EMAILJS_PUBLIC_KEY|${{ secrets.EMAILJS_PUBLIC_KEY }}|g" newsletter-admin.html
+        fi
+        
+        # Replace EmailJS Service ID if available
+        if [ -n "${{ secrets.EMAILJS_SERVICE_ID }}" ]; then
+          echo "✅ EmailJS Service ID found, injecting..."
+          sed -i "s|YOUR_EMAILJS_SERVICE_ID|${{ secrets.EMAILJS_SERVICE_ID }}|g" main.html
+          sed -i "s|YOUR_EMAILJS_SERVICE_ID|${{ secrets.EMAILJS_SERVICE_ID }}|g" newsletter-admin.html
+        fi
+        
+        # Replace EmailJS Welcome Template ID if available
+        if [ -n "${{ secrets.EMAILJS_WELCOME_TEMPLATE_ID }}" ]; then
+          echo "✅ EmailJS Welcome Template ID found, injecting..."
+          sed -i "s|YOUR_EMAILJS_WELCOME_TEMPLATE_ID|${{ secrets.EMAILJS_WELCOME_TEMPLATE_ID }}|g" main.html
+        fi
+        
+        # Replace EmailJS Newsletter Template ID if available
+        if [ -n "${{ secrets.EMAILJS_NEWSLETTER_TEMPLATE_ID }}" ]; then
+          echo "✅ EmailJS Newsletter Template ID found, injecting..."
+          sed -i "s|YOUR_EMAILJS_NEWSLETTER_TEMPLATE_ID|${{ secrets.EMAILJS_NEWSLETTER_TEMPLATE_ID }}|g" newsletter-admin.html
+        fi
+        
         # Verify the replacements worked (for debugging)
         echo "🔍 Groq API key status in main.html:"
         grep "GROQ_API_KEY" main.html | head -1

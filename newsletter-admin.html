@@ -250,12 +250,8 @@
         import { db } from './firebase.js';
         import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
         
-        // Initialize EmailJS with environment variables
-        const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY || 'YOUR_EMAILJS_PUBLIC_KEY';
-        const EMAILJS_SERVICE_ID = process.env.EMAILJS_SERVICE_ID || 'YOUR_EMAILJS_SERVICE_ID';
-        const EMAILJS_NEWSLETTER_TEMPLATE_ID = process.env.EMAILJS_NEWSLETTER_TEMPLATE_ID || 'YOUR_EMAILJS_NEWSLETTER_TEMPLATE_ID';
-        
-        emailjs.init(EMAILJS_PUBLIC_KEY);
+        // Initialize EmailJS
+        emailjs.init('YOUR_EMAILJS_PUBLIC_KEY');
         
         // Theme toggle
         const themeToggle = document.getElementById('theme-toggle');
@@ -332,7 +328,7 @@
                 for (const doc of snapshot.docs) {
                     const subscriber = doc.data();
                     try {
-                        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_NEWSLETTER_TEMPLATE_ID, {
+                        await emailjs.send('YOUR_EMAILJS_SERVICE_ID', 'YOUR_EMAILJS_NEWSLETTER_TEMPLATE_ID', {
                             to_email: subscriber.email,
                             week_date: week_date,
                             new_games: new_games,
